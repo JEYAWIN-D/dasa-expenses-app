@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes.js';
+import platformRoutes from '../modules/platform/platform.routes.js';
+import orgRoutes from '../modules/organization/organization.routes.js';
 import clientRoutes from '../modules/clients/client.routes.js';
 import quotationRoutes from '../modules/quotations/quotation.routes.js';
 import negotiationRoutes from '../modules/negotiations/negotiation.routes.js';
@@ -21,11 +23,18 @@ router.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
-    service: 'Quotation, Billing & Business Finance API',
+    service: 'DASA EXPENCES SaaS Platform API',
+    edition: 'Enterprise Multi-Tenant SaaS Edition',
   });
 });
 
-// Modular route mounting
+// 1. DASA TECH Platform Administration (/api/platform/*)
+router.use('/platform', platformRoutes);
+
+// 2. Customer Organization Workspaces (/api/org/*)
+router.use('/org', orgRoutes);
+
+// 3. Core Tenant Business Modules
 router.use('/auth', authRoutes);
 router.use('/clients', clientRoutes);
 router.use('/quotations', quotationRoutes);
@@ -42,4 +51,5 @@ router.use('/settings', settingsRoutes);
 router.use('/leads', leadRoutes);
 
 export default router;
+
 

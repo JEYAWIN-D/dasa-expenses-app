@@ -408,7 +408,7 @@ export default function LoginPage() {
           <form onSubmit={handleLoginSubmit}>
             <div className="form-group" style={{ marginBottom: 18 }}>
               <label className="form-label" style={{ color: '#cbd5e1', fontSize: 13 }}>
-                Email Address
+                User Name or Email
               </label>
               <div style={{ position: 'relative' }}>
                 <div
@@ -420,15 +420,15 @@ export default function LoginPage() {
                     color: '#64748b',
                   }}
                 >
-                  <Mail size={16} />
+                  <User size={16} />
                 </div>
                 <input
-                  type="email"
+                  type="text"
                   required
                   className="form-input"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
+                  placeholder="Enter User Name or Email"
                   style={{
                     paddingLeft: 38,
                     backgroundColor: '#1e293b',
@@ -442,7 +442,7 @@ export default function LoginPage() {
             <div className="form-group" style={{ marginBottom: 18 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <label className="form-label" style={{ color: '#cbd5e1', fontSize: 13 }}>
-                  Password
+                  Password (or Date of Birth: DD-MM-YYYY)
                 </label>
               </div>
               <div style={{ position: 'relative' }}>
@@ -463,7 +463,7 @@ export default function LoginPage() {
                   className="form-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="Password or DOB (e.g. 15-08-1995)"
                   style={{
                     paddingLeft: 38,
                     backgroundColor: '#1e293b',
@@ -472,6 +472,9 @@ export default function LoginPage() {
                   }}
                 />
               </div>
+              <span style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, display: 'block' }}>
+                Staff members can sign in with their User Name and Date of Birth in (d-m-y) format.
+              </span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>

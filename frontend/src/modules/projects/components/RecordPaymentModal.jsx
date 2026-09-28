@@ -90,35 +90,34 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
     }
   };
 
-  // Quick fill user's exact example: ₹9,000 Cash + ₹1,000 GPay + ₹1,200 Bank = ₹11,200
-  const handleQuickFillUserExample = () => {
+  // Setup clean multi-channel split rows (Cash + UPI + Bank) without any dummy placeholder amounts
+  const handleSetupMultiChannelSplits = () => {
     const cashAcc = accounts.find((a) => a.accountType === 'CASH');
     const upiAcc = accounts.find((a) => a.accountType === 'UPI');
     const bankAcc = accounts.find((a) => a.accountType === 'BANK');
 
     setPaymentType('ADVANCE');
-    setNotes('Advance payment received in multiple channels: Cash (₹9,000), GPay (₹1,000), Bank Transfer (₹1,200)');
     setSplits([
       {
         paymentMode: 'CASH',
-        amount: '9000',
+        amount: '',
         accountId: cashAcc?.id || '',
         referenceNumber: 'CASH-REC',
         notes: 'Cash physically collected',
       },
       {
         paymentMode: 'UPI',
-        amount: '1000',
+        amount: '',
         accountId: upiAcc?.id || '',
-        referenceNumber: 'GPAY-UPI',
-        notes: 'Google Pay mobile transfer',
+        referenceNumber: '',
+        notes: 'Google Pay / PhonePe / UPI transfer',
       },
       {
         paymentMode: 'BANK_TRANSFER',
-        amount: '1200',
+        amount: '',
         accountId: bankAcc?.id || '',
-        referenceNumber: 'BANK-NEFT',
-        notes: 'Bank IMPS credit',
+        referenceNumber: '',
+        notes: 'Bank IMPS / NEFT transfer',
       },
     ]);
   };
@@ -187,6 +186,17 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
 
     setSubmitting(true);
     try {
+      // Auto-compute dynamic split summary note if user has not typed custom memo or if it has stale text
+      const splitSummary = activeSplits
+        .map((s) => `${s.paymentMode} (₹${Number(s.amount).toLocaleString('en-IN')}${s.referenceNumber ? ' Ref: ' + s.referenceNumber : ''})`)
+        .join(', ');
+      const isStaleNote = !notes || notes.includes('Cash (₹9,000)') || notes.startsWith('Advance payment received in multiple channels:');
+      const finalNotes = isStaleNote
+        ? (activeSplits.length > 1
+            ? `Advance payment received in multiple channels: ${splitSummary}`
+            : `Payment received: ${splitSummary}`)
+        : notes;
+
       const payload = {
         clientId: project.clientId,
         projectId: project.id,
@@ -194,7 +204,7 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
         milestoneId: milestoneId || null,
         paymentType,
         paymentDate,
-        notes,
+        notes: finalNotes,
         splits: activeSplits,
       };
 
@@ -358,32 +368,34 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
             <div
               style={{
                 backgroundColor: '#f8fafc',
-                border: '1px dashed #cbd5e1',
+                border: '1px solid #e2e8f0',
                 borderRadius: '10px',
                 padding: '10px 14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 8,
               }}
             >
-              <div style={{ fontSize: '12px', color: '#64748b' }}>
-                Multi-channel split example: ₹9,000 Cash + ₹1,000 GPay + ₹1,200 Bank
+              <div style={{ fontSize: '12px', color: '#475569' }}>
+                Multi-channel allocation: Record separate portions received across Cash, UPI, and Bank accounts.
               </div>
               <button
                 type="button"
-                onClick={handleQuickFillUserExample}
+                onClick={handleSetupMultiChannelSplits}
                 style={{
                   padding: '5px 12px',
-                  backgroundColor: '#f1f5f9',
-                  color: '#334155',
-                  border: '1px solid #cbd5e1',
+                  backgroundColor: '#ffffff',
+                  color: '#2563eb',
+                  border: '1px solid #93c5fd',
                   borderRadius: '6px',
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
-                Load Split Template
+                + Prepare Cash / UPI / Bank Splits
               </button>
             </div>
 

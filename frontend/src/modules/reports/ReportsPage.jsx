@@ -636,11 +636,11 @@ export default function ReportsPage() {
                             <td style={{ padding: '12px 16px' }}>
                               {p.splits && p.splits.length > 0 ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                  {p.splits.map((s, sIdx) => (
-                                    <span key={sIdx} style={{ fontSize: 11, color: '#64748b' }}>
-                                      • {s.paymentMode}: <strong>₹{Number(s.amount).toLocaleString('en-IN')}</strong> {s.accountName ? `(${s.accountName})` : ''}
-                                    </span>
-                                  ))}
+                                    {p.splits.map((s, sIdx) => (
+                                      <span key={sIdx} style={{ fontSize: 11, color: '#64748b' }}>
+                                        • {s.paymentMode}: <strong>₹{Number(s.amount).toLocaleString('en-IN')}</strong> {s.accountName ? `(${s.accountName})` : ''} {s.referenceNumber ? `[Ref: ${s.referenceNumber}]` : ''}
+                                      </span>
+                                    ))}
                                 </div>
                               ) : (
                                 <span style={{ fontSize: 11, color: '#94a3b8' }}>Direct</span>

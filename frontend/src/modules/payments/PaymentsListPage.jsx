@@ -163,12 +163,48 @@ export default function PaymentsListPage() {
                     {new Date(p.paymentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
                   <td>
-                    <span style={{ fontSize: 11, fontWeight: 800, backgroundColor: '#eff6ff', color: '#1d4ed8', padding: '3px 8px', borderRadius: 999, border: '1px solid #bfdbfe' }}>
-                      {p.paymentMode}
-                    </span>
+                    {p.splits && p.splits.length > 1 ? (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          backgroundColor: '#ecfdf5',
+                          color: '#065f46',
+                          padding: '3px 8px',
+                          borderRadius: 999,
+                          border: '1px solid #a7f3d0',
+                        }}
+                      >
+                        MULTI ({p.splits.length} METHODS)
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          backgroundColor: '#eff6ff',
+                          color: '#1d4ed8',
+                          padding: '3px 8px',
+                          borderRadius: 999,
+                          border: '1px solid #bfdbfe',
+                        }}
+                      >
+                        {p.paymentMode}
+                      </span>
+                    )}
                   </td>
                   <td>
-                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{p.referenceNumber || '—'}</span>
+                    {p.splits && p.splits.length > 1 ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {p.splits.map((s, idx) => (
+                          <span key={idx} style={{ fontSize: 11, color: '#475569' }}>
+                            • {s.paymentMode}: <strong style={{ color: '#059669' }}>₹{Number(s.amount).toLocaleString('en-IN')}</strong> {s.referenceNumber ? `(${s.referenceNumber})` : ''}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>{p.referenceNumber || '—'}</span>
+                    )}
                   </td>
                   <td>
                     <span style={{ fontWeight: 800, color: '#059669', fontSize: 14 }}>

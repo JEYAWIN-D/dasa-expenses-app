@@ -22,6 +22,7 @@ import {
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
+import { api } from '../../services/api.js';
 import { projectsService } from '../../services/projects.service.js';
 import { accountsService } from '../../services/accounts.service.js';
 import { useNotification } from '../../contexts/NotificationContext.jsx';
@@ -49,6 +50,7 @@ export default function ProjectDetailsPage() {
   const [selectedMilestoneForInvoice, setSelectedMilestoneForInvoice] = useState(null);
   const [preselectedInvoiceForPayment, setPreselectedInvoiceForPayment] = useState(null);
   const [previewInvoiceDoc, setPreviewInvoiceDoc] = useState(null);
+  const [previewPaymentDoc, setPreviewPaymentDoc] = useState(null);
 
   // Handover Action State
   const [handoverNotes, setHandoverNotes] = useState('');
@@ -87,6 +89,15 @@ export default function ProjectDetailsPage() {
       setDocumentModalData(res.data);
     } catch (err) {
       notify.error(err.message || 'Failed to generate document');
+    }
+  };
+
+  const handleOpenPaymentReceipt = async (paymentId) => {
+    try {
+      const res = await api.get(`/payments/${paymentId}`);
+      setPreviewPaymentDoc(res.data);
+    } catch (err) {
+      notify.error('Failed to load payment receipt');
     }
   };
 
@@ -1057,41 +1068,67 @@ export default function ProjectDetailsPage() {
                         {p.splits && p.splits.length > 0 ? (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             {p.splits.map((s, idx) => (
-                              <div key={idx} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <div key={idx} style={{ fontSize: '12px', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                                 <span style={{ fontWeight: 600, color: '#0f172a' }}>• {s.paymentMode}:</span>
-                                <strong style={{ color: '#059669' }}>₹{s.amount.toLocaleString('en-IN')}</strong>
+                                <strong style={{ color: '#059669' }}>₹{Number(s.amount).toLocaleString('en-IN')}</strong>
                                 {s.accountName && <span style={{ color: '#64748b', fontSize: '11px' }}>({s.accountName})</span>}
-                                {s.referenceNumber && <span style={{ color: '#94a3b8', fontSize: '11px' }}>Ref: {s.referenceNumber}</span>}
+                                {s.referenceNumber && <span style={{ color: '#64748b', fontSize: '11px', fontFamily: 'monospace', backgroundColor: '#f1f5f9', padding: '1px 5px', borderRadius: 3 }}>Ref: {s.referenceNumber}</span>}
                               </div>
                             ))}
                           </div>
                         ) : (
                           <span>{p.paymentMode} {p.referenceNumber ? `(Ref: ${p.referenceNumber})` : ''}</span>
                         )}
-                        {p.notes && <div style={{ fontSize: '11px', color: '#64748b', marginTop: 4 }}>{p.notes}</div>}
+                        {p.notes && !p.notes.includes('Cash (₹9,000)') && !p.notes.startsWith('Advance payment received in multiple channels:') && (
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: 4, fontStyle: 'italic' }}>{p.notes}</div>
+                        )}
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 800, fontSize: '15px', color: '#0f172a' }}>
-                        ₹{p.amount.toLocaleString('en-IN')}
+                        ₹{Number(p.amount).toLocaleString('en-IN')}
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                        <button
-                          onClick={() => handleGenerateDoc('acknowledgment')}
-                          style={{
-                            padding: '5px 10px',
-                            backgroundColor: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}
-                        >
-                          <Printer size={13} />
-                          <span>Letter / Receipt</span>
-                        </button>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <button
+                            onClick={() => handleOpenPaymentReceipt(p.id)}
+                            style={{
+                              padding: '5px 10px',
+                              backgroundColor: '#eff6ff',
+                              border: '1px solid #bfdbfe',
+                              color: '#1d4ed8',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                            title="Print official payment receipt with full multi-channel split breakdown"
+                          >
+                            <Printer size={13} />
+                            <span>Receipt</span>
+                          </button>
+                          <button
+                            onClick={() => handleGenerateDoc('acknowledgment')}
+                            style={{
+                              padding: '5px 8px',
+                              backgroundColor: '#f1f5f9',
+                              border: '1px solid #cbd5e1',
+                              color: '#475569',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 3,
+                            }}
+                            title="Project Payment Acknowledgment Letter"
+                          >
+                            <FileText size={12} />
+                            <span>Letter</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -1651,6 +1688,15 @@ export default function ProjectDetailsPage() {
           document={previewInvoiceDoc}
           type="INVOICE"
           onClose={() => setPreviewInvoiceDoc(null)}
+        />
+      )}
+
+      {previewPaymentDoc && (
+        <CommonDocumentPreviewModal
+          isOpen={Boolean(previewPaymentDoc)}
+          document={previewPaymentDoc}
+          type="PAYMENT"
+          onClose={() => setPreviewPaymentDoc(null)}
         />
       )}
     </div>

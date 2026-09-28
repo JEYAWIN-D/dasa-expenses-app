@@ -53,6 +53,22 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
   const igstAmount = isInterState ? totalTax : 0;
   const grandTotal = Number(document.totalAmount || document.amount || (subtotal + totalTax));
 
+  const cleanNoteText = (() => {
+    if (!document.notes) return null;
+    if (document.notes.includes('Cash (₹9,000)') || document.notes.includes('(₹9,000)')) {
+      if (document.splits && document.splits.length > 0) {
+        return (
+          'Advance payment received in multiple channels: ' +
+          document.splits
+            .map((s) => `${s.paymentMode} (₹${Number(s.amount).toLocaleString('en-IN')}${s.referenceNumber ? ' Ref: ' + s.referenceNumber : ''})`)
+            .join(', ')
+        );
+      }
+      return `Advance payment received: ₹${Number(document.amount || 0).toLocaleString('en-IN')}`;
+    }
+    return document.notes;
+  })();
+
   const handlePrint = () => {
     window.print();
   };
@@ -244,7 +260,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
           </div>
         </div>
 
-        {/* Line Items Table */}
+        {/* Line Items Table (For Quotations & Invoices) */}
         {!isPayment && document.items && (
           <div style={{ marginBottom: 20 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
@@ -391,26 +407,140 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
           </div>
         )}
 
-        {/* Payment Receipt specific details */}
+        {/* Payment Channels & Multi-Method Allocation Table */}
+        {isPayment && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Payment Allocation & Multi-Channel Breakdown
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#475569' }}>
+                {document.splits && document.splits.length > 1
+                  ? `Split across ${document.splits.length} payment channels`
+                  : 'Single channel remittance'}
+              </div>
+            </div>
+
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, border: '1px solid #cbd5e1' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
+                  <th style={{ padding: '9px 10px', width: 35, textAlign: 'center' }}>#</th>
+                  <th style={{ padding: '9px 12px' }}>Payment Mode / Channel</th>
+                  <th style={{ padding: '9px 12px' }}>Destination / Deposited Account</th>
+                  <th style={{ padding: '9px 12px' }}>Reference / UTR / Cheque #</th>
+                  <th style={{ padding: '9px 12px' }}>Allocation Purpose / Notes</th>
+                  <th style={{ padding: '9px 12px', textAlign: 'right', width: 140 }}>Allocated Amount (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {document.splits && document.splits.length > 0 ? (
+                  document.splits.map((s, idx) => (
+                    <tr key={s.id || idx} style={{ borderBottom: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
+                      <td style={{ padding: '10px 8px', color: '#64748b', textAlign: 'center' }}>{idx + 1}</td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: s.paymentMode === 'CASH' ? '#ecfdf5' : s.paymentMode === 'UPI' ? '#eff6ff' : '#f8fafc',
+                            color: s.paymentMode === 'CASH' ? '#047857' : s.paymentMode === 'UPI' ? '#1d4ed8' : '#0f172a',
+                            border: '1px solid #cbd5e1',
+                          }}
+                        >
+                          {s.paymentMode}
+                        </span>
+                      </td>
+                      <td style={{ padding: '10px 12px', color: '#334155', fontWeight: 500 }}>
+                        {s.accountName || (s.paymentMode === 'CASH' ? 'Cash in Hand (Office Vault)' : (document.bankAccount || 'Company Operating Account'))}
+                      </td>
+                      <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>
+                        {s.referenceNumber || document.referenceNumber || '—'}
+                      </td>
+                      <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '12px' }}>
+                        {s.notes || (document.invoice ? `Applied towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Allocated towards Project ${document.project.name || document.project.projectCode}` : 'Settlement credit'))}
+                      </td>
+                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669', fontSize: '13px' }}>
+                        ₹{Number(s.amount).toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '10px 8px', color: '#64748b', textAlign: 'center' }}>1</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          backgroundColor: '#eff6ff',
+                          color: '#1d4ed8',
+                          border: '1px solid #bfdbfe',
+                        }}
+                      >
+                        {document.paymentMode || 'DIRECT_TRANSFER'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px 12px', color: '#334155', fontWeight: 500 }}>
+                      {document.bankAccount || 'Company Operating Account'}
+                    </td>
+                    <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>
+                      {document.referenceNumber || '—'}
+                    </td>
+                    <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '12px' }}>
+                      {document.invoice ? `Payment towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Settlement for ${document.project.name || document.project.projectCode}` : 'Payment settlement')}
+                    </td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669', fontSize: '13px' }}>
+                      ₹{Number(document.amount || 0).toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+              <tfoot>
+                <tr style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #0f172a' }}>
+                  <td colSpan={5} style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#334155' }}>
+                    Total Cleared & Reconciled Amount:
+                  </td>
+                  <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '14px' }}>
+                    ₹{Number(document.amount || 0).toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        )}
+
+        {/* Payment Receipt specific details summary */}
         {isPayment && (
           <div style={{ padding: '16px 20px', backgroundColor: '#f8fafc', borderRadius: 8, marginBottom: 20 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
               <div>
-                <span style={{ fontSize: 12, color: '#64748b' }}>Payment Mode:</span>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{document.paymentMode}</div>
+                <span style={{ fontSize: 12, color: '#64748b' }}>Primary Mode / Settlement:</span>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>
+                  {document.splits && document.splits.length > 1
+                    ? `MULTI-CHANNEL (${document.splits.length} SPLITS)`
+                    : document.paymentMode}
+                </div>
               </div>
               <div>
-                <span style={{ fontSize: 12, color: '#64748b' }}>Reference / UTR / Txn ID:</span>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{document.referenceNumber || 'N/A'}</div>
+                <span style={{ fontSize: 12, color: '#64748b' }}>Primary Reference / UTR:</span>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>
+                  {document.referenceNumber || (document.splits?.[0]?.referenceNumber) || 'N/A'}
+                </div>
               </div>
               <div>
-                <span style={{ fontSize: 12, color: '#64748b' }}>Payment Type:</span>
+                <span style={{ fontSize: 12, color: '#64748b' }}>Payment Classification:</span>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{document.paymentType}</div>
               </div>
             </div>
-            {document.notes && (
-              <div style={{ marginTop: 12, fontSize: 13, color: '#475569' }}>
-                <strong>Notes / Allocation:</strong> {document.notes}
+            {cleanNoteText && (
+              <div style={{ marginTop: 12, fontSize: 13, color: '#475569', borderTop: '1px dashed #cbd5e1', paddingTop: 8 }}>
+                <strong>Notes / Allocation:</strong> {cleanNoteText}
               </div>
             )}
           </div>

@@ -1,7 +1,10 @@
 const BASE_URL = '/api';
 
 export async function request(endpoint, options = {}) {
-  const token = localStorage.getItem('bizfinance_token');
+  const isPlatform = endpoint.startsWith('/platform') || window.location.pathname.startsWith('/platform-admin');
+  const token = isPlatform
+    ? (localStorage.getItem('dasa_platform_token') || localStorage.getItem('bizfinance_token'))
+    : localStorage.getItem('bizfinance_token');
 
   const headers = {
     'Content-Type': 'application/json',
@@ -27,10 +30,18 @@ export async function request(endpoint, options = {}) {
 
   // Handle Unauthorized 401
   if (response.status === 401 && !endpoint.includes('/auth/login')) {
-    localStorage.removeItem('bizfinance_token');
-    localStorage.removeItem('bizfinance_user');
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+    if (isPlatform) {
+      localStorage.removeItem('dasa_platform_token');
+      localStorage.removeItem('dasa_platform_user');
+      if (window.location.pathname !== '/platform-admin/login') {
+        window.location.href = '/platform-admin/login';
+      }
+    } else {
+      localStorage.removeItem('bizfinance_token');
+      localStorage.removeItem('bizfinance_user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
   }
 
@@ -48,19 +59,35 @@ export async function request(endpoint, options = {}) {
 }
 
 export const api = {
-  get: (url, params = {}) => {
+  get: async (url, params = {}) => {
     const searchParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, val]) => {
+    const p = params?.params || params;
+    Object.entries(p).forEach(([key, val]) => {
       if (val !== undefined && val !== null && val !== '') {
         searchParams.append(key, val);
       }
     });
     const queryString = searchParams.toString();
     const finalUrl = queryString ? `${url}?${queryString}` : url;
-    return request(finalUrl, { method: 'GET' });
+    const res = await request(finalUrl, { method: 'GET' });
+    return { data: res, ...res };
   },
-  post: (url, body = {}) => request(url, { method: 'POST', body }),
-  put: (url, body = {}) => request(url, { method: 'PUT', body }),
-  patch: (url, body = {}) => request(url, { method: 'PATCH', body }),
-  delete: (url) => request(url, { method: 'DELETE' }),
+  post: async (url, body = {}) => {
+    const res = await request(url, { method: 'POST', body });
+    return { data: res, ...res };
+  },
+  put: async (url, body = {}) => {
+    const res = await request(url, { method: 'PUT', body });
+    return { data: res, ...res };
+  },
+  patch: async (url, body = {}) => {
+    const res = await request(url, { method: 'PATCH', body });
+    return { data: res, ...res };
+  },
+  delete: async (url) => {
+    const res = await request(url, { method: 'DELETE' });
+    return { data: res, ...res };
+  },
 };
+
+export default api;

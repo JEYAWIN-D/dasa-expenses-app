@@ -77,6 +77,17 @@ export function Sidebar() {
       ],
     },
     {
+      label: 'SAAS WORKSPACE & GOVERNANCE',
+      items: [
+        { to: '/team', label: 'Team & Staff Seats', icon: <Users size={18} /> },
+        { to: '/roles', label: 'Custom Roles & RBAC', icon: <ShieldCheck size={18} /> },
+        { to: '/subscription', label: 'SaaS Subscription', icon: <Sparkles size={18} /> },
+        { to: '/storage', label: 'Tenant Cloud Storage', icon: <FolderKanban size={18} /> },
+        { to: '/journals', label: 'General Ledger', icon: <ScrollText size={18} /> },
+        { to: '/security-settings', label: 'Security & Sessions', icon: <Settings size={18} /> },
+      ],
+    },
+    {
       label: 'SYSTEM & SETTINGS',
       items: [
         { to: '/settings', label: 'Company Settings', icon: <Settings size={18} /> },
@@ -84,7 +95,7 @@ export function Sidebar() {
         { to: '/settings?tab=templates', label: 'Document Templates', icon: <ScrollText size={18} /> },
         { to: '/settings?tab=numbering', label: 'Numbering Formats', icon: <Hash size={18} /> },
         { to: '/settings?tab=audit', label: 'Audit Logs', icon: <ShieldCheck size={18} /> },
-        { to: '/settings?tab=users', label: 'Team & RBAC', icon: <UserCheck size={18} /> },
+        { to: '/settings?tab=users', label: 'Legacy Users', icon: <UserCheck size={18} /> },
       ],
     },
   ];
@@ -198,6 +209,21 @@ export function Sidebar() {
         >
           <ExternalLink size={12} />
           <span>Marketing Website</span>
+        </Link>
+        <Link
+          to="/platform-admin/dashboard"
+          style={{
+            fontSize: 11,
+            color: '#818cf8',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            textDecoration: 'none',
+            fontWeight: 700,
+          }}
+        >
+          <ExternalLink size={12} />
+          <span>Platform Super Admin</span>
         </Link>
         <div
           style={{

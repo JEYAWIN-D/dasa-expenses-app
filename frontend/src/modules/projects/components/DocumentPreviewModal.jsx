@@ -316,15 +316,26 @@ export function DocumentPreviewModal({ docData, onClose }) {
                         <td style={{ padding: '10px 14px' }}>{p.paymentType}</td>
                         <td style={{ padding: '10px 14px' }}>
                           {p.splits && p.splits.length > 0 ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                               {p.splits.map((s, idx) => (
-                                <span key={idx} style={{ fontSize: '12px', color: '#475569' }}>
-                                  • {s.paymentMode}: <strong>₹{s.amount.toLocaleString('en-IN')}</strong> {s.accountName ? `(${s.accountName})` : ''}
-                                </span>
+                                <div key={idx} style={{ fontSize: '12px', color: '#334155' }}>
+                                  • <strong style={{ color: '#0f172a' }}>{s.paymentMode}:</strong>{' '}
+                                  <strong style={{ color: '#059669' }}>₹{Number(s.amount).toLocaleString('en-IN')}</strong>{' '}
+                                  {s.accountName && <span style={{ color: '#64748b', fontSize: '11px' }}>({s.accountName})</span>}{' '}
+                                  {s.referenceNumber && <span style={{ fontFamily: 'monospace', color: '#475569', fontSize: '11px', backgroundColor: '#f1f5f9', padding: '1px 5px', borderRadius: 3 }}>Ref: {s.referenceNumber}</span>}
+                                </div>
                               ))}
                             </div>
                           ) : (
-                            <span>{p.paymentMode} {p.referenceNumber ? `(Ref: ${p.referenceNumber})` : ''}</span>
+                            <div>
+                              <span style={{ fontWeight: 600 }}>{p.paymentMode}</span>{' '}
+                              {p.referenceNumber && <span style={{ fontFamily: 'monospace', color: '#64748b' }}>Ref: {p.referenceNumber}</span>}
+                            </div>
+                          )}
+                          {p.notes && !p.notes.includes('Cash (₹9,000)') && !p.notes.startsWith('Advance payment received in multiple channels:') && (
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: 4, fontStyle: 'italic' }}>
+                              Note: {p.notes}
+                            </div>
                           )}
                         </td>
                         <td style={{ padding: '10px 14px', textAlign: 'right', fontWeight: 700 }}>

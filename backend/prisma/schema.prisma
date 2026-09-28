@@ -7,6 +7,20 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// ==========================================
+// PLATFORM & SYSTEM ENUMS
+// ==========================================
+
+enum PlatformRole {
+  PLATFORM_OWNER
+  PLATFORM_ADMIN
+  FINANCE_ADMIN
+  SUPPORT_ADMIN
+  SECURITY_ADMIN
+  INFRA_ADMIN
+  READONLY_AUDITOR
+}
+
 enum Role {
   SUPER_ADMIN
   ADMIN
@@ -15,6 +29,19 @@ enum Role {
   SALES
   STAFF
   VIEWER
+}
+
+enum OrgStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+  CANCELLED
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
 }
 
 enum QuotationStatus {
@@ -62,6 +89,613 @@ enum AssetType {
   SIGNATURE
 }
 
+// ==========================================
+// 1. DASA TECH PLATFORM ADMINISTRATION ENTITIES
+// ==========================================
+
+model PlatformUser {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  passwordHash    String
+  name            String
+  platformRole    PlatformRole  @default(PLATFORM_ADMIN)
+  status          String        @default("ACTIVE") // ACTIVE, SUSPENDED
+  phone           String?
+  mfaEnabled      Boolean       @default(false)
+  mfaSecret       String?
+  lastLoginAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  auditLogs       PlatformAuditLog[]
+  assignedTickets SupportTicket[]
+
+  @@index([email])
+  @@index([platformRole])
+}
+
+model PlatformSecurityEvent {
+  id             String    @id @default(uuid())
+  eventType      String    // AUTH_FAILURE, SUSPICIOUS_LOGIN, PRIVILEGE_CHANGE, RATE_LIMIT_BREACH, STORAGE_OVERFLOW, MALWARE_DETECTED
+  severity       String    // CRITICAL, HIGH, MEDIUM, LOW
+  ipAddress      String?
+  organizationId String?
+  userId         String?
+  details        String    @db.Text
+  status         String    @default("NEW") // NEW, INVESTIGATING, RESOLVED, DISMISSED
+  assignedTo     String?
+  resolutionNotes String?  @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([eventType])
+  @@index([severity])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PlatformAuditLog {
+  id             String        @id @default(uuid())
+  platformUserId String?
+  platformUser   PlatformUser? @relation(fields: [platformUserId], references: [id], onDelete: SetNull)
+  userEmail      String?
+  action         String        // ORG_CREATE, PLAN_CHANGE, OVERRIDE_GRANT, SUSPEND_ORG, SUPPORT_ACCESS
+  targetOrgId    String?
+  entityType     String?
+  entityId       String?
+  ipAddress      String?
+  details        String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  @@index([action])
+  @@index([targetOrgId])
+  @@index([createdAt])
+}
+
+// ==========================================
+// 2. SAAS CUSTOMER ORGANIZATIONS & TENANTS
+// ==========================================
+
+model Organization {
+  id                 String    @id @default(uuid())
+  slug               String    @unique // e.g. "acme-corp", "dasa-tech"
+  name               String
+  legalName          String?
+  gstNumber          String?
+  panNumber          String?
+  phone              String
+  email              String
+  website            String?
+  address            String
+  city               String
+  state              String
+  country            String    @default("India")
+  postalCode         String?
+  status             OrgStatus @default(TRIAL)
+  trialEndsAt        DateTime?
+  currency           String    @default("INR")
+  
+  // Storage isolation & accounting
+  storageQuotaMB     Float     @default(5120) // 5 GB default
+  storageUsedBytes   Float     @default(0)
+  
+  // Digital signature & security
+  signaturePinHash   String?
+  authorizedPerson   String?
+  enforceOrgMfa      Boolean   @default(false)
+  isDedicatedDb      Boolean   @default(false)
+  dedicatedDbUrl     String?
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Tenant Relationships
+  memberships        OrganizationMembership[]
+  roles              OrganizationRole[]
+  departments        Department[]
+  branches           Branch[]
+  subscription       OrganizationSubscription?
+  subscriptionInvoices SubscriptionInvoice[]
+  featureOverrides   FeatureOverride[]
+  userInvitations    UserInvitation[]
+  supportTickets     SupportTicket[]
+  documents          Document[]
+  storageReservations StorageReservation[]
+  storageUsage       StorageUsage?
+  journalEntries     JournalEntry[]
+
+  // Business Entities bound to Tenant
+  clients            Client[]
+  quotations         Quotation[]
+  invoices           Invoice[]
+  payments           Payment[]
+  expenses           Expense[]
+  financialAccounts  FinancialAccount[]
+  projects           Project[]
+  vendors            Vendor[]
+  auditLogs          AuditLog[]
+  documentTemplates  DocumentTemplate[]
+  numberingConfigs   NumberingConfig[]
+  demoLeads          DemoLead[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model OrganizationMembership {
+  id             String           @id @default(uuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleId         String?
+  role           OrganizationRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  roleTitle      String           @default("Member") // e.g. "Owner", "Finance Manager"
+  departmentId   String?
+  department     Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  branchId       String?
+  branch         Branch?          @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  status         String           @default("ACTIVE") // ACTIVE, SUSPENDED
+  isOwner        Boolean          @default(false)
+  joinedAt       DateTime         @default(now())
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model OrganizationRole {
+  id             String           @id @default(uuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String           // e.g. "Organization Owner", "Finance Manager", "Junior Accounts Executive"
+  description    String?
+  isSystemDefault Boolean         @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  permissions    RolePermission[]
+  memberships    OrganizationMembership[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model RolePermission {
+  id             String           @id @default(uuid())
+  roleId         String
+  role           OrganizationRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  module         String           // QUOTATIONS, INVOICES, PAYMENTS, EXPENSES, PROJECTS, TREASURY, DOCUMENTS, TEAM, REPORTS, SETTINGS
+  canView        Boolean          @default(false)
+  canCreate      Boolean          @default(false)
+  canEdit        Boolean          @default(false)
+  canSubmit      Boolean          @default(false)
+  canApprove     Boolean          @default(false)
+  canReject      Boolean          @default(false)
+  canDelete      Boolean          @default(false)
+  canExport      Boolean          @default(false)
+  scope          String           @default("ORGANIZATION") // OWN, ASSIGNED_PROJECTS, ASSIGNED_DEPARTMENT, ORGANIZATION
+
+  @@unique([roleId, module])
+  @@index([roleId])
+}
+
+model Department {
+  id             String           @id @default(uuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  code           String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  memberships    OrganizationMembership[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model Branch {
+  id             String           @id @default(uuid())
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  code           String?
+  city           String?
+  state          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  memberships    OrganizationMembership[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+// ==========================================
+// 3. SAAS SUBSCRIPTIONS & PLANS
+// ==========================================
+
+model SubscriptionPlan {
+  id                   String                  @id @default(uuid())
+  code                 String                  @unique // STARTER, GROWTH, BUSINESS, ENTERPRISE
+  name                 String
+  description          String?
+  monthlyPriceINR      Float
+  annualPriceINR       Float
+  maxUsers             Int                     @default(5)
+  maxProjects          Int                     @default(20)
+  maxStorageMB         Float                   @default(5120) // 5 GB
+  hasApiAccess         Boolean                 @default(false)
+  hasAdvancedAnalytics Boolean                 @default(false)
+  hasCustomBranding    Boolean                 @default(false)
+  hasDedicatedDb       Boolean                 @default(false)
+  supportTier          String                  @default("Standard Email")
+  isActive             Boolean                 @default(true)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  subscriptions        OrganizationSubscription[]
+  entitlements         PlanEntitlement[]
+
+  @@index([code])
+}
+
+model PlanEntitlement {
+  id           String           @id @default(uuid())
+  planId       String
+  plan         SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureKey   String           // e.g. "DIGITAL_SIGNATURES", "SPLIT_PAYMENTS", "HANDOVER_GATEKEEPER", "CUSTOM_ROLES"
+  featureName  String
+  isEnabled    Boolean          @default(true)
+  numericLimit Int?             // null for unlimited
+  notes        String?
+
+  @@unique([planId, featureKey])
+  @@index([planId])
+}
+
+model OrganizationSubscription {
+  id                 String           @id @default(uuid())
+  organizationId     String           @unique
+  organization       Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               SubscriptionPlan @relation(fields: [planId], references: [id])
+  status             OrgStatus        @default(TRIAL)
+  billingCycle       BillingCycle     @default(MONTHLY)
+  currentPeriodStart DateTime         @default(now())
+  currentPeriodEnd   DateTime
+  trialEndsAt        DateTime?
+  cancelAtPeriodEnd  Boolean          @default(false)
+  nextBillingAmount  Float            @default(0)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@index([organizationId])
+  @@index([planId])
+  @@index([status])
+}
+
+model SubscriptionInvoice {
+  id                 String       @id @default(uuid())
+  organizationId     String
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoiceNumber      String       @unique
+  amount             Float
+  taxAmount          Float        @default(0)
+  totalAmount        Float
+  status             String       @default("PAID") // PAID, PENDING, FAILED, REFUNDED
+  billingPeriod      String
+  paidAt             DateTime?
+  paymentMethod      String?      // RAZORPAY, STRIPE, BANK_TRANSFER, UPI
+  paymentGatewayRef  String?
+  invoicePdfUrl      String?
+  createdAt          DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model PaymentGatewayEvent {
+  id          String   @id @default(uuid())
+  gateway     String   // RAZORPAY, STRIPE
+  eventId     String   @unique
+  eventType   String
+  payload     String   @db.Text
+  isProcessed Boolean  @default(false)
+  processedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([eventId])
+  @@index([gateway])
+}
+
+model FeatureOverride {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  featureKey     String       // e.g. "MAX_PROJECTS", "MAX_USERS", "EXTRA_STORAGE"
+  isEnabled      Boolean      @default(true)
+  overrideLimit  Int?
+  expiresAt      DateTime?
+  reason         String?
+  grantedBy      String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+// ==========================================
+// 4. USERS, SESSIONS & INVITATIONS
+// ==========================================
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  role         Role       @default(ADMIN) // Global legacy role fallback
+  isPlatformAdmin Boolean @default(false)
+  platformRole PlatformRole?
+  status       String     @default("ACTIVE")
+  phone        String?
+  avatar       String?
+  mfaEnabled   Boolean    @default(false)
+  mfaSecret    String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  memberships  OrganizationMembership[]
+  sessions     UserSession[]
+  auditLogs    AuditLog[]
+  projectAssignments ProjectAssignment[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model UserSession {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String    @unique
+  ipAddress    String?
+  userAgent    String?
+  deviceInfo   String?
+  isValid      Boolean   @default(true)
+  lastActiveAt DateTime  @default(now())
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model UserInvitation {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  roleId         String?
+  departmentId   String?
+  branchId       String?
+  token          String       @unique
+  status         String       @default("PENDING") // PENDING, ACCEPTED, EXPIRED, CANCELLED
+  invitedBy      String
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+  @@index([token])
+  @@index([email])
+}
+
+// ==========================================
+// 5. STORAGE ISOLATION & DOCUMENTS
+// ==========================================
+
+model Document {
+  id               String            @id @default(uuid())
+  organizationId   String
+  organization     Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectId        String?
+  project          Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title            String
+  docType          String            // QUOTATION, INVOICE, RECEIPT, CONTRACT, HANDOVER_CERTIFICATE, COMPLETION_LETTER, EXPENSE_BILL, OTHER
+  fileKey          String            // Path e.g. "organizations/{orgId}/projects/{prjId}/documents/{docId}"
+  fileName         String
+  fileSizeBytes    Float
+  mimeType         String
+  storageNamespace String
+  isDeleted        Boolean           @default(false)
+  uploadedBy       String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  versions         DocumentVersion[]
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([docType])
+}
+
+model DocumentVersion {
+  id            String   @id @default(uuid())
+  documentId    String
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionNumber Int      @default(1)
+  fileKey       String
+  fileSizeBytes Float
+  uploadedBy    String?
+  changeSummary String?
+  createdAt     DateTime @default(now())
+
+  @@index([documentId])
+}
+
+model StorageUsage {
+  id                  String       @id @default(uuid())
+  organizationId      String       @unique
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  totalUsedBytes      Float        @default(0)
+  totalAllocatedBytes Float        @default(5368709120) // 5GB default in bytes
+  documentsCount      Int          @default(0)
+  lastCalculatedAt    DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+model StorageReservation {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reservationKey String       @unique
+  bytesReserved  Float
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+// ==========================================
+// 6. FINANCIAL INTEGRITY & DOUBLE-ENTRY LEDGER
+// ==========================================
+
+model JournalEntry {
+  id             String        @id @default(uuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  entryNumber    String        @unique // JRN-2026-0001
+  entryDate      DateTime      @default(now())
+  referenceType  String        // PAYMENT, EXPENSE, INVOICE, TRANSFER, ADJUSTMENT
+  referenceId    String?
+  description    String
+  totalDebit     Float
+  totalCredit    Float
+  status         String        @default("POSTED") // POSTED, VOIDED
+  postedBy       String?
+  voidReason     String?
+  createdAt      DateTime      @default(now())
+
+  lines          JournalLine[]
+
+  @@index([organizationId])
+  @@index([entryNumber])
+  @@index([referenceType])
+}
+
+model JournalLine {
+  id             String       @id @default(uuid())
+  journalEntryId String
+  journalEntry   JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  accountId      String?
+  accountName    String
+  lineType       String       // DEBIT, CREDIT
+  amount         Float
+  narration      String?
+
+  @@index([journalEntryId])
+  @@index([accountId])
+}
+
+model ExpenseApproval {
+  id             String   @id @default(uuid())
+  expenseId      String
+  expense        Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  approverUserId String
+  status         String   // APPROVED, REJECTED
+  comments       String?
+  createdAt      DateTime @default(now())
+
+  @@index([expenseId])
+}
+
+// ==========================================
+// 7. SUPPORT, AUDIT & DEMO LEADS
+// ==========================================
+
+model SupportTicket {
+  id                   String        @id @default(uuid())
+  organizationId       String
+  organization         Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ticketNumber         String        @unique // TKT-2026-1001
+  userId               String?
+  subject              String
+  description          String        @db.Text
+  priority             String        @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status               String        @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  category             String        @default("GENERAL") // BILLING, BUG, FEATURE, ACCESS, SECURITY
+  resolutionNotes      String?       @db.Text
+  supportAccessGranted Boolean       @default(false)
+  supportAccessExpiresAt DateTime?
+  assignedToPlatformUserId String?
+  assignedPlatformUser PlatformUser? @relation(fields: [assignedToPlatformUserId], references: [id], onDelete: SetNull)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([priority])
+}
+
+model BackupJob {
+  id             String    @id @default(uuid())
+  organizationId String?   // Null for full platform backup
+  backupType     String    // FULL_PLATFORM, TENANT_EXPORT, DATABASE_SNAPSHOT
+  status         String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  fileKey        String?
+  fileSizeBytes  Float?
+  checksum       String?
+  errorMessage   String?
+  initiatedBy    String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([backupType])
+  @@index([status])
+}
+
+model DemoLead {
+  id               String        @id @default(uuid())
+  organizationId   String?
+  organization     Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  fullName         String
+  companyName      String
+  email            String
+  phone            String
+  whatsappNumber   String?
+  industry         String?
+  companySize      String?
+  monthlyProjects  String?
+  currentProcess   String?
+  featuresInterest String?       @db.Text
+  preferredDate    String?
+  preferredTime    String?
+  additionalReqs   String?       @db.Text
+  consentContact   Boolean       @default(true)
+  status           String        @default("NEW") // NEW, CONTACTED, DEMO_SCHEDULED, DEMO_COMPLETED, FOLLOW_UP, CONVERTED, CLOSED
+  assignedTo       String?
+  notes            String?       @db.Text
+  followUpDate     DateTime?
+  convertedOrgId   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+  @@index([organizationId])
+}
+
+// ==========================================
+// 8. CORE BUSINESS ENTITIES (TENANT-SCOPED)
+// ==========================================
+
 model CompanyProfile {
   id                 String   @id @default(uuid())
   companyName        String
@@ -108,26 +742,10 @@ model CompanyAsset {
   @@index([type])
 }
 
-model User {
-  id           String     @id @default(uuid())
-  email        String     @unique
-  passwordHash String
-  name         String
-  role         Role       @default(ADMIN)
-  status       String     @default("ACTIVE")
-  phone        String?
-  avatar       String?
-  lastLoginAt  DateTime?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  auditLogs    AuditLog[]
-
-  @@index([email])
-  @@index([role])
-}
-
 model Client {
   id             String          @id @default(uuid())
+  organizationId String?
+  organization   Organization?   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   clientCode     String          @unique
   companyName    String
   contactPerson  String
@@ -161,6 +779,7 @@ model Client {
   payments       Payment[]
   projects       Project[]
 
+  @@index([organizationId])
   @@index([companyName])
   @@index([email])
   @@index([status])
@@ -184,6 +803,8 @@ model ClientContact {
 
 model Quotation {
   id                 String                 @id @default(uuid())
+  organizationId     String?
+  organization       Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   quotationNumber    String                 @unique
   revisionNumber     Int                    @default(0)
   clientId           String
@@ -216,6 +837,7 @@ model Quotation {
   invoices           Invoice[]
   projects           Project[]
 
+  @@index([organizationId])
   @@index([quotationNumber])
   @@index([clientId, status])
   @@index([quotationDate])
@@ -248,7 +870,7 @@ model QuotationRevision {
   revisedAt      DateTime  @default(now())
   revisedBy      String?
   reason         String?
-  snapshot       String    @db.Text // Full JSON snapshot of previous quotation state
+  snapshotData   String    @db.Text
 
   @@index([quotationId])
 }
@@ -257,58 +879,57 @@ model QuotationNegotiation {
   id             String    @id @default(uuid())
   quotationId    String
   quotation      Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  round          Int       @default(1)
-  proposedBy     String    // CLIENT or COMPANY
-  personName     String
-  previousAmount Float
-  offeredAmount  Float
-  changeAmount   Float
-  reason         String?
-  notes          String?   @db.Text
-  status         String    @default("PENDING") // PENDING, ACCEPTED, REJECTED, COUNTER_OFFERED
+  sender         String
+  message        String    @db.Text
+  proposedAmount Float?
+  status         String    @default("PENDING")
   createdAt      DateTime  @default(now())
 
   @@index([quotationId])
 }
 
 model Invoice {
-  id                String        @id @default(uuid())
-  invoiceNumber     String        @unique
-  clientId          String
-  client            Client        @relation(fields: [clientId], references: [id])
-  quotationId       String?
-  quotation         Quotation?    @relation(fields: [quotationId], references: [id])
-  invoiceDate       DateTime      @default(now())
-  dueDate           DateTime
-  status            InvoiceStatus @default(DRAFT)
-  subtotal          Float         @default(0)
-  discountAmount    Float         @default(0)
-  taxAmount         Float         @default(0)
-  totalAmount       Float         @default(0)
-  paidAmount        Float         @default(0)
-  balanceDue        Float         @default(0)
-  notes             String?       @db.Text
-  terms             String?       @db.Text
-  isDigitallySigned Boolean       @default(false)
-  signedAt          DateTime?
-  signedBy          String?
-  isDeleted         Boolean       @default(false)
-  deletedAt         DateTime?
-  createdBy         String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  id                 String            @id @default(uuid())
+  organizationId     String?
+  organization       Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoiceNumber      String            @unique
+  clientId           String
+  client             Client            @relation(fields: [clientId], references: [id])
+  quotationId        String?
+  quotation          Quotation?        @relation(fields: [quotationId], references: [id])
+  projectId          String?
+  project            Project?          @relation(fields: [projectId], references: [id])
+  milestoneId        String?
+  milestone          ProjectMilestone? @relation(fields: [milestoneId], references: [id])
+  invoiceDate        DateTime          @default(now())
+  dueDate            DateTime
+  status             InvoiceStatus     @default(DRAFT)
+  subtotal           Float             @default(0)
+  discountAmount     Float             @default(0)
+  taxRate            Float             @default(0)
+  taxAmount          Float             @default(0)
+  totalAmount        Float             @default(0)
+  paidAmount         Float             @default(0)
+  dueAmount          Float             @default(0)
+  balanceDue         Float             @default(0)
+  notes              String?           @db.Text
+  terms              String?           @db.Text
+  isDigitallySigned  Boolean           @default(false)
+  signedAt           DateTime?
+  signedBy           String?
+  isDeleted          Boolean           @default(false)
+  deletedAt          DateTime?
+  createdBy          String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
 
-  items             InvoiceItem[]
-  payments          Payment[]
-  projectId         String?
-  project           Project?      @relation(fields: [projectId], references: [id])
-  milestoneId       String?
+  items              InvoiceItem[]
+  payments           Payment[]
 
+  @@index([organizationId])
   @@index([invoiceNumber])
   @@index([clientId, status])
-  @@index([invoiceDate])
   @@index([dueDate])
-  @@index([projectId])
   @@index([isDeleted])
 }
 
@@ -331,211 +952,38 @@ model InvoiceItem {
 }
 
 model Payment {
-  id                String      @id @default(uuid())
-  receiptNumber     String      @unique
-  invoiceId         String?
-  invoice           Invoice?    @relation(fields: [invoiceId], references: [id])
-  clientId          String
-  client            Client      @relation(fields: [clientId], references: [id])
-  paymentType       PaymentType @default(PARTIAL)
-  amount            Float       @default(0)
-  paymentDate       DateTime    @default(now())
-  paymentMode       PaymentMode @default(BANK_TRANSFER)
-  referenceNumber   String?     // Cheque / UTR / Transaction ID
-  bankAccount       String?
-  notes             String?     @db.Text
-  receiptUrl        String?
-  projectId         String?
-  project           Project?    @relation(fields: [projectId], references: [id])
-  milestoneId       String?
-  splits            PaymentSplit[]
-  isDigitallySigned Boolean     @default(false)
-  signedAt          DateTime?
-  signedBy          String?
-  createdBy         String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
-
-  @@index([receiptNumber])
-  @@index([invoiceId])
-  @@index([clientId])
-  @@index([projectId])
-  @@index([paymentDate])
-}
-
-model Vendor {
-  id            String    @id @default(uuid())
-  vendorCode    String    @unique
-  vendorName    String
-  company       String?
-  contactPerson String?
-  email         String?
-  phone         String?
-  address       String?
-  gstNumber     String?
-  panNumber     String?
-  bankDetails   String?   @db.Text
-  totalPayable  Float     @default(0)
-  totalPaid     Float     @default(0)
-  outstanding   Float     @default(0)
-  status        String    @default("ACTIVE")
-  notes         String?   @db.Text
-  isDeleted     Boolean   @default(false)
-  deletedAt     DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  expenses      Expense[]
-
-  @@index([vendorCode])
-  @@index([vendorName])
-  @@index([isDeleted])
-}
-
-model Expense {
-  id              String      @id @default(uuid())
-  expenseCode     String      @unique
-  category        String      // Office Rent, Salary, Hosting, Cloud, Marketing, etc.
+  id              String            @id @default(uuid())
+  organizationId  String?
+  organization    Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  receiptNumber   String            @unique
+  paymentDate     DateTime          @default(now())
+  paymentType     PaymentType       @default(PARTIAL)
   amount          Float
-  expenseDate     DateTime    @default(now())
-  paymentMode     PaymentMode @default(BANK_TRANSFER)
-  vendorId        String?
-  vendor          Vendor?     @relation(fields: [vendorId], references: [id])
-  description     String
+  paymentMode     PaymentMode       @default(BANK_TRANSFER)
   referenceNumber String?
-  receiptUrl      String?
+  notes           String?
+  isDigitallySigned Boolean         @default(false)
+  signedAt        DateTime?
+  signedBy        String?
+  clientId        String
+  client          Client            @relation(fields: [clientId], references: [id])
+  invoiceId       String?
+  invoice         Invoice?          @relation(fields: [invoiceId], references: [id])
   projectId       String?
-  project         Project?    @relation(fields: [projectId], references: [id])
-  isReimbursable  Boolean     @default(false)
-  employeeName    String?
-  reimbursementStatus String? @default("N_A") // N_A, PENDING, APPROVED, REIMBURSED
-  approvalStatus  String      @default("APPROVED") // PENDING, APPROVED, REJECTED
-  approvedBy      String?
-  approvedAt      DateTime?
-  accountId       String?
-  notes           String?     @db.Text
-  isDeleted       Boolean     @default(false)
-  deletedAt       DateTime?
+  project         Project?          @relation(fields: [projectId], references: [id])
+  milestoneId     String?
+  milestone       ProjectMilestone? @relation(fields: [milestoneId], references: [id])
   createdBy       String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 
-  @@index([expenseCode])
-  @@index([category])
-  @@index([expenseDate])
-  @@index([vendorId])
-  @@index([projectId])
-  @@index([isDeleted])
-}
+  splits          PaymentSplit[]
 
-model DocumentTemplate {
-  id              String   @id @default(uuid())
-  type            String   // QUOTATION, INVOICE, RECEIPT
-  name            String
-  headerText      String?
-  footerText      String?
-  termsText       String?  @db.Text
-  primaryColor    String   @default("#1e40af")
-  accentColor     String   @default("#3b82f6")
-  showLogo        Boolean  @default(true)
-  showBankDetails Boolean  @default(true)
-  showSignature   Boolean  @default(true)
-  showSeal        Boolean  @default(true)
-  isDefault       Boolean  @default(true)
-  updatedAt       DateTime @updatedAt
-
-  @@index([type])
-}
-
-model NumberingConfig {
-  id                String   @id @default(uuid())
-  documentType      String   @unique // QUOTATION, INVOICE, PAYMENT, EXPENSE, CLIENT, VENDOR
-  prefix            String
-  includeFiscalYear Boolean  @default(true)
-  currentSequence   Int      @default(1)
-  padLength         Int      @default(4)
-  updatedAt         DateTime @updatedAt
-}
-
-model AuditLog {
-  id         String   @id @default(uuid())
-  userId     String?
-  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userEmail  String?
-  module     String   // AUTH, CLIENT, QUOTATION, INVOICE, PAYMENT, EXPENSE, VENDOR, SETTINGS
-  action     String   // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, SIGN, CONVERT, NEGOTIATE, SETTINGS_CHANGE
-  entityId   String?
-  entityType String?
-  ipAddress  String?
-  details    String?  @db.Text
-  createdAt  DateTime @default(now())
-
-  @@index([module])
-  @@index([action])
-  @@index([createdAt])
-  @@index([userId])
-}
-
-model Project {
-  id                     String             @id @default(uuid())
-  projectCode            String             @unique
-  name                   String
-  description            String?            @db.Text
-  clientId               String
-  client                 Client             @relation(fields: [clientId], references: [id])
-  quotationId            String?
-  quotation              Quotation?         @relation(fields: [quotationId], references: [id])
-  status                 String             @default("PLANNING") // PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED, HANDED_OVER, CANCELLED
-  startDate              DateTime?
-  deadline               DateTime?
-  completedDate          DateTime?
-  quotationValue         Float              @default(0)
-  additionalCharges      Float              @default(0)
-  totalProjectValue      Float              @default(0)
-  advanceRequiredPercent Float              @default(50)
-  advanceRequiredAmount  Float              @default(0)
-  advanceReceived        Float              @default(0)
-  assignedTeam           String?            @db.Text // JSON string: [{name, role, email}]
-  handoverStatus         String             @default("NOT_READY") // NOT_READY, PENDING_CLEARANCE, CLEARED, HANDED_OVER
-  handoverDate           DateTime?
-  handoverApprovedBy     String?
-  handoverNotes          String?            @db.Text
-  isDeleted              Boolean            @default(false)
-  deletedAt              DateTime?
-  createdBy              String?
-  createdAt              DateTime           @default(now())
-  updatedAt              DateTime           @updatedAt
-
-  milestones             ProjectMilestone[]
-  payments               Payment[]
-  expenses               Expense[]
-  invoices               Invoice[]
-
-  @@index([projectCode])
+  @@index([organizationId])
+  @@index([receiptNumber])
   @@index([clientId])
-  @@index([status])
-  @@index([handoverStatus])
-  @@index([isDeleted])
-}
-
-model ProjectMilestone {
-  id             String    @id @default(uuid())
-  projectId      String
-  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title          String
-  milestoneOrder Int       @default(0)
-  percentage     Float     @default(0)
-  amount         Float     @default(0)
-  dueDate        DateTime?
-  status         String    @default("PENDING") // PENDING, INVOICED, PARTIALLY_PAID, PAID, OVERDUE
-  paidAmount     Float     @default(0)
-  notes          String?   @db.Text
-  completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
-  @@index([projectId])
-  @@index([status])
+  @@index([invoiceId])
+  @@index([paymentDate])
 }
 
 model PaymentSplit {
@@ -554,8 +1002,184 @@ model PaymentSplit {
   @@index([accountId])
 }
 
+model Expense {
+  id                  String            @id @default(uuid())
+  organizationId      String?
+  organization        Organization?     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  expenseCode         String            @unique
+  category            String            // Office Rent, Salary, Hosting, Cloud, Marketing, etc.
+  amount              Float
+  expenseDate         DateTime          @default(now())
+  paymentMode         PaymentMode       @default(BANK_TRANSFER)
+  vendorId            String?
+  vendor              Vendor?           @relation(fields: [vendorId], references: [id])
+  description         String
+  referenceNumber     String?
+  receiptUrl          String?
+  projectId           String?
+  project             Project?          @relation(fields: [projectId], references: [id])
+  isBillable          Boolean           @default(false)
+  isReimbursable      Boolean           @default(false)
+  employeeName        String?
+  reimbursementStatus String?           @default("N_A") // N_A, PENDING, APPROVED, REIMBURSED
+  approvalStatus      String            @default("APPROVED") // PENDING, APPROVED, REJECTED
+  approvedBy          String?
+  approvedAt          DateTime?
+  reimbursedAt        DateTime?
+  reimbursedTo        String?
+  accountId           String?
+  notes               String?           @db.Text
+  isDeleted           Boolean           @default(false)
+  deletedAt           DateTime?
+  createdBy           String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  approvals           ExpenseApproval[]
+
+  @@index([organizationId])
+  @@index([expenseCode])
+  @@index([category])
+  @@index([expenseDate])
+  @@index([vendorId])
+  @@index([projectId])
+  @@index([isDeleted])
+  @@index([approvalStatus])
+}
+
+model Vendor {
+  id             String        @id @default(uuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  vendorCode     String        @unique
+  vendorName     String
+  company        String?
+  companyName    String?
+  contactPerson  String?
+  email          String?
+  phone          String?
+  address        String?
+  city           String?
+  state          String?
+  country        String?       @default("India")
+  postalCode     String?
+  gstNumber      String?
+  panNumber      String?
+  category       String?
+  paymentTerms   String?
+  bankDetails    String?       @db.Text
+  totalPayable   Float         @default(0)
+  totalPaid      Float         @default(0)
+  outstanding    Float         @default(0)
+  status         String        @default("ACTIVE")
+  notes          String?       @db.Text
+  isDeleted      Boolean       @default(false)
+  deletedAt      DateTime?
+  deletedBy      String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  expenses       Expense[]
+
+  @@index([organizationId])
+  @@index([vendorCode])
+  @@index([vendorName])
+  @@index([status])
+  @@index([isDeleted])
+}
+
+model Project {
+  id                     String             @id @default(uuid())
+  organizationId         String?
+  organization           Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  projectCode            String             @unique
+  name                   String
+  description            String?            @db.Text
+  clientId               String
+  client                 Client             @relation(fields: [clientId], references: [id])
+  quotationId            String?
+  quotation              Quotation?         @relation(fields: [quotationId], references: [id])
+  status                 String             @default("PLANNING") // PLANNING, IN_PROGRESS, ON_HOLD, COMPLETED, HANDED_OVER, CANCELLED
+  startDate              DateTime?
+  deadline               DateTime?
+  completedDate          DateTime?
+  quotationValue         Float              @default(0)
+  additionalCharges      Float              @default(0)
+  totalProjectValue      Float              @default(0)
+  budgetAmount           Float              @default(0)
+  totalInvoiced          Float              @default(0)
+  totalPaid              Float              @default(0)
+  totalExpenses          Float              @default(0)
+  advanceRequiredPercent Float              @default(50)
+  advanceRequiredAmount  Float              @default(0)
+  advanceReceived        Float              @default(0)
+  assignedTeam           String?            @db.Text // JSON string: [{name, role, email}]
+  handoverStatus         String             @default("NOT_READY") // NOT_READY, PENDING_CLEARANCE, CLEARED, HANDED_OVER
+  handoverDate           DateTime?
+  handoverApprovedBy     String?
+  handoverNotes          String?            @db.Text
+  isDeleted              Boolean            @default(false)
+  deletedAt              DateTime?
+  createdBy              String?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  milestones             ProjectMilestone[]
+  payments               Payment[]
+  expenses               Expense[]
+  invoices               Invoice[]
+  assignments            ProjectAssignment[]
+  documents              Document[]
+
+  @@index([organizationId])
+  @@index([projectCode])
+  @@index([clientId])
+  @@index([status])
+  @@index([handoverStatus])
+  @@index([isDeleted])
+}
+
+model ProjectAssignment {
+  id            String   @id @default(uuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  roleInProject String   @default("MEMBER") // LEAD, DEVELOPER, DESIGNER, QA, MANAGER, OBSERVER
+  assignedAt    DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model ProjectMilestone {
+  id             String    @id @default(uuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title          String
+  milestoneOrder Int       @default(0)
+  percentage     Float     @default(0)
+  amount         Float     @default(0)
+  dueDate        DateTime?
+  status         String    @default("PENDING") // PENDING, INVOICED, PARTIALLY_PAID, PAID, OVERDUE
+  paidAmount     Float     @default(0)
+  notes          String?   @db.Text
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  invoices       Invoice[]
+  payments       Payment[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
 model FinancialAccount {
   id             String               @id @default(uuid())
+  organizationId String?
+  organization   Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   accountCode    String               @unique // ACC-CASH, ACC-GPAY, ACC-HDFC, etc.
   accountName    String               // Cash in Hand, Google Pay (Business), HDFC Current A/C
   accountType    String               // CASH, UPI, BANK
@@ -571,6 +1195,7 @@ model FinancialAccount {
 
   transactions   AccountTransaction[]
 
+  @@index([organizationId])
   @@index([accountCode])
   @@index([accountType])
 }
@@ -594,31 +1219,60 @@ model AccountTransaction {
   @@index([transactionDate])
 }
 
-model DemoLead {
-  id               String    @id @default(uuid())
-  fullName         String
-  companyName      String
-  email            String
-  phone            String
-  whatsappNumber   String?
-  industry         String?
-  companySize      String?
-  monthlyProjects  String?
-  currentProcess   String?
-  featuresInterest String?   @db.Text
-  preferredDate    String?
-  preferredTime    String?
-  additionalReqs   String?   @db.Text
-  consentContact   Boolean   @default(true)
-  status           String    @default("NEW") // NEW, CONTACTED, DEMO_SCHEDULED, DEMO_COMPLETED, FOLLOW_UP, CONVERTED, CLOSED
-  assignedTo       String?
-  notes            String?   @db.Text
-  followUpDate     DateTime?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+model DocumentTemplate {
+  id              String        @id @default(uuid())
+  organizationId  String?
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type            String        // QUOTATION, INVOICE, RECEIPT
+  name            String
+  headerText      String?
+  footerText      String?
+  termsText       String?       @db.Text
+  primaryColor    String        @default("#1e40af")
+  accentColor     String        @default("#3b82f6")
+  showLogo        Boolean       @default(true)
+  showBankDetails Boolean       @default(true)
+  showSignature   Boolean       @default(true)
+  showSeal        Boolean       @default(true)
+  isDefault       Boolean       @default(true)
+  updatedAt       DateTime      @updatedAt
 
-  @@index([status])
-  @@index([email])
-  @@index([createdAt])
+  @@index([organizationId])
+  @@index([type])
 }
 
+model NumberingConfig {
+  id                String        @id @default(uuid())
+  organizationId    String?
+  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documentType      String        @unique // QUOTATION, INVOICE, PAYMENT, EXPENSE, CLIENT, VENDOR, PROJECT
+  prefix            String
+  includeFiscalYear Boolean       @default(true)
+  currentSequence   Int           @default(1)
+  padLength         Int           @default(4)
+  updatedAt         DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userEmail      String?
+  module         String        // AUTH, CLIENT, QUOTATION, INVOICE, PAYMENT, EXPENSE, VENDOR, SETTINGS, TEAM, SUBSCRIPTION
+  action         String        // LOGIN, LOGOUT, CREATE, UPDATE, DELETE, SIGN, CONVERT, NEGOTIATE, SETTINGS_CHANGE
+  entityId       String?
+  entityType     String?
+  ipAddress      String?
+  details        String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
+  @@index([userId])
+}

@@ -25,7 +25,26 @@ const TermsPage = lazy(() => import('./modules/marketing/TermsPage.jsx'));
 // Authentication & App
 const LoginPage = lazy(() => import('./modules/auth/LoginPage.jsx'));
 
-// In-App Protected Modules
+// Platform Super-Admin Modules
+const PlatformLoginPage = lazy(() => import('./modules/platform/PlatformLoginPage.jsx'));
+const PlatformLayout = lazy(() => import('./modules/platform/PlatformLayout.jsx'));
+const PlatformDashboardPage = lazy(() => import('./modules/platform/PlatformDashboardPage.jsx'));
+const PlatformOrganizationsPage = lazy(() => import('./modules/platform/PlatformOrganizationsPage.jsx'));
+const PlatformPlansPage = lazy(() => import('./modules/platform/PlatformPlansPage.jsx'));
+const PlatformDemoRequestsPage = lazy(() => import('./modules/platform/PlatformDemoRequestsPage.jsx'));
+const PlatformSocPage = lazy(() => import('./modules/platform/PlatformSocPage.jsx'));
+const PlatformAuditLogsPage = lazy(() => import('./modules/platform/PlatformAuditLogsPage.jsx'));
+const PlatformHealthPage = lazy(() => import('./modules/platform/PlatformHealthPage.jsx'));
+
+// Customer Tenant SaaS Workspace Modules
+const TeamManagementPage = lazy(() => import('./modules/organization/TeamManagementPage.jsx'));
+const RolesPermissionsPage = lazy(() => import('./modules/organization/RolesPermissionsPage.jsx'));
+const SubscriptionBillingPage = lazy(() => import('./modules/organization/SubscriptionBillingPage.jsx'));
+const TenantStoragePage = lazy(() => import('./modules/organization/TenantStoragePage.jsx'));
+const FinancialJournalsPage = lazy(() => import('./modules/organization/FinancialJournalsPage.jsx'));
+const CustomerSecurityPage = lazy(() => import('./modules/organization/CustomerSecurityPage.jsx'));
+
+// In-App Protected Business Modules
 const DashboardPage = lazy(() => import('./modules/dashboard/DashboardPage.jsx'));
 const ClientsListPage = lazy(() => import('./modules/clients/ClientsListPage.jsx'));
 const ClientDetailsPage = lazy(() => import('./modules/clients/ClientDetailsPage.jsx'));
@@ -101,7 +120,22 @@ export default function App() {
                   {/* Public Authentication Route */}
                   <Route path="/login" element={<LoginPage />} />
 
-                  {/* Protected SaaS Application Routes */}
+                  {/* DASA TECH Platform Super-Admin Routes */}
+                  <Route path="/platform-admin/login" element={<PlatformLoginPage />} />
+                  <Route path="/platform-admin" element={<PlatformLayout />}>
+                    <Route index element={<Navigate to="/platform-admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<PlatformDashboardPage />} />
+                    <Route path="organizations" element={<PlatformOrganizationsPage />} />
+                    <Route path="plans" element={<PlatformPlansPage />} />
+                    <Route path="demo-requests" element={<PlatformDemoRequestsPage />} />
+                    <Route path="soc" element={<PlatformSocPage />} />
+                    <Route path="security" element={<PlatformSocPage />} />
+                    <Route path="audit-logs" element={<PlatformAuditLogsPage />} />
+                    <Route path="health" element={<PlatformHealthPage />} />
+                    <Route path="system-health" element={<PlatformHealthPage />} />
+                  </Route>
+
+                  {/* Protected Customer SaaS Organization Workspace Routes */}
                   <Route
                     path="/app"
                     element={
@@ -111,6 +145,26 @@ export default function App() {
                     }
                   >
                     <Route index element={<Navigate to="/dashboard" replace />} />
+                    <Route path="dashboard" element={<DashboardPage />} />
+                    <Route path="projects" element={<ProjectsListPage />} />
+                    <Route path="projects/:id" element={<ProjectDetailsPage />} />
+                    <Route path="quotations" element={<QuotationsListPage />} />
+                    <Route path="quotations/new" element={<QuotationCreatePage />} />
+                    <Route path="quotations/:id" element={<QuotationDetailsPage />} />
+                    <Route path="clients" element={<ClientsListPage />} />
+                    <Route path="clients/:id" element={<ClientDetailsPage />} />
+                    <Route path="invoices" element={<InvoicesListPage />} />
+                    <Route path="payments" element={<PaymentsListPage />} />
+                    <Route path="expenses" element={<ExpensesListPage />} />
+                    <Route path="cash-bank" element={<CashBankPage />} />
+                    <Route path="team" element={<TeamManagementPage />} />
+                    <Route path="roles" element={<RolesPermissionsPage />} />
+                    <Route path="subscription" element={<SubscriptionBillingPage />} />
+                    <Route path="storage" element={<TenantStoragePage />} />
+                    <Route path="journals" element={<FinancialJournalsPage />} />
+                    <Route path="security" element={<CustomerSecurityPage />} />
+                    <Route path="reports" element={<ReportsPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
                   </Route>
 
                   <Route
@@ -121,6 +175,14 @@ export default function App() {
                     }
                   >
                     <Route path="/dashboard" element={<DashboardPage />} />
+
+                    {/* SaaS Multi-Tenant Workspace & Governance */}
+                    <Route path="/team" element={<TeamManagementPage />} />
+                    <Route path="/roles" element={<RolesPermissionsPage />} />
+                    <Route path="/subscription" element={<SubscriptionBillingPage />} />
+                    <Route path="/storage" element={<TenantStoragePage />} />
+                    <Route path="/journals" element={<FinancialJournalsPage />} />
+                    <Route path="/security-settings" element={<CustomerSecurityPage />} />
 
                     {/* Projects & Governance */}
                     <Route path="/projects" element={<ProjectsListPage />} />

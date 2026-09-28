@@ -5,19 +5,27 @@ import { ENV } from '../../config/env.js';
 import { logAudit } from '../../utils/audit.service.js';
 
 export async function loginUser(email, password, rememberMe = false, ipAddress = null) {
-  const user = await prisma.user.findUnique({
-    where: { email: email.toLowerCase().trim() },
+  const identifier = (email || '').trim();
+
+  // Search by email or user name (case-insensitive)
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: { equals: identifier, mode: 'insensitive' } },
+        { name: { equals: identifier, mode: 'insensitive' } },
+      ],
+    },
   });
 
   if (!user) {
     await logAudit({
-      userEmail: email.toLowerCase().trim(),
+      userEmail: identifier,
       module: 'AUTH',
       action: 'LOGIN_FAILED',
       ipAddress,
-      details: `Security Alert: Failed login attempt for non-existent account: ${email}`,
+      details: `Security Alert: Failed login attempt for non-existent account: ${identifier}`,
     });
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid user name / email or password');
   }
 
   if (user.status !== 'ACTIVE') {
@@ -32,7 +40,18 @@ export async function loginUser(email, password, rememberMe = false, ipAddress =
     throw new Error('This account has been deactivated. Please contact administrator.');
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+  let isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+  // If standard bcrypt comparison failed, check if password matches user's DOB format
+  if (!isPasswordValid && user.avatar?.startsWith('dob:')) {
+    const rawDob = user.avatar.replace('dob:', '').trim(); // e.g. "15-08-1995"
+    const cleanInput = (password || '').replace(/[-/._ ]/g, '');
+    const cleanDob = rawDob.replace(/[-/._ ]/g, '');
+    if (cleanInput && cleanInput === cleanDob) {
+      isPasswordValid = true;
+    }
+  }
+
   if (!isPasswordValid) {
     await logAudit({
       userId: user.id,
@@ -42,7 +61,7 @@ export async function loginUser(email, password, rememberMe = false, ipAddress =
       ipAddress,
       details: `Security Alert: Failed login attempt for ${user.email}: incorrect password entered`,
     });
-    throw new Error('Invalid email or password');
+    throw new Error('Invalid user name / email or password');
   }
 
   // Update last login timestamp

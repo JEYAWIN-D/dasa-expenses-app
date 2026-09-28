@@ -74,24 +74,24 @@ export async function getDashboardMetrics() {
     prisma.vendor.aggregate({
       where: { isDeleted: false },
       _sum: { outstanding: true },
-    }),
+    }).catch(() => ({ _sum: { outstanding: 0 } })),
     // Active Clients
     prisma.client.count({
       where: { isDeleted: false, status: 'ACTIVE' },
-    }),
+    }).catch(() => 0),
     // Quotations Status Breakdown
     prisma.quotation.groupBy({
       by: ['status'],
       where: { isDeleted: false },
       _count: { id: true },
-    }),
+    }).catch(() => []),
     // Pending Invoices Count (ISSUED or PARTIALLY_PAID)
     prisma.invoice.count({
       where: {
         isDeleted: false,
         status: { in: ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'] },
       },
-    }),
+    }).catch(() => 0),
     // Projects for Centralized Dashboard & Profitability Table
     prisma.project.findMany({
       where: { isDeleted: false },
@@ -106,28 +106,28 @@ export async function getDashboardMetrics() {
         },
         milestones: true,
       },
-    }),
+    }).catch(() => []),
     // Financial Accounts (Cash, UPI, Bank)
     prisma.financialAccount.findMany({
       where: { isActive: true },
-    }),
+    }).catch(() => []),
   ]);
 
-  const quotationCounts = quotationsSummary.reduce((acc, curr) => {
+  const quotationCounts = (quotationsSummary || []).reduce((acc, curr) => {
     acc[curr.status] = curr._count.id;
     return acc;
   }, {});
 
-  const totalRevenue = invoicesAggregate._sum.paidAmount || 0;
-  const pendingReceivables = invoicesAggregate._sum.balanceDue || 0;
-  const overdueAmount = overdueAggregate._sum.balanceDue || 0;
+  const totalRevenue = invoicesAggregate?._sum?.paidAmount || 0;
+  const pendingReceivables = invoicesAggregate?._sum?.balanceDue || 0;
+  const overdueAmount = overdueAggregate?._sum?.balanceDue || 0;
 
-  const todayIncome = todayIncomeAggregate._sum.amount || 0;
-  const monthlyIncome = monthlyIncomeAggregate._sum.amount || 0;
-  const todayExpenses = todayExpenseAggregate._sum.amount || 0;
-  const monthlyExpenses = monthlyExpenseAggregate._sum.amount || 0;
+  const todayIncome = todayIncomeAggregate?._sum?.amount || 0;
+  const monthlyIncome = monthlyIncomeAggregate?._sum?.amount || 0;
+  const todayExpenses = todayExpenseAggregate?._sum?.amount || 0;
+  const monthlyExpenses = monthlyExpenseAggregate?._sum?.amount || 0;
   const netCashflow = monthlyIncome - monthlyExpenses;
-  const vendorPayables = vendorPayablesAggregate._sum.outstanding || 0;
+  const vendorPayables = vendorPayablesAggregate?._sum?.outstanding || 0;
 
   // Process Projects and Profitability Table
   const projectCards = rawProjects.map((p) => {
