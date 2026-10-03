@@ -298,12 +298,34 @@ export async function recordPayment(data, user) {
 
         if (milestone) {
           const newPaid = Math.round((milestone.paidAmount + Number(amount)) * 100) / 100;
+          const variance = Math.round((newPaid - milestone.amount) * 100) / 100;
+          let paymentStatusCategory = 'UNPAID';
+          let excessAmount = 0;
+          let shortfallAmount = 0;
+
+          if (newPaid <= 0) {
+            paymentStatusCategory = 'UNPAID';
+            shortfallAmount = milestone.amount;
+          } else if (variance === 0) {
+            paymentStatusCategory = 'EXACT';
+          } else if (variance > 0) {
+            paymentStatusCategory = 'EXCESS';
+            excessAmount = variance;
+          } else {
+            paymentStatusCategory = 'SHORTFALL';
+            shortfallAmount = Math.abs(variance);
+          }
+
           const isComplete = newPaid >= milestone.amount;
 
           await tx.projectMilestone.update({
             where: { id: milestone.id },
             data: {
               paidAmount: newPaid,
+              varianceAmount: variance,
+              paymentStatusCategory,
+              excessAmount,
+              shortfallAmount,
               status: isComplete ? 'PAID' : 'PARTIALLY_PAID',
               completedAt: isComplete ? new Date() : null,
             },

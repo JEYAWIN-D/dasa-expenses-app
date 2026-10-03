@@ -42,9 +42,10 @@ export default function QuotationsListPage() {
   const handleOpenPreview = async (id) => {
     try {
       const res = await api.get(`/quotations/${id}`);
-      setPreviewDoc(res.data);
+      const doc = res?.data?.id ? res.data : (res?.data?.data || res?.data || res);
+      setPreviewDoc(doc);
     } catch (err) {
-      notify.error('Failed to load quotation for preview');
+      notify.error(err.message || 'Failed to load quotation for preview');
     }
   };
 

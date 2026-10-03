@@ -63,6 +63,15 @@ export async function updateProject(req, res) {
   }
 }
 
+export async function deleteProject(req, res) {
+  try {
+    const result = await projectService.deleteProject(req.params.id, req.user);
+    return apiSuccess(res, result, 'Project deleted successfully');
+  } catch (error) {
+    return apiError(res, error.message, 400);
+  }
+}
+
 export async function addMilestone(req, res) {
   try {
     const milestone = await projectService.addMilestone(req.params.id, req.body, req.user);
@@ -83,7 +92,7 @@ export async function updateMilestone(req, res) {
 
 export async function deleteMilestone(req, res) {
   try {
-    await projectService.deleteMilestone(req.params.milestoneId);
+    await projectService.deleteMilestone(req.params.milestoneId, req.user);
     return apiSuccess(res, null, 'Milestone deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

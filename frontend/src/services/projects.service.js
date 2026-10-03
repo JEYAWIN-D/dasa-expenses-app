@@ -6,6 +6,7 @@ export const projectsService = {
   createProject: (data) => api.post('/projects', data),
   convertQuotation: (quotationId, data = {}) => api.post(`/projects/convert-quotation/${quotationId}`, data),
   updateProject: (id, data) => api.put(`/projects/${id}`, data),
+  deleteProject: (id) => api.delete(`/projects/${id}`),
   
   // Milestones
   addMilestone: (projectId, data) => api.post(`/projects/${projectId}/milestones`, data),

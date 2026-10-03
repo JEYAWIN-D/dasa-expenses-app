@@ -138,6 +138,14 @@ export default function SettingsPage() {
     bankSwift: '',
     termsAndConditions: '',
     authorizedPerson: '',
+    authorizedDesignation: 'Authorized Signatory',
+    signatureApprovalText: 'DASA TECH ADMIN APPROVED',
+    defaultPaymentTerms: '',
+    defaultPaymentMode: 'Bank Transfer (NEFT/RTGS/IMPS), UPI',
+    defaultNotes: '',
+    quotationDeclaration: '',
+    upiId: '',
+    upiQrUrl: '',
     currency: 'INR',
   });
 
@@ -816,25 +824,290 @@ export default function SettingsPage() {
                       onChange={(e) => setCompanyForm({ ...companyForm, bankIfsc: e.target.value })}
                     />
                   </div>
+
+                  <div className="form-group">
+                    <label className="form-label">UPI ID / VPA (For Instant QR / Online Payments)</label>
+                    <input
+                      className="form-input"
+                      placeholder="e.g. dasatech@icici or 9876543210@upi"
+                      value={companyForm.upiId || ''}
+                      onChange={(e) => setCompanyForm({ ...companyForm, upiId: e.target.value })}
+                    />
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Authorized Signatory Name & Title</label>
-                  <input
-                    className="form-input"
-                    value={companyForm.authorizedPerson || ''}
-                    onChange={(e) => setCompanyForm({ ...companyForm, authorizedPerson: e.target.value })}
-                    placeholder="e.g. Vikram Aditya (Managing Director)"
-                  />
+                {/* Section: Quotation Approval & Digital Signature Customization */}
+                <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1.5px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <ShieldCheck size={18} color="#16a34a" />
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+                      Quotation Digital Approval & Signatory Customization
+                    </h4>
+                  </div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 14 }}>
+                    Customize the approval banner, signatory name, and official designation stamped on finalized and digitally signed quotations.
+                  </p>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                    <div className="form-group">
+                      <label className="form-label">Authorized Signatory Name *</label>
+                      <input
+                        className="form-input"
+                        value={companyForm.authorizedPerson || ''}
+                        onChange={(e) => setCompanyForm({ ...companyForm, authorizedPerson: e.target.value })}
+                        placeholder="e.g. DASA TECH Admin or Vikram Aditya"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Signatory Title / Designation</label>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6, flexWrap: 'wrap' }}>
+                        {[
+                          'Chief Executive Officer (CEO)',
+                          'Chief Financial Officer (CFO)',
+                          'Chief Technology Officer (CTO)',
+                          'Managing Director (MD)',
+                          'Director',
+                          'Authorized Signatory',
+                        ].map((desig) => (
+                          <button
+                            key={desig}
+                            type="button"
+                            onClick={() => setCompanyForm({ ...companyForm, authorizedDesignation: desig })}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: 5,
+                              border: companyForm.authorizedDesignation === desig ? '1.5px solid var(--primary)' : '1px solid #cbd5e1',
+                              backgroundColor: companyForm.authorizedDesignation === desig ? 'var(--primary-light)' : '#ffffff',
+                              color: companyForm.authorizedDesignation === desig ? 'var(--primary)' : '#334155',
+                              fontSize: 10.5,
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {desig}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        className="form-input"
+                        value={companyForm.authorizedDesignation || ''}
+                        onChange={(e) => setCompanyForm({ ...companyForm, authorizedDesignation: e.target.value })}
+                        placeholder="e.g. Chief Executive Officer (CEO) / Managing Director"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 14 }}>
+                    <label className="form-label">Approval Badge / Stamp Text</label>
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+                      {[
+                        'DASA TECH ADMIN APPROVED',
+                        'CEO APPROVED & SIGNED',
+                        'CFO APPROVED & CERTIFIED',
+                        'CTO APPROVED & VERIFIED',
+                        'DIRECTOR APPROVED & AUTHORIZED',
+                        'DIGITALLY SIGNED & VERIFIED',
+                        'ACCOUNTS DEPT AUDITED & APPROVED',
+                        'OFFICIALLY CERTIFIED',
+                      ].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setCompanyForm({ ...companyForm, signatureApprovalText: preset })}
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: 6,
+                            border: companyForm.signatureApprovalText === preset ? '1.5px solid #16a34a' : '1px solid #cbd5e1',
+                            backgroundColor: companyForm.signatureApprovalText === preset ? '#f0fdf4' : '#f8fafc',
+                            color: companyForm.signatureApprovalText === preset ? '#15803d' : '#475569',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      className="form-input"
+                      value={companyForm.signatureApprovalText || ''}
+                      onChange={(e) => setCompanyForm({ ...companyForm, signatureApprovalText: e.target.value })}
+                      placeholder="e.g. DASA TECH ADMIN APPROVED"
+                    />
+                  </div>
+
+                  {/* Live Approval Badge Preview */}
+                  <div style={{ padding: 14, backgroundColor: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0', marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 8 }}>
+                      Live Approval Stamp Preview (As Rendered on Proposals)
+                    </div>
+                    <div
+                      style={{
+                        padding: '12px 18px',
+                        backgroundColor: '#f0fdf4',
+                        border: '1.5px dashed #22c55e',
+                        borderRadius: 8,
+                        maxWidth: 380,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#16a34a', fontWeight: 800, fontSize: 12 }}>
+                        <ShieldCheck size={16} />
+                        <span>{companyForm.signatureApprovalText || 'DASA TECH ADMIN APPROVED'}</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: '#15803d', marginTop: 3, fontWeight: 700 }}>
+                        {companyForm.authorizedPerson || 'DASA TECH Admin'} ({companyForm.authorizedDesignation || 'Authorized Signatory'})
+                      </div>
+                      <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                        {new Date().toLocaleString('en-IN')} • 256-Bit Cryptographically Sealed
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Default Commercial Terms</label>
-                  <textarea
-                    className="form-textarea"
-                    value={companyForm.termsAndConditions || ''}
-                    onChange={(e) => setCompanyForm({ ...companyForm, termsAndConditions: e.target.value })}
-                  />
+                {/* Section: Payment Modes & Terms Defaults */}
+                <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1.5px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <FileSpreadsheet size={18} color="var(--primary)" />
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+                      Quotation Payment Modes & Milestone Defaults
+                    </h4>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                    <div className="form-group">
+                      <label className="form-label">Default Payment Modes</label>
+                      <input
+                        className="form-input"
+                        value={companyForm.defaultPaymentMode || ''}
+                        onChange={(e) => setCompanyForm({ ...companyForm, defaultPaymentMode: e.target.value })}
+                        placeholder="e.g. Bank Transfer (NEFT/RTGS/IMPS), UPI, Corporate Cheque"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Default Payment Schedule / Milestones</label>
+                      <input
+                        className="form-input"
+                        value={companyForm.defaultPaymentTerms || ''}
+                        onChange={(e) => setCompanyForm({ ...companyForm, defaultPaymentTerms: e.target.value })}
+                        placeholder="e.g. 50% Advance with PO, 40% on UAT Delivery, 10% on Go-Live"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
+                    <span style={{ fontSize: 11, color: '#64748b', alignSelf: 'center', fontWeight: 600 }}>Quick Presets:</span>
+                    {[
+                      '50% Advance with PO, 40% on UAT, 10% on Go-Live',
+                      '50% Advance, 50% on Delivery/Completion',
+                      '100% Advance before Kickoff',
+                      'Net 15 Days from Invoice Date',
+                      'Net 30 Days from Invoice Date',
+                    ].map((sched) => (
+                      <button
+                        key={sched}
+                        type="button"
+                        onClick={() => setCompanyForm({ ...companyForm, defaultPaymentTerms: sched })}
+                        style={{
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          border: '1px solid #cbd5e1',
+                          backgroundColor: '#ffffff',
+                          fontSize: 11,
+                          color: '#334155',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {sched}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Section: Terms & Conditions Default Templates */}
+                <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1.5px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div>
+                      <h4 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>
+                        Default Quotation Terms & Conditions
+                      </h4>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        Choose a pre-defined industry template or write custom commercial clauses to auto-load on new quotations.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 1-Click Template Loader Buttons */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 12 }}>
+                    {[
+                      {
+                        name: 'Software / IT Project',
+                        text: `1. Validity: This commercial proposal is valid for 30 calendar days from issuance.\n2. Payment Milestones: 50% advance on agreement, 40% on UAT delivery, 10% on final handover.\n3. Scope Changes: Any additions beyond specifications will be scoped under a revision addendum.\n4. Taxes: Statutory GST @ 18% is applicable as per Govt of India regulations.\n5. Warranty: 90 days complimentary bug-fixing and warranty support post deployment.\n6. Jurisdiction: Disputes subject to Erode, Tamil Nadu jurisdiction.`,
+                      },
+                      {
+                        name: 'AMC & SLA Support',
+                        text: `1. SLA Coverage: 24/7 critical system monitoring with 4-hour response time.\n2. Payment Terms: 100% advance at commencement of each billing cycle.\n3. Preventive Visits: 4 scheduled system health audits per annum.\n4. Spares / Hardware: Labor included; replacement spares charged at actuals.\n5. Renewal / Termination: 30 days prior written notice required for termination.`,
+                      },
+                      {
+                        name: 'Hardware & Supplies',
+                        text: `1. Payment Terms: 100% advance against Proforma Invoice prior to dispatch.\n2. Delivery Timeline: Estimated 7-10 business days from purchase order confirmation.\n3. OEM Warranty: Standard manufacturer warranty applies to all delivered items.\n4. Freight & Transit: Inclusive of doorstep freight and transit insurance.\n5. Returns: Non-defective goods cannot be returned once unboxed.`,
+                      },
+                      {
+                        name: 'Consulting & Services',
+                        text: `1. Engagement Basis: Professional fees invoiced monthly upon milestone sign-off.\n2. Payment Window: Strictly net 15 days from date of monthly invoice issuance.\n3. IP Ownership: Full intellectual property transfers upon 100% settlement of dues.\n4. Non-Disclosure: Confidentiality and NDA terms strictly observed throughout.`,
+                      },
+                    ].map((tpl) => (
+                      <button
+                        key={tpl.name}
+                        type="button"
+                        onClick={() => setCompanyForm({ ...companyForm, termsAndConditions: tpl.text })}
+                        className="btn btn-secondary btn-sm"
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '6px 10px',
+                        }}
+                      >
+                        <span>📋 Load {tpl.name}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: 16 }}>
+                    <textarea
+                      rows={7}
+                      className="form-textarea"
+                      style={{ fontSize: 12, lineHeight: 1.6 }}
+                      value={companyForm.termsAndConditions || ''}
+                      onChange={(e) => setCompanyForm({ ...companyForm, termsAndConditions: e.target.value })}
+                      placeholder="1. Validity: 30 days...&#10;2. Payment terms: 50% advance..."
+                    />
+                  </div>
+                </div>
+
+                {/* Section: Default Proposal Notes */}
+                <div style={{ marginTop: 20, paddingTop: 18, borderTop: '1.5px solid #e2e8f0' }}>
+                  <h4 style={{ fontSize: 15, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+                    Default Proposal Header Notes / Commercial Remarks
+                  </h4>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+                    Standard preamble or greeting text shown to clients at the top or bottom of proposal PDFs.
+                  </p>
+                  <div className="form-group" style={{ marginBottom: 16 }}>
+                    <textarea
+                      rows={3}
+                      className="form-textarea"
+                      style={{ fontSize: 12 }}
+                      value={companyForm.defaultNotes || ''}
+                      onChange={(e) => setCompanyForm({ ...companyForm, defaultNotes: e.target.value })}
+                      placeholder="e.g. Thank you for considering DASA TECH as your technology partner. We look forward to delivering exceptional results."
+                    />
+                  </div>
                 </div>
               </form>
 

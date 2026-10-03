@@ -36,6 +36,11 @@ export const createQuotationSchema = z.object({
   taxRate: z.number().min(0).max(100).default(0),
   notes: z.string().optional().nullable(),
   terms: z.string().optional().nullable(),
+  paymentTerms: z.string().optional().nullable(),
+  paymentMode: z.string().optional().nullable(),
+  approvalText: z.string().optional().nullable(),
+  authorizedPerson: z.string().optional().nullable(),
+  authorizedDesignation: z.string().optional().nullable(),
   amcPackages: z.any().optional().nullable(),
   items: z.array(quotationItemSchema).min(1, 'At least one item is required'),
 });
@@ -50,6 +55,11 @@ export const reviseQuotationSchema = z.object({
   taxRate: z.number().min(0).max(100).optional(),
   notes: z.string().optional().nullable(),
   terms: z.string().optional().nullable(),
+  paymentTerms: z.string().optional().nullable(),
+  paymentMode: z.string().optional().nullable(),
+  approvalText: z.string().optional().nullable(),
+  authorizedPerson: z.string().optional().nullable(),
+  authorizedDesignation: z.string().optional().nullable(),
   amcPackages: z.any().optional().nullable(),
   items: z.array(quotationItemSchema).min(1, 'At least one item is required'),
 });

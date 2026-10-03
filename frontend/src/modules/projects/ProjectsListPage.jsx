@@ -16,6 +16,8 @@ import {
   Calendar,
   Building,
   RefreshCw,
+  Trash2,
+  AlertCircle,
 } from 'lucide-react';
 import { projectsService } from '../../services/projects.service.js';
 import { useNotification } from '../../contexts/NotificationContext.jsx';
@@ -35,6 +37,8 @@ export default function ProjectsListPage() {
   // Modals
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [convertModalOpen, setConvertModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -52,6 +56,21 @@ export default function ProjectsListPage() {
       notify.error(err.message || 'Failed to fetch projects');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    setDeleting(true);
+    try {
+      await projectsService.deleteProject(projectToDelete.id);
+      notify.success(`Project ${projectToDelete.projectCode} deleted successfully`);
+      setProjectToDelete(null);
+      fetchProjects();
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete project');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -507,23 +526,175 @@ export default function ProjectsListPage() {
                     <span>{p.deadline ? `Due ${new Date(p.deadline).toLocaleDateString('en-IN')}` : 'No deadline'}</span>
                   </div>
 
-                  <span
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      color: '#2563eb',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <span>Financial Dashboard</span>
-                    <ArrowRight size={14} />
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <button
+                      type="button"
+                      title="Delete Project"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setProjectToDelete(p);
+                      }}
+                      style={{
+                        padding: '6px 8px',
+                        backgroundColor: '#fee2e2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '6px',
+                        color: '#dc2626',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        fontSize: '11px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      <Trash2 size={13} />
+                      <span>Delete</span>
+                    </button>
+
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: '#2563eb',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <span>Dashboard</span>
+                      <ArrowRight size={14} />
+                    </span>
+                  </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {projectToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '20px',
+          }}
+          onClick={() => !deleting && setProjectToDelete(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '10px',
+                  backgroundColor: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#dc2626',
+                  flexShrink: 0,
+                }}
+              >
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Delete Project</h3>
+                <div style={{ fontSize: '13px', color: '#64748b', marginTop: 2 }}>{projectToDelete.projectCode}</div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '14px', color: '#334155', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Are you sure you want to delete project <strong>"{projectToDelete.name}"</strong>?
+            </p>
+
+            <div
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '12px',
+                color: '#92400e',
+                display: 'flex',
+                gap: 8,
+                marginBottom: 20,
+              }}
+            >
+              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                This action is protected by system audit logging. The project will be removed from active dashboards while preserving historical accounting records.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setProjectToDelete(null)}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  color: '#475569',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteProject}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#dc2626',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {deleting ? (
+                  <>
+                    <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

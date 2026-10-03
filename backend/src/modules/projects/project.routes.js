@@ -12,6 +12,7 @@ router.post('/', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'SALES'), pro
 router.post('/convert-quotation/:quotationId', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'SALES'), projectController.convertQuotation);
 router.get('/:id', projectController.getProject);
 router.put('/:id', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'FINANCE'), projectController.updateProject);
+router.delete('/:id', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER'), projectController.deleteProject);
 
 // Milestones
 router.post('/:id/milestones', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER'), projectController.addMilestone);

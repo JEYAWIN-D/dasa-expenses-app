@@ -717,14 +717,22 @@ model CompanyProfile {
   bankAccountNumber  String?
   bankIfsc           String?
   bankSwift          String?
-  termsAndConditions String?  @db.Text
-  authorizedPerson   String?
-  signatureImageUrl  String?
-  signaturePinHash   String   // Hashed 4-digit PIN for signature authorization
-  currency           String   @default("INR")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  assets             CompanyAsset[]
+  termsAndConditions    String?  @db.Text
+  authorizedPerson      String?
+  authorizedDesignation String?  @default("Authorized Signatory")
+  signatureApprovalText String?  @default("DASA TECH ADMIN APPROVED")
+  defaultPaymentTerms   String?  @db.Text
+  defaultPaymentMode    String?  @default("Bank Transfer (NEFT/RTGS/IMPS), UPI")
+  defaultNotes          String?  @db.Text
+  quotationDeclaration  String?  @db.Text
+  upiId                 String?
+  upiQrUrl              String?
+  signatureImageUrl     String?
+  signaturePinHash      String   // Hashed 4-digit PIN for signature authorization
+  currency              String   @default("INR")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  assets                CompanyAsset[]
 }
 
 model CompanyAsset {
@@ -820,6 +828,11 @@ model Quotation {
   totalAmount        Float                  @default(0)
   notes              String?                @db.Text
   terms              String?                @db.Text
+  paymentTerms       String?                @db.Text
+  paymentMode        String?
+  approvalText       String?
+  authorizedPerson   String?
+  authorizedDesignation String?
   amcPackages        String?                @db.Text
   isDigitallySigned  Boolean                @default(false)
   signedAt           DateTime?
@@ -879,9 +892,14 @@ model QuotationNegotiation {
   id             String    @id @default(uuid())
   quotationId    String
   quotation      Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
-  sender         String
-  message        String    @db.Text
-  proposedAmount Float?
+  round          Int       @default(1)
+  proposedBy     String    @default("CLIENT")
+  personName     String?
+  previousAmount Float?
+  offeredAmount  Float?
+  changeAmount   Float?
+  reason         String?   @db.Text
+  notes          String?   @db.Text
   status         String    @default("PENDING")
   createdAt      DateTime  @default(now())
 
@@ -1113,6 +1131,8 @@ model Project {
   advanceRequiredPercent Float              @default(50)
   advanceRequiredAmount  Float              @default(0)
   advanceReceived        Float              @default(0)
+  totalExcessReceived    Float              @default(0)
+  unallocatedCredit      Float              @default(0)
   assignedTeam           String?            @db.Text // JSON string: [{name, role, email}]
   handoverStatus         String             @default("NOT_READY") // NOT_READY, PENDING_CLEARANCE, CLEARED, HANDED_OVER
   handoverDate           DateTime?
@@ -1154,26 +1174,32 @@ model ProjectAssignment {
 }
 
 model ProjectMilestone {
-  id             String    @id @default(uuid())
-  projectId      String
-  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title          String
-  milestoneOrder Int       @default(0)
-  percentage     Float     @default(0)
-  amount         Float     @default(0)
-  dueDate        DateTime?
-  status         String    @default("PENDING") // PENDING, INVOICED, PARTIALLY_PAID, PAID, OVERDUE
-  paidAmount     Float     @default(0)
-  notes          String?   @db.Text
-  completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id                    String    @id @default(uuid())
+  projectId             String
+  project               Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title                 String
+  milestoneOrder        Int       @default(0)
+  percentage            Float     @default(0)
+  amount                Float     @default(0)
+  dueDate               DateTime?
+  status                String    @default("PENDING") // PENDING, INVOICED, PARTIALLY_PAID, PAID, OVERDUE
+  paidAmount            Float     @default(0)
+  varianceAmount        Float     @default(0) // paidAmount - amount (+ for excess, - for shortfall)
+  paymentStatusCategory String?   @default("UNPAID") // "EXACT", "EXCESS", "SHORTFALL", "UNPAID"
+  excessAmount          Float     @default(0) // max(0, paidAmount - amount)
+  shortfallAmount       Float     @default(0) // max(0, amount - paidAmount)
+  excessAllocationNotes String?   @db.Text
+  notes                 String?   @db.Text
+  completedAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  invoices       Invoice[]
-  payments       Payment[]
+  invoices              Invoice[]
+  payments              Payment[]
 
   @@index([projectId])
   @@index([status])
+  @@index([paymentStatusCategory])
 }
 
 model FinancialAccount {

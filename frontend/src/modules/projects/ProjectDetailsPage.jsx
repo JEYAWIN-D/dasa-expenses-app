@@ -15,12 +15,17 @@ import {
   Printer,
   Plus,
   TrendingUp,
+  TrendingDown,
   Percent,
   RefreshCw,
   Award,
   Layers,
   Sparkles,
   ExternalLink,
+  Trash2,
+  Edit3,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { api } from '../../services/api.js';
 import { projectsService } from '../../services/projects.service.js';
@@ -57,11 +62,20 @@ export default function ProjectDetailsPage() {
   const [handoverAuthorizedBy, setHandoverAuthorizedBy] = useState('');
   const [handoverSubmitting, setHandoverSubmitting] = useState(false);
 
-  // Milestone edit/add state
+  // Milestone edit/add/delete state
   const [newMilestoneTitle, setNewMilestoneTitle] = useState('');
   const [newMilestonePercent, setNewMilestonePercent] = useState('');
   const [newMilestoneDueDate, setNewMilestoneDueDate] = useState('');
   const [addingMilestone, setAddingMilestone] = useState(false);
+
+  const [editingMilestone, setEditingMilestone] = useState(null);
+  const [savingMilestone, setSavingMilestone] = useState(false);
+  const [milestoneToDelete, setMilestoneToDelete] = useState(null);
+  const [deletingMilestone, setDeletingMilestone] = useState(false);
+
+  // Project Deletion State
+  const [projectDeleteModalOpen, setProjectDeleteModalOpen] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
 
   const fetchProjectData = async () => {
     try {
@@ -82,6 +96,60 @@ export default function ProjectDetailsPage() {
   useEffect(() => {
     fetchProjectData();
   }, [id]);
+
+  const handleDeleteProject = async () => {
+    setDeletingProject(true);
+    try {
+      await projectsService.deleteProject(id);
+      notify.success(`Project ${project.projectCode} deleted successfully`);
+      navigate('/projects');
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete project');
+      setDeletingProject(false);
+    }
+  };
+
+  const handleUpdateMilestoneSubmit = async (e) => {
+    e.preventDefault();
+    if (!editingMilestone) return;
+
+    setSavingMilestone(true);
+    try {
+      await projectsService.updateMilestone(id, editingMilestone.id, {
+        title: editingMilestone.title,
+        percentage: Number(editingMilestone.percentage || 0),
+        amount: Number(editingMilestone.amount || 0),
+        paidAmount: Number(editingMilestone.paidAmount || 0),
+        excessAllocationNotes: editingMilestone.excessAllocationNotes || '',
+        dueDate: editingMilestone.dueDate || null,
+        status: editingMilestone.status,
+      });
+
+      notify.success(`Milestone "${editingMilestone.title}" updated successfully!`);
+      setEditingMilestone(null);
+      fetchProjectData();
+    } catch (err) {
+      notify.error(err.message || 'Failed to update milestone');
+    } finally {
+      setSavingMilestone(false);
+    }
+  };
+
+  const handleDeleteMilestoneSubmit = async () => {
+    if (!milestoneToDelete) return;
+
+    setDeletingMilestone(true);
+    try {
+      await projectsService.deleteMilestone(id, milestoneToDelete.id);
+      notify.success(`Milestone "${milestoneToDelete.title}" deleted successfully`);
+      setMilestoneToDelete(null);
+      fetchProjectData();
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete milestone');
+    } finally {
+      setDeletingMilestone(false);
+    }
+  };
 
   const handleGenerateDoc = async (docType) => {
     try {
@@ -218,7 +286,7 @@ export default function ProjectDetailsPage() {
         </div>
 
         {/* Quick Action Buttons */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <button
             onClick={() => setRecordPaymentOpen(true)}
             style={{
@@ -280,6 +348,27 @@ export default function ProjectDetailsPage() {
           >
             {isHandedOver ? <Award size={16} /> : (isHandoverEligible ? <CheckCircle2 size={16} /> : <Lock size={16} />)}
             <span>{isHandedOver ? 'Handover Cleared' : (isHandoverEligible ? 'Approve Handover' : 'Verify Settlement')}</span>
+          </button>
+
+          <button
+            onClick={() => setProjectDeleteModalOpen(true)}
+            title="Delete Project (Audit Logged)"
+            style={{
+              padding: '9px 14px',
+              backgroundColor: '#fee2e2',
+              color: '#dc2626',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <Trash2 size={15} />
+            <span>Delete Project</span>
           </button>
         </div>
       </div>
@@ -390,6 +479,11 @@ export default function ProjectDetailsPage() {
           </div>
           <div style={{ fontSize: '11px', color: '#64748b', marginTop: 2 }}>
             Required: ₹{fin.advanceRequiredAmount.toLocaleString('en-IN')} ({fin.advanceRequiredPercent}%)
+            {fin.totalMilestonesExcess > 0 && (
+              <span style={{ color: '#16a34a', fontWeight: 700, marginLeft: 4 }}>
+                (+₹{fin.totalMilestonesExcess.toLocaleString('en-IN')} Excess)
+              </span>
+            )}
           </div>
         </div>
 
@@ -444,140 +538,222 @@ export default function ProjectDetailsPage() {
       <div
         style={{
           display: 'flex',
-          borderBottom: '2px solid var(--border-subtle)',
-          gap: 24,
-          fontSize: '14px',
-          fontWeight: 600,
+          backgroundColor: '#f1f5f9',
+          padding: '6px',
+          borderRadius: '12px',
+          gap: '6px',
+          overflowX: 'auto',
+          border: '1px solid var(--border-subtle)',
         }}
       >
         <button
           onClick={() => setActiveTab('milestones')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'milestones' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'milestones' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'milestones' ? '#ffffff' : 'transparent',
+            color: activeTab === 'milestones' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'milestones' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'milestones' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <Layers size={16} />
-          <span>Payment Milestones ({project.milestones?.length || 0})</span>
+          <span>Payment Milestones</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              backgroundColor: activeTab === 'milestones' ? '#eff6ff' : '#e2e8f0',
+              color: activeTab === 'milestones' ? '#2563eb' : '#64748b',
+              fontWeight: 700,
+            }}
+          >
+            {project.milestones?.length || 0}
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('invoices')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'invoices' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'invoices' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'invoices' ? '#ffffff' : 'transparent',
+            color: activeTab === 'invoices' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'invoices' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'invoices' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <FileText size={16} />
-          <span>Invoices & GST Bills ({project.invoices?.length || 0})</span>
+          <span>Invoices & GST Bills</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              backgroundColor: activeTab === 'invoices' ? '#eff6ff' : '#e2e8f0',
+              color: activeTab === 'invoices' ? '#2563eb' : '#64748b',
+              fontWeight: 700,
+            }}
+          >
+            {project.invoices?.length || 0}
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('payments')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'payments' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'payments' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'payments' ? '#ffffff' : 'transparent',
+            color: activeTab === 'payments' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'payments' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'payments' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <Receipt size={16} />
-          <span>Payment Received ({project.payments?.length || 0})</span>
+          <span>Payment Received</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              backgroundColor: activeTab === 'payments' ? '#eff6ff' : '#e2e8f0',
+              color: activeTab === 'payments' ? '#2563eb' : '#64748b',
+              fontWeight: 700,
+            }}
+          >
+            {project.payments?.length || 0}
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('expenses')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'expenses' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'expenses' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'expenses' ? '#ffffff' : 'transparent',
+            color: activeTab === 'expenses' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'expenses' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'expenses' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <Wallet size={16} />
-          <span>Expense Ledger & Fund Utilization ({project.expenses?.length || 0})</span>
+          <span>Expense Ledger & Funds</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              backgroundColor: activeTab === 'expenses' ? '#eff6ff' : '#e2e8f0',
+              color: activeTab === 'expenses' ? '#2563eb' : '#64748b',
+              fontWeight: 700,
+            }}
+          >
+            {project.expenses?.length || 0}
+          </span>
         </button>
 
         <button
           onClick={() => setActiveTab('documents')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'documents' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'documents' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'documents' ? '#ffffff' : 'transparent',
+            color: activeTab === 'documents' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'documents' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'documents' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <FileText size={16} />
-          <span>Official Letters & Document Generator</span>
+          <span>Document Generator</span>
         </button>
 
         <button
           onClick={() => setActiveTab('handover')}
           style={{
-            padding: '10px 4px',
-            background: 'transparent',
+            padding: '8px 16px',
+            borderRadius: '8px',
             border: 'none',
-            borderBottom: activeTab === 'handover' ? '3px solid #2563eb' : '3px solid transparent',
-            color: activeTab === 'handover' ? '#2563eb' : 'var(--text-muted)',
+            backgroundColor: activeTab === 'handover' ? '#ffffff' : 'transparent',
+            color: activeTab === 'handover' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'handover' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'handover' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
           }}
         >
           <ShieldCheck size={16} />
-          <span>Final Payment Verification & Handover</span>
+          <span>Handover & Settlement</span>
         </button>
       </div>
 
       {/* TAB CONTENT 1: MILESTONES */}
       {activeTab === 'milestones' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Header & Add Button */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <div>
-              <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-main)' }}>
-                Customizable Payment Milestones & Schedule
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
+                Payment Milestones, Advance & Collections Schedule
               </h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                Configure flexible phases based on percentages or fixed amounts (e.g. 50% advance, 30% development, 20% handover).
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: 2 }}>
+                Track contract phases with exact breakdown of planned milestone targets, actual payments received, remaining balances, and excess advances.
               </p>
             </div>
 
             <button
               onClick={() => setAddingMilestone(!addingMilestone)}
               style={{
-                padding: '8px 14px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #cbd5e1',
+                padding: '9px 16px',
+                backgroundColor: '#2563eb',
+                color: '#ffffff',
+                border: 'none',
                 borderRadius: '8px',
                 fontSize: '13px',
                 fontWeight: 600,
@@ -585,9 +761,10 @@ export default function ProjectDetailsPage() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
-              <Plus size={15} />
+              <Plus size={16} />
               <span>Add Custom Phase</span>
             </button>
           </div>
@@ -598,139 +775,531 @@ export default function ProjectDetailsPage() {
               onSubmit={handleAddMilestoneSubmit}
               style={{
                 backgroundColor: '#f8fafc',
-                padding: '16px 20px',
-                borderRadius: '12px',
-                border: '1px dashed #cbd5e1',
+                padding: '18px 20px',
+                borderRadius: '14px',
+                border: '1px dashed #93c5fd',
                 display: 'grid',
-                gridTemplateColumns: '1fr 120px 160px 100px',
+                gridTemplateColumns: '1.4fr 140px 160px 100px',
                 gap: '12px',
                 alignItems: 'center',
               }}
             >
               <input
                 type="text"
-                placeholder="Milestone Title (e.g. Phase 2: Staging Demo Approval)"
+                placeholder="Milestone Title (e.g. Phase 2: Core Development & Staging Review)"
                 value={newMilestoneTitle}
                 onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
                 required
               />
               <input
                 type="number"
-                placeholder="Percentage %"
+                placeholder="Share %"
                 value={newMilestonePercent}
                 onChange={(e) => setNewMilestonePercent(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
               />
               <input
                 type="date"
                 value={newMilestoneDueDate}
                 onChange={(e) => setNewMilestoneDueDate(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
               />
               <button
                 type="submit"
-                style={{ padding: '8px 16px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                style={{ padding: '9px 16px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
               >
-                Save
+                Save Phase
               </button>
             </form>
           )}
 
-          {/* Milestones Table */}
-          <div style={{ backgroundColor: 'var(--bg-surface)', borderRadius: '14px', border: '1px solid var(--border-subtle)', overflow: 'hidden' }}>
+          {/* Milestones Modern Table */}
+          <div
+            style={{
+              backgroundColor: 'var(--bg-surface)',
+              borderRadius: '16px',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+              overflow: 'hidden',
+            }}
+          >
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--border-subtle)', textAlign: 'left' }}>
-                  <th style={{ padding: '12px 18px' }}>#</th>
-                  <th style={{ padding: '12px 18px' }}>Milestone Phase Title</th>
-                  <th style={{ padding: '12px 18px' }}>Target Due Date</th>
-                  <th style={{ padding: '12px 18px' }}>Share (%)</th>
-                  <th style={{ padding: '12px 18px', textAlign: 'right' }}>Amount (₹)</th>
-                  <th style={{ padding: '12px 18px', textAlign: 'right' }}>Paid Amount</th>
-                  <th style={{ padding: '12px 18px', textAlign: 'center' }}>Status</th>
-                  <th style={{ padding: '12px 18px', textAlign: 'right' }}>Actions</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}># Phase</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Milestone Phase Title</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Target Date</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Planned (₹)</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Paid Amount (₹)</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#b45309', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Remaining Due (₹)</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Variance / Excess</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Status</th>
+                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {project.milestones?.map((m) => (
-                  <tr key={m.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '14px 18px', fontWeight: 700 }}>Phase {m.milestoneOrder}</td>
-                    <td style={{ padding: '14px 18px', fontWeight: 600, color: 'var(--text-main)' }}>
-                      <div>{m.title}</div>
-                      {m.notes && <div style={{ fontSize: '12px', color: '#64748b', marginTop: 2 }}>{m.notes}</div>}
-                    </td>
-                    <td style={{ padding: '14px 18px', color: '#475569' }}>
-                      {m.dueDate ? new Date(m.dueDate).toLocaleDateString('en-IN') : 'Flexible'}
-                    </td>
-                    <td style={{ padding: '14px 18px', fontWeight: 600 }}>{m.percentage}%</td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
-                      ₹{m.amount.toLocaleString('en-IN')}
-                    </td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 700, color: m.paidAmount > 0 ? '#16a34a' : '#94a3b8' }}>
-                      ₹{m.paidAmount.toLocaleString('en-IN')}
-                    </td>
-                    <td style={{ padding: '14px 18px', textAlign: 'center' }}>
-                      <span
-                        style={{
-                          padding: '3px 10px',
-                          borderRadius: '6px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          backgroundColor: m.status === 'PAID' ? '#dcfce7' : (m.status === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
-                          color: m.status === 'PAID' ? '#166534' : (m.status === 'PARTIALLY_PAID' ? '#854d0e' : '#475569'),
-                        }}
-                      >
-                        {m.status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
-                        <button
-                          onClick={() => {
-                            setSelectedMilestoneForInvoice(m);
-                            setCreateInvoiceOpen(true);
-                          }}
-                          style={{
-                            padding: '5px 10px',
-                            backgroundColor: '#eff6ff',
-                            border: '1px solid #bfdbfe',
-                            borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            color: '#2563eb',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4,
-                          }}
-                        >
-                          <FileText size={12} />
-                          <span>Bill with GST</span>
-                        </button>
+                {project.milestones?.map((m) => {
+                  const amt = Number(m.amount || 0);
+                  const paid = Number(m.paidAmount || 0);
+                  const remainingDue = Math.max(0, Math.round((amt - paid) * 100) / 100);
+                  const variance = Math.round((paid - amt) * 100) / 100;
+                  const hasPaid = paid > 0;
 
-                        <button
-                          onClick={() => handleGenerateDoc('milestone-request')}
+                  return (
+                    <tr
+                      key={m.id}
+                      style={{
+                        borderBottom: '1px solid #f1f5f9',
+                        transition: 'background-color 0.15s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fbfcfe')}
+                      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                    >
+                      <td style={{ padding: '16px 18px' }}>
+                        <span
                           style={{
-                            padding: '5px 10px',
-                            backgroundColor: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            padding: '4px 9px',
                             borderRadius: '6px',
-                            fontSize: '12px',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                            color: '#475569',
+                            backgroundColor: '#f1f5f9',
+                            color: '#0f172a',
+                            fontFamily: 'var(--font-mono)',
                           }}
                         >
-                          Request Payment
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                          Phase {m.milestoneOrder}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '16px 18px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>{m.title}</span>
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              backgroundColor: '#eff6ff',
+                              color: '#2563eb',
+                              border: '1px solid #dbeafe',
+                              padding: '2px 7px',
+                              borderRadius: '999px',
+                            }}
+                          >
+                            {m.percentage}% Share
+                          </span>
+                        </div>
+                        {m.notes && <div style={{ fontSize: '12px', color: '#64748b', marginTop: 3 }}>{m.notes}</div>}
+                      </td>
+
+                      <td style={{ padding: '16px 18px', color: '#475569', fontSize: '13px' }}>
+                        {m.dueDate ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <Calendar size={13} color="#64748b" />
+                            <span>{new Date(m.dueDate).toLocaleDateString('en-IN')}</span>
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>Flexible</span>
+                        )}
+                      </td>
+
+                      <td style={{ padding: '16px 18px', textAlign: 'right', fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>
+                        ₹{amt.toLocaleString('en-IN')}
+                      </td>
+
+                      <td style={{ padding: '16px 18px', textAlign: 'right', fontWeight: 800, fontSize: '14px', color: hasPaid ? '#15803d' : '#94a3b8' }}>
+                        ₹{paid.toLocaleString('en-IN')}
+                      </td>
+
+                      {/* Remaining Due Column */}
+                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                        {remainingDue === 0 ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              color: '#15803d',
+                              backgroundColor: '#f0fdf4',
+                              border: '1px solid #bbf7d0',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                            }}
+                          >
+                            <CheckCircle2 size={13} />
+                            <span>₹0 (Cleared)</span>
+                          </span>
+                        ) : (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                fontSize: '14px',
+                                fontWeight: 800,
+                                color: '#b45309',
+                                backgroundColor: '#fffbeb',
+                                border: '1px solid #fde68a',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                              }}
+                            >
+                              <span>₹{remainingDue.toLocaleString('en-IN')}</span>
+                            </span>
+                            {/* If prior phase had excess advance, show adjusted cash to collect */}
+                            {m.milestoneOrder === 2 && (project.milestones?.[0]?.paidAmount > project.milestones?.[0]?.amount) && (
+                              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
+                                Net Due: ₹{Math.max(0, remainingDue - (project.milestones[0].paidAmount - project.milestones[0].amount)).toLocaleString('en-IN')} (after credit)
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Variance / Excess Column */}
+                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                        {!hasPaid ? (
+                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
+                            ₹0 (Pending)
+                          </span>
+                        ) : variance > 0 ? (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                backgroundColor: '#dcfce7',
+                                color: '#166534',
+                                border: '1px solid #86efac',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                                boxShadow: '0 1px 2px rgba(22, 101, 52, 0.05)',
+                              }}
+                            >
+                              <TrendingUp size={14} color="#16a34a" />
+                              <span>+₹{variance.toLocaleString('en-IN')} Excess Advance</span>
+                            </span>
+                            {m.excessAllocationNotes && (
+                              <div style={{ fontSize: '10px', color: '#15803d', marginTop: 3, fontWeight: 500 }}>{m.excessAllocationNotes}</div>
+                            )}
+                          </div>
+                        ) : variance < 0 ? (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 800,
+                                backgroundColor: '#fef3c7',
+                                color: '#92400e',
+                                border: '1px solid #fde68a',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                              }}
+                            >
+                              <TrendingDown size={14} color="#b45309" />
+                              <span>-₹{Math.abs(variance).toLocaleString('en-IN')} Shortfall</span>
+                            </span>
+                            {m.excessAllocationNotes && (
+                              <div style={{ fontSize: '10px', color: '#92400e', marginTop: 3 }}>{m.excessAllocationNotes}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <span
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              backgroundColor: '#eff6ff',
+                              color: '#1d4ed8',
+                              border: '1px solid #bfdbfe',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                            }}
+                          >
+                            <CheckCircle2 size={14} />
+                            <span>₹0 Exact Match</span>
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Status Column */}
+                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            letterSpacing: '0.3px',
+                            backgroundColor: m.status === 'PAID' ? '#dcfce7' : (m.status === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
+                            color: m.status === 'PAID' ? '#166534' : (m.status === 'PARTIALLY_PAID' ? '#854d0e' : '#475569'),
+                            border: `1px solid ${m.status === 'PAID' ? '#bbf7d0' : (m.status === 'PARTIALLY_PAID' ? '#fde68a' : '#e2e8f0')}`,
+                          }}
+                        >
+                          {m.status}
+                        </span>
+                      </td>
+
+                      {/* Actions Column */}
+                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                          <button
+                            onClick={() => {
+                              setSelectedMilestoneForInvoice(m);
+                              setCreateInvoiceOpen(true);
+                            }}
+                            title="Generate GST Tax Invoice for this Phase"
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: '#eff6ff',
+                              border: '1px solid #bfdbfe',
+                              borderRadius: '7px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              color: '#2563eb',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 5,
+                            }}
+                          >
+                            <FileText size={13} />
+                            <span>Bill with GST</span>
+                          </button>
+
+                          <button
+                            onClick={() => handleGenerateDoc('milestone-request')}
+                            title="Generate Official Payment Request Letter"
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: '#ffffff',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '7px',
+                              fontSize: '12px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              color: '#334155',
+                            }}
+                          >
+                            Request Payment
+                          </button>
+
+                          <button
+                            onClick={() => setEditingMilestone({
+                              ...m,
+                              dueDate: m.dueDate ? new Date(m.dueDate).toISOString().split('T')[0] : '',
+                            })}
+                            title="Edit Milestone / Adjust Advance"
+                            style={{
+                              padding: '6px 8px',
+                              backgroundColor: '#f8fafc',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '7px',
+                              cursor: 'pointer',
+                              color: '#0f172a',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Edit3 size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => setMilestoneToDelete(m)}
+                            title="Delete Milestone Phase"
+                            style={{
+                              padding: '6px 8px',
+                              backgroundColor: '#fee2e2',
+                              border: '1px solid #fecaca',
+                              borderRadius: '7px',
+                              cursor: 'pointer',
+                              color: '#dc2626',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
+              <tfoot>
+                {(() => {
+                  const totalPlanned = (project.milestones || []).reduce((sum, m) => sum + Number(m.amount || 0), 0);
+                  const totalPaid = (project.milestones || []).reduce((sum, m) => sum + Number(m.paidAmount || 0), 0);
+                  const totalExcess = (project.milestones || []).reduce((sum, m) => sum + Math.max(0, Number(m.paidAmount || 0) - Number(m.amount || 0)), 0);
+                  const exactNetRemaining = fin.outstandingBalance;
+
+                  return (
+                    <tr style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #cbd5e1', fontWeight: 800 }}>
+                      <td style={{ padding: '16px 18px', color: '#0f172a' }}>
+                        TOTALS
+                      </td>
+                      <td style={{ padding: '16px 18px', color: '#0f172a' }}>
+                        <span>All {project.milestones?.length || 0} Project Phases</span>
+                      </td>
+                      <td style={{ padding: '16px 18px', color: '#64748b', fontSize: '12px' }}>
+                        100% Contract
+                      </td>
+                      <td style={{ padding: '16px 18px', textAlign: 'right', fontSize: '15px', color: '#0f172a' }}>
+                        ₹{totalPlanned.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '16px 18px', textAlign: 'right', fontSize: '15px', color: '#15803d' }}>
+                        ₹{totalPaid.toLocaleString('en-IN')}
+                      </td>
+                      {/* Exact Net Remaining Due */}
+                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                          <span
+                            style={{
+                              fontSize: '15px',
+                              fontWeight: 900,
+                              color: exactNetRemaining > 0 ? '#b45309' : '#15803d',
+                              backgroundColor: exactNetRemaining > 0 ? '#fffbeb' : '#f0fdf4',
+                              border: `1px solid ${exactNetRemaining > 0 ? '#fde68a' : '#bbf7d0'}`,
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                            }}
+                          >
+                            ₹{exactNetRemaining.toLocaleString('en-IN')}
+                          </span>
+                          <span style={{ fontSize: '10px', color: '#64748b', marginTop: 2, fontWeight: 600 }}>
+                            Exact Net Remaining Due
+                          </span>
+                        </div>
+                      </td>
+                      {/* Total Excess Received */}
+                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                        {totalExcess > 0 ? (
+                          <span
+                            style={{
+                              padding: '4px 10px',
+                              borderRadius: '8px',
+                              fontSize: '12px',
+                              fontWeight: 800,
+                              backgroundColor: '#dcfce7',
+                              color: '#166534',
+                              border: '1px solid #86efac',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <TrendingUp size={14} color="#16a34a" />
+                            <span>+₹{totalExcess.toLocaleString('en-IN')} Net Excess</span>
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>₹0 Balanced</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                        <span
+                          style={{
+                            padding: '4px 10px',
+                            borderRadius: '999px',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            backgroundColor: exactNetRemaining === 0 ? '#dcfce7' : '#eff6ff',
+                            color: exactNetRemaining === 0 ? '#166534' : '#1d4ed8',
+                            border: `1px solid ${exactNetRemaining === 0 ? '#bbf7d0' : '#bfdbfe'}`,
+                          }}
+                        >
+                          {fin.totalProjectValue > 0 ? Math.round((fin.totalPaid / fin.totalProjectValue) * 100) : 0}% Collected
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px 18px' }}></td>
+                    </tr>
+                  );
+                })()}
+              </tfoot>
             </table>
           </div>
+
+          {/* Reconciliation & Advance Settlement Note Card */}
+          {(() => {
+            const totalExcess = (project.milestones || []).reduce((sum, m) => sum + Math.max(0, Number(m.paidAmount || 0) - Number(m.amount || 0)), 0);
+            if (totalExcess <= 0) return null;
+
+            return (
+              <div
+                style={{
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  borderRadius: '14px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '14px',
+                  boxShadow: '0 2px 6px rgba(22, 101, 52, 0.04)',
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '10px',
+                    backgroundColor: '#dcfce7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#16a34a',
+                    flexShrink: 0,
+                  }}
+                >
+                  <TrendingUp size={20} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#166534' }}>
+                    Exact Balance Reconciliation — Excess Advance Credit of ₹{totalExcess.toLocaleString('en-IN')}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#15803d', marginTop: 4, lineHeight: 1.5 }}>
+                    Client paid <strong>₹{fin.totalPaid.toLocaleString('en-IN')}</strong> against the Phase 1 target of <strong>₹{project.milestones?.[0]?.amount?.toLocaleString('en-IN')}</strong>, creating a <strong>+₹{totalExcess.toLocaleString('en-IN')}</strong> surplus credit.
+                  </div>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                      gap: 12,
+                      marginTop: 12,
+                      paddingTop: 12,
+                      borderTop: '1px dashed #86efac',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Total Project Contract</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#0f172a' }}>₹{fin.totalProjectValue.toLocaleString('en-IN')}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Total Collections Received</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#15803d' }}>₹{fin.totalPaid.toLocaleString('en-IN')}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#166534', fontWeight: 600 }}>Surplus Advance Credit</div>
+                      <div style={{ fontSize: '14px', fontWeight: 800, color: '#16a34a' }}>+₹{totalExcess.toLocaleString('en-IN')}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', color: '#b45309', fontWeight: 700 }}>Exact Net Remaining Balance</div>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#b45309' }}>₹{fin.outstandingBalance.toLocaleString('en-IN')}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -1698,6 +2267,482 @@ export default function ProjectDetailsPage() {
           type="PAYMENT"
           onClose={() => setPreviewPaymentDoc(null)}
         />
+      )}
+
+      {/* Edit Milestone Modal */}
+      {editingMilestone && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '20px',
+          }}
+          onClick={() => !savingMilestone && setEditingMilestone(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '560px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>
+                  Edit Milestone Phase & Advance Allocation
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: 2 }}>
+                  Phase {editingMilestone.milestoneOrder} — {project.projectCode}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMilestone(null)}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateMilestoneSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Milestone Phase Title
+                </label>
+                <input
+                  type="text"
+                  value={editingMilestone.title}
+                  onChange={(e) => setEditingMilestone({ ...editingMilestone, title: e.target.value })}
+                  required
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Planned Percentage (%)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={editingMilestone.percentage}
+                    onChange={(e) => {
+                      const pct = parseFloat(e.target.value) || 0;
+                      const totalVal = project.financials.totalProjectValue || 0;
+                      const calculatedAmt = Math.round(totalVal * (pct / 100) * 100) / 100;
+                      setEditingMilestone({
+                        ...editingMilestone,
+                        percentage: e.target.value,
+                        amount: calculatedAmt,
+                      });
+                    }}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Planned Amount (₹)
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={editingMilestone.amount}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, amount: parseFloat(e.target.value) || 0 })}
+                    required
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Actual Paid / Received Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={editingMilestone.paidAmount}
+                  onChange={(e) => setEditingMilestone({ ...editingMilestone, paidAmount: parseFloat(e.target.value) || 0 })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', fontWeight: 700 }}
+                />
+              </div>
+
+              {/* Live Variance Calculation Preview */}
+              {(() => {
+                const planned = Number(editingMilestone.amount || 0);
+                const paid = Number(editingMilestone.paidAmount || 0);
+                const diff = Math.round((paid - planned) * 100) / 100;
+
+                if (paid <= 0) {
+                  return (
+                    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#64748b' }}>
+                      Status: Unpaid. Full planned amount of ₹{planned.toLocaleString('en-IN')} pending.
+                    </div>
+                  );
+                }
+
+                if (diff > 0) {
+                  return (
+                    <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#166534' }}>
+                      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <TrendingUp size={15} color="#16a34a" />
+                        <span>Excess Payment Received: +₹{diff.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div style={{ fontSize: '11px', marginTop: 3, color: '#15803d' }}>
+                        Client paid more than the planned {editingMilestone.percentage}% milestone amount. This surplus will be saved in DB and tracked as excess advance.
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (diff < 0) {
+                  return (
+                    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fde68a', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#92400e' }}>
+                      <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <TrendingDown size={15} color="#b45309" />
+                        <span>Shortfall / Partial Payment: -₹{Math.abs(diff).toLocaleString('en-IN')}</span>
+                      </div>
+                      <div style={{ fontSize: '11px', marginTop: 3, color: '#b45309' }}>
+                        Remaining balance of ₹{Math.abs(diff).toLocaleString('en-IN')} is still pending for this milestone phase.
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', padding: '10px 14px', fontSize: '12px', color: '#1e40af' }}>
+                    <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <CheckCircle2 size={15} color="#2563eb" />
+                      <span>Exact Match: ₹0 Variance (100% Phase Settled)</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                  Surplus / Variance Allocation Notes (Saved in DB)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Client paid additional advance for early hardware procurement..."
+                  value={editingMilestone.excessAllocationNotes || ''}
+                  onChange={(e) => setEditingMilestone({ ...editingMilestone, excessAllocationNotes: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Target Due Date
+                  </label>
+                  <input
+                    type="date"
+                    value={editingMilestone.dueDate || ''}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, dueDate: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontWeight: 700, color: '#334155', marginBottom: 4 }}>
+                    Milestone Status
+                  </label>
+                  <select
+                    value={editingMilestone.status}
+                    onChange={(e) => setEditingMilestone({ ...editingMilestone, status: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#ffffff' }}
+                  >
+                    <option value="PENDING">PENDING</option>
+                    <option value="INVOICED">INVOICED</option>
+                    <option value="PARTIALLY_PAID">PARTIALLY_PAID</option>
+                    <option value="PAID">PAID</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 10 }}>
+                <button
+                  type="button"
+                  disabled={savingMilestone}
+                  onClick={() => setEditingMilestone(null)}
+                  style={{
+                    padding: '9px 18px',
+                    backgroundColor: '#f1f5f9',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: savingMilestone ? 'not-allowed' : 'pointer',
+                    color: '#475569',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingMilestone}
+                  style={{
+                    padding: '9px 18px',
+                    backgroundColor: '#2563eb',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: '#ffffff',
+                    cursor: savingMilestone ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  {savingMilestone ? (
+                    <>
+                      <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save & Update Milestone</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Milestone Confirmation Modal */}
+      {milestoneToDelete && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '20px',
+          }}
+          onClick={() => !deletingMilestone && setMilestoneToDelete(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '460px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '10px',
+                  backgroundColor: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#dc2626',
+                  flexShrink: 0,
+                }}
+              >
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Delete Milestone Phase</h3>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: 2 }}>Phase {milestoneToDelete.milestoneOrder}</div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '14px', color: '#334155', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Are you sure you want to delete milestone <strong>"{milestoneToDelete.title}"</strong> (₹{milestoneToDelete.amount?.toLocaleString('en-IN')})?
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                type="button"
+                disabled={deletingMilestone}
+                onClick={() => setMilestoneToDelete(null)}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: deletingMilestone ? 'not-allowed' : 'pointer',
+                  color: '#475569',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingMilestone}
+                onClick={handleDeleteMilestoneSubmit}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#dc2626',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  cursor: deletingMilestone ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {deletingMilestone ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Confirmation Modal */}
+      {projectDeleteModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.7)',
+            backdropFilter: 'blur(3px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1100,
+            padding: '20px',
+          }}
+          onClick={() => !deletingProject && setProjectDeleteModalOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              maxWidth: '480px',
+              width: '100%',
+              padding: '24px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '10px',
+                  backgroundColor: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#dc2626',
+                  flexShrink: 0,
+                }}
+              >
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#0f172a', margin: 0 }}>Delete Project</h3>
+                <div style={{ fontSize: '13px', color: '#64748b', marginTop: 2 }}>{project.projectCode}</div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '14px', color: '#334155', lineHeight: 1.5, margin: '0 0 16px' }}>
+              Are you sure you want to delete project <strong>"{project.name}"</strong>?
+            </p>
+
+            <div
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '1px solid #fde68a',
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '12px',
+                color: '#92400e',
+                display: 'flex',
+                gap: 8,
+                marginBottom: 20,
+              }}
+            >
+              <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                This action is audited. The project will be removed from your active list while financial records remain logged in the audit ledger.
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button
+                type="button"
+                disabled={deletingProject}
+                onClick={() => setProjectDeleteModalOpen(false)}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: deletingProject ? 'not-allowed' : 'pointer',
+                  color: '#475569',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deletingProject}
+                onClick={handleDeleteProject}
+                style={{
+                  padding: '9px 18px',
+                  backgroundColor: '#dc2626',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: '#ffffff',
+                  cursor: deletingProject ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                {deletingProject ? (
+                  <>
+                    <RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Deleting Project...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={14} />
+                    <span>Confirm Delete</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

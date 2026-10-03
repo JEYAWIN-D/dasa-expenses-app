@@ -32,13 +32,38 @@ export default function QuotationCreatePage() {
   const { company } = useCompany();
   const [notes, setNotes] = useState('');
   const [terms, setTerms] = useState('');
+  const [paymentMode, setPaymentMode] = useState('');
+  const [paymentTerms, setPaymentTerms] = useState('');
+  const [approvalText, setApprovalText] = useState('DASA TECH ADMIN APPROVED');
+  const [authorizedPerson, setAuthorizedPerson] = useState('');
+  const [authorizedDesignation, setAuthorizedDesignation] = useState('Authorized Signatory');
 
-  // Auto-fill terms from company settings when loaded
+  // Auto-fill terms and commercial defaults from company settings when loaded
   useEffect(() => {
-    if (company?.termsAndConditions && !terms) {
-      setTerms(company.termsAndConditions);
+    if (company) {
+      if (company.termsAndConditions && !terms) {
+        setTerms(company.termsAndConditions);
+      }
+      if (company.defaultNotes && !notes) {
+        setNotes(company.defaultNotes);
+      }
+      if (company.defaultPaymentMode && !paymentMode) {
+        setPaymentMode(company.defaultPaymentMode);
+      }
+      if (company.defaultPaymentTerms && !paymentTerms) {
+        setPaymentTerms(company.defaultPaymentTerms);
+      }
+      if (company.signatureApprovalText && (!approvalText || approvalText === 'DASA TECH ADMIN APPROVED')) {
+        setApprovalText(company.signatureApprovalText);
+      }
+      if (company.authorizedPerson && !authorizedPerson) {
+        setAuthorizedPerson(company.authorizedPerson);
+      }
+      if (company.authorizedDesignation && (!authorizedDesignation || authorizedDesignation === 'Authorized Signatory')) {
+        setAuthorizedDesignation(company.authorizedDesignation);
+      }
     }
-  }, [company?.termsAndConditions]);
+  }, [company]);
 
   const [items, setItems] = useState([
     {
@@ -320,6 +345,11 @@ export default function QuotationCreatePage() {
         taxRate: Number(taxRate),
         notes: notes.trim() || null,
         terms: terms.trim() || null,
+        paymentMode: paymentMode?.trim() || null,
+        paymentTerms: paymentTerms?.trim() || null,
+        approvalText: approvalText?.trim() || null,
+        authorizedPerson: authorizedPerson?.trim() || null,
+        authorizedDesignation: authorizedDesignation?.trim() || null,
         amcPackages: hasAmc
           ? amcPackages.map((pkg) => {
               const totals = calculateAmcTotals(pkg);
@@ -1219,26 +1249,334 @@ export default function QuotationCreatePage() {
           )}
         </div>
 
-        {/* Notes & Terms */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
-          <div className="card">
-            <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Proposal Notes</h4>
-            <textarea
-              className="form-textarea"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Internal or customer visible notes..."
-            />
-          </div>
+        {/* Section: Commercial Terms & Payment Modes */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 24, marginBottom: 24 }}>
+          {/* Terms & Conditions with 1-click Preset Loaders */}
+          <div className="card" style={{ padding: 22 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div>
+                <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Commercial Terms & Conditions</h4>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                  Statutory validity, milestone schedules, and legal jurisdiction
+                </p>
+              </div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '3px 8px', borderRadius: 6 }}>
+                Auto-Synced
+              </span>
+            </div>
 
-          <div className="card">
-            <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Commercial Terms & Conditions</h4>
+            {/* Quick 1-click presets */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              {[
+                {
+                  label: 'Software / IT',
+                  icon: '💻',
+                  text: `1. Validity: This commercial proposal is valid for 30 calendar days from issuance.\n2. Payment Milestones: 50% advance on agreement, 40% on UAT delivery, 10% on final handover.\n3. Scope Changes: Any additions beyond specifications will be scoped under a revision addendum.\n4. Taxes: Statutory GST @ 18% is applicable as per Govt of India regulations.\n5. Warranty: 90 days complimentary bug-fixing and warranty support post deployment.\n6. Jurisdiction: Disputes subject to Erode, Tamil Nadu jurisdiction.`,
+                },
+                {
+                  label: 'AMC Support',
+                  icon: '🛡️',
+                  text: `1. SLA Coverage: 24/7 critical system monitoring with 4-hour response time.\n2. Payment Terms: 100% advance at commencement of each billing cycle.\n3. Preventive Visits: 4 scheduled system health audits per annum.\n4. Spares / Hardware: Labor included; replacement spares charged at actuals.\n5. Renewal / Termination: 30 days prior written notice required for termination.`,
+                },
+                {
+                  label: 'Hardware Supply',
+                  icon: '📦',
+                  text: `1. Payment Terms: 100% advance against Proforma Invoice prior to dispatch.\n2. Delivery Timeline: Estimated 7-10 business days from purchase order confirmation.\n3. OEM Warranty: Standard manufacturer warranty applies to all delivered items.\n4. Freight & Transit: Inclusive of doorstep freight and transit insurance.\n5. Returns: Non-defective goods cannot be returned once unboxed.`,
+                },
+                {
+                  label: 'Consulting',
+                  icon: '💼',
+                  text: `1. Engagement Basis: Professional fees invoiced monthly upon milestone sign-off.\n2. Payment Window: Strictly net 15 days from date of monthly invoice issuance.\n3. IP Ownership: Full intellectual property transfers upon 100% settlement of dues.\n4. Non-Disclosure: Confidentiality and NDA terms strictly observed throughout.`,
+                },
+              ].map((tpl) => (
+                <button
+                  key={tpl.label}
+                  type="button"
+                  onClick={() => setTerms(tpl.text)}
+                  className="btn btn-secondary btn-sm"
+                  style={{
+                    fontSize: 11.5,
+                    fontWeight: 700,
+                    padding: '5px 10px',
+                    borderRadius: 6,
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    color: '#1e293b',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                  }}
+                >
+                  <span>{tpl.icon}</span>
+                  <span>{tpl.label} Terms</span>
+                </button>
+              ))}
+            </div>
+
             <textarea
+              rows={8}
               className="form-textarea"
               value={terms}
               onChange={(e) => setTerms(e.target.value)}
-              placeholder="Milestone schedule, validity terms, jurisdiction..."
+              placeholder="1. Validity: 30 days...&#10;2. Payment terms: 50% advance..."
+              style={{
+                width: '100%',
+                fontSize: 12.5,
+                lineHeight: 1.6,
+                padding: '12px 14px',
+                borderRadius: 8,
+                border: '1px solid #cbd5e1',
+                boxSizing: 'border-box',
+              }}
             />
+          </div>
+
+          {/* Payment Mode & Schedule */}
+          <div className="card" style={{ padding: 22, display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div>
+              <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>Payment Mode & Schedule</h4>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                Remittance method and stage-wise disbursement terms
+              </p>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: 12 }}>Accepted Payment Method / Mode</label>
+              <input
+                className="form-input"
+                style={{ width: '100%', boxSizing: 'border-box' }}
+                value={paymentMode}
+                onChange={(e) => setPaymentMode(e.target.value)}
+                placeholder="e.g. Bank Transfer (NEFT/RTGS/IMPS), UPI, Cheque"
+              />
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {[
+                  'Bank Transfer (NEFT/RTGS/IMPS), UPI',
+                  'UPI QR / Online Gateway',
+                  'Corporate Cheque / DD',
+                  '100% Advance via Bank Wire',
+                ].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setPaymentMode(m)}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: 5,
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: paymentMode === m ? '#eff6ff' : '#f8fafc',
+                      color: paymentMode === m ? '#1d4ed8' : '#475569',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: 12 }}>Payment Schedule / Milestones</label>
+              <input
+                className="form-input"
+                style={{ width: '100%', boxSizing: 'border-box' }}
+                value={paymentTerms}
+                onChange={(e) => setPaymentTerms(e.target.value)}
+                placeholder="e.g. 50% Advance with PO, 40% on UAT Delivery, 10% on Go-Live"
+              />
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {[
+                  '50% Adv, 40% UAT, 10% Live',
+                  '50% Adv, 50% on Delivery',
+                  '100% Advance',
+                  'Net 15 Days',
+                  'Net 30 Days',
+                ].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => {
+                      if (s === '50% Adv, 40% UAT, 10% Live') setPaymentTerms('50% Advance with PO, 40% on UAT Delivery, 10% on Go-Live');
+                      else if (s === '50% Adv, 50% on Delivery') setPaymentTerms('50% Advance with PO, 50% on Delivery/Completion');
+                      else if (s === '100% Advance') setPaymentTerms('100% Advance before Project Commencement');
+                      else if (s === 'Net 15 Days') setPaymentTerms('Payment strictly due within 15 days of invoice date');
+                      else if (s === 'Net 30 Days') setPaymentTerms('Payment strictly due within 30 days of invoice date');
+                    }}
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: 5,
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: '#f8fafc',
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: '#475569',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section: Proposal Notes & Signatory Approval Configuration */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: 24, marginBottom: 28 }}>
+          <div className="card" style={{ padding: 22 }}>
+            <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+              Proposal Notes & Scope Remarks
+            </h4>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+              Customer-facing preamble, architectural notes, or scope assumptions
+            </p>
+            <textarea
+              rows={5}
+              className="form-textarea"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Scope clarifications, hardware requirements, client prerequisites..."
+              style={{
+                width: '100%',
+                fontSize: 12.5,
+                lineHeight: 1.6,
+                padding: '12px 14px',
+                borderRadius: 8,
+                border: '1px solid #cbd5e1',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+
+          <div className="card" style={{ padding: 22, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <ShieldCheck size={18} color="#16a34a" />
+                <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0f172a' }}>
+                  Digital Approval & Signatory Configuration
+                </h4>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+                Customized authorization seal stamped upon PIN verification
+              </p>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: 11 }}>Signatory Name</label>
+                  <input
+                    className="form-input"
+                    style={{ fontSize: 12, width: '100%', boxSizing: 'border-box' }}
+                    value={authorizedPerson}
+                    onChange={(e) => setAuthorizedPerson(e.target.value)}
+                    placeholder="e.g. DASA TECH Admin"
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label" style={{ fontSize: 11 }}>Signatory Designation</label>
+                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 6 }}>
+                    {[
+                      'CEO',
+                      'CFO',
+                      'CTO',
+                      'MD',
+                      'Director',
+                      'Auth Signatory',
+                    ].map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => {
+                          if (d === 'CEO') setAuthorizedDesignation('Chief Executive Officer (CEO)');
+                          else if (d === 'CFO') setAuthorizedDesignation('Chief Financial Officer (CFO)');
+                          else if (d === 'CTO') setAuthorizedDesignation('Chief Technology Officer (CTO)');
+                          else if (d === 'MD') setAuthorizedDesignation('Managing Director (MD)');
+                          else if (d === 'Director') setAuthorizedDesignation('Director');
+                          else if (d === 'Auth Signatory') setAuthorizedDesignation('Authorized Signatory');
+                        }}
+                        style={{
+                          padding: '2px 6px',
+                          borderRadius: 4,
+                          border: '1px solid #cbd5e1',
+                          backgroundColor: '#ffffff',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#334155',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    className="form-input"
+                    style={{ fontSize: 12, width: '100%', boxSizing: 'border-box' }}
+                    value={authorizedDesignation}
+                    onChange={(e) => setAuthorizedDesignation(e.target.value)}
+                    placeholder="e.g. Chief Executive Officer (CEO)"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 12 }}>
+                <label className="form-label" style={{ fontSize: 11 }}>Approval Stamp Text</label>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 6 }}>
+                  {[
+                    'DASA TECH ADMIN APPROVED',
+                    'CEO APPROVED & SIGNED',
+                    'CFO APPROVED & CERTIFIED',
+                    'CTO APPROVED & VERIFIED',
+                    'DIRECTOR APPROVED & AUTHORIZED',
+                    'DIGITALLY SIGNED & VERIFIED',
+                    'OFFICIALLY CERTIFIED',
+                  ].map((txt) => (
+                    <button
+                      key={txt}
+                      type="button"
+                      onClick={() => setApprovalText(txt)}
+                      style={{
+                        padding: '3px 7px',
+                        borderRadius: 5,
+                        border: approvalText === txt ? '1.5px solid #16a34a' : '1px solid #cbd5e1',
+                        backgroundColor: approvalText === txt ? '#f0fdf4' : '#f8fafc',
+                        color: approvalText === txt ? '#15803d' : '#475569',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {txt}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  className="form-input"
+                  style={{ fontSize: 12, width: '100%', boxSizing: 'border-box' }}
+                  value={approvalText}
+                  onChange={(e) => setApprovalText(e.target.value)}
+                  placeholder="e.g. CEO APPROVED & SIGNED"
+                />
+              </div>
+            </div>
+
+            {/* Live Mini Preview */}
+            <div
+              style={{
+                padding: '10px 14px',
+                backgroundColor: '#f0fdf4',
+                border: '1.5px dashed #22c55e',
+                borderRadius: 8,
+                marginTop: 6,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#16a34a', fontWeight: 800, fontSize: 11.5 }}>
+                <ShieldCheck size={14} />
+                <span>{approvalText || 'DASA TECH ADMIN APPROVED'}</span>
+              </div>
+              <div style={{ fontSize: 11, color: '#15803d', marginTop: 2, fontWeight: 700 }}>
+                {authorizedPerson || company?.authorizedPerson || 'DASA TECH Admin'} ({authorizedDesignation || 'Authorized Signatory'})
+              </div>
+            </div>
           </div>
         </div>
       </form>

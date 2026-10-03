@@ -2,6 +2,35 @@ import { prisma } from '../../config/prisma.js';
 import { generateNextDocumentNumber } from '../../utils/numbering.service.js';
 import { logAudit } from '../../utils/audit.service.js';
 
+export function computeMilestoneVariance(amount, paidAmount) {
+  const amt = Number(amount || 0);
+  const paid = Number(paidAmount || 0);
+  const variance = Math.round((paid - amt) * 100) / 100;
+  let category = 'UNPAID';
+  let excess = 0;
+  let shortfall = 0;
+
+  if (paid <= 0) {
+    category = 'UNPAID';
+    shortfall = amt;
+  } else if (variance === 0) {
+    category = 'EXACT';
+  } else if (variance > 0) {
+    category = 'EXCESS';
+    excess = variance;
+  } else {
+    category = 'SHORTFALL';
+    shortfall = Math.abs(variance);
+  }
+
+  return {
+    varianceAmount: variance,
+    paymentStatusCategory: category,
+    excessAmount: excess,
+    shortfallAmount: shortfall,
+  };
+}
+
 /**
  * Computes standard financial metrics for a project object
  */
@@ -22,6 +51,11 @@ export function calculateProjectFinancials(project) {
   const milestonePaymentsReceived = payments
     .filter((p) => p.paymentType !== 'ADVANCE')
     .reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  // Milestones variance totals
+  const milestones = project.milestones || [];
+  const totalMilestonesExcess = milestones.reduce((sum, m) => sum + Number(m.excessAmount || (m.paidAmount > m.amount ? m.paidAmount - m.amount : 0)), 0);
+  const totalMilestonesShortfall = milestones.reduce((sum, m) => sum + Number(m.shortfallAmount || (m.paidAmount < m.amount ? m.amount - m.paidAmount : 0)), 0);
 
   // Outstanding balance
   const outstandingBalance = Math.max(0, Math.round((totalProjectValue - totalPaid) * 100) / 100);
@@ -58,6 +92,8 @@ export function calculateProjectFinancials(project) {
     advanceReceived,
     milestonePaymentsReceived,
     totalPaid,
+    totalMilestonesExcess,
+    totalMilestonesShortfall,
     outstandingBalance,
     totalExpenses,
     remainingFunds,
@@ -478,46 +514,156 @@ export async function updateProject(id, data, user) {
   return updated;
 }
 
+export async function deleteProject(id, user) {
+  const existing = await prisma.project.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw new Error('Project not found');
+  }
+
+  const deleted = await prisma.project.update({
+    where: { id },
+    data: {
+      isDeleted: true,
+      deletedAt: new Date(),
+    },
+  });
+
+  await logAudit({
+    userId: user?.id,
+    userEmail: user?.email,
+    module: 'PROJECT',
+    action: 'DELETE',
+    entityId: id,
+    entityType: 'PROJECT',
+    details: `Deleted project ${existing.projectCode} (${existing.name})`,
+  });
+
+  return deleted;
+}
+
 export async function addMilestone(projectId, milestoneData, user) {
+  const amount = Number(milestoneData.amount || 0);
+  const paidAmount = Number(milestoneData.paidAmount || 0);
+  const varianceData = computeMilestoneVariance(amount, paidAmount);
+
   const milestone = await prisma.projectMilestone.create({
     data: {
       projectId,
       title: milestoneData.title,
       milestoneOrder: Number(milestoneData.milestoneOrder || 1),
       percentage: Number(milestoneData.percentage || 0),
-      amount: Number(milestoneData.amount || 0),
+      amount,
+      paidAmount,
+      varianceAmount: varianceData.varianceAmount,
+      paymentStatusCategory: varianceData.paymentStatusCategory,
+      excessAmount: varianceData.excessAmount,
+      shortfallAmount: varianceData.shortfallAmount,
+      excessAllocationNotes: milestoneData.excessAllocationNotes || null,
       dueDate: milestoneData.dueDate ? new Date(milestoneData.dueDate) : null,
-      status: milestoneData.status || 'PENDING',
+      status: milestoneData.status || (paidAmount >= amount && amount > 0 ? 'PAID' : paidAmount > 0 ? 'PARTIALLY_PAID' : 'PENDING'),
       notes: milestoneData.notes || null,
     },
   });
+
+  if (user) {
+    await logAudit({
+      userId: user.id,
+      userEmail: user.email,
+      module: 'PROJECT',
+      action: 'UPDATE',
+      entityId: projectId,
+      entityType: 'PROJECT',
+      details: `Added milestone "${milestone.title}" (₹${amount}) to project`,
+    });
+  }
 
   return milestone;
 }
 
 export async function updateMilestone(milestoneId, milestoneData, user) {
+  const existing = await prisma.projectMilestone.findUnique({
+    where: { id: milestoneId },
+  });
+
+  if (!existing) {
+    throw new Error('Milestone not found');
+  }
+
+  const amount = milestoneData.amount !== undefined ? Number(milestoneData.amount) : existing.amount;
+  const paidAmount = milestoneData.paidAmount !== undefined ? Number(milestoneData.paidAmount) : existing.paidAmount;
+  const varianceData = computeMilestoneVariance(amount, paidAmount);
+
+  let computedStatus = milestoneData.status || existing.status;
+  if (milestoneData.paidAmount !== undefined && !milestoneData.status) {
+    if (paidAmount >= amount && amount > 0) {
+      computedStatus = 'PAID';
+    } else if (paidAmount > 0) {
+      computedStatus = 'PARTIALLY_PAID';
+    } else {
+      computedStatus = 'PENDING';
+    }
+  }
+
   const updated = await prisma.projectMilestone.update({
     where: { id: milestoneId },
     data: {
       title: milestoneData.title,
       milestoneOrder: milestoneData.milestoneOrder !== undefined ? Number(milestoneData.milestoneOrder) : undefined,
       percentage: milestoneData.percentage !== undefined ? Number(milestoneData.percentage) : undefined,
-      amount: milestoneData.amount !== undefined ? Number(milestoneData.amount) : undefined,
+      amount,
+      paidAmount,
+      varianceAmount: varianceData.varianceAmount,
+      paymentStatusCategory: varianceData.paymentStatusCategory,
+      excessAmount: varianceData.excessAmount,
+      shortfallAmount: varianceData.shortfallAmount,
+      excessAllocationNotes: milestoneData.excessAllocationNotes !== undefined ? milestoneData.excessAllocationNotes : undefined,
       dueDate: milestoneData.dueDate ? new Date(milestoneData.dueDate) : undefined,
-      status: milestoneData.status,
-      notes: milestoneData.notes,
-      paidAmount: milestoneData.paidAmount !== undefined ? Number(milestoneData.paidAmount) : undefined,
-      completedAt: milestoneData.status === 'PAID' ? new Date() : undefined,
+      status: computedStatus,
+      notes: milestoneData.notes !== undefined ? milestoneData.notes : undefined,
+      completedAt: computedStatus === 'PAID' ? (existing.completedAt || new Date()) : null,
     },
   });
+
+  if (user) {
+    await logAudit({
+      userId: user.id,
+      userEmail: user.email,
+      module: 'PROJECT',
+      action: 'UPDATE',
+      entityId: updated.projectId,
+      entityType: 'PROJECT',
+      details: `Updated milestone "${updated.title}" - Paid: ₹${paidAmount}, Variance: ₹${varianceData.varianceAmount} (${varianceData.paymentStatusCategory})`,
+    });
+  }
 
   return updated;
 }
 
-export async function deleteMilestone(milestoneId) {
-  return await prisma.projectMilestone.delete({
+export async function deleteMilestone(milestoneId, user) {
+  const existing = await prisma.projectMilestone.findUnique({
     where: { id: milestoneId },
   });
+
+  const deleted = await prisma.projectMilestone.delete({
+    where: { id: milestoneId },
+  });
+
+  if (user && existing) {
+    await logAudit({
+      userId: user.id,
+      userEmail: user.email,
+      module: 'PROJECT',
+      action: 'DELETE',
+      entityId: existing.projectId,
+      entityType: 'PROJECT',
+      details: `Deleted milestone "${existing.title}"`,
+    });
+  }
+
+  return deleted;
 }
 
 /**

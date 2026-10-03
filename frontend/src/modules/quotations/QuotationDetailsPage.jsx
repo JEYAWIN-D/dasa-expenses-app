@@ -57,8 +57,9 @@ export default function QuotationDetailsPage() {
     try {
       setLoading(true);
       const res = await api.get(`/quotations/${id}`);
-      setQuotation(res.data);
-      setRevisedDiscountValue(res.data.discountRate || 0);
+      const data = res?.data?.id ? res.data : (res?.data?.data || res?.data || res);
+      setQuotation(data);
+      setRevisedDiscountValue(data?.discountRate || 0);
     } catch (err) {
       notify.error(err.message || 'Failed to load quotation');
     } finally {
@@ -361,10 +362,34 @@ export default function QuotationDetailsPage() {
           {/* Optional AMC / Maintenance Terms */}
           <AmcComparisonView amcPackages={quotation.amcPackages} isPrint={false} />
 
+          {/* Payment Mode, Schedule & Notes */}
+          {(quotation.paymentMode || quotation.paymentTerms || quotation.notes) && (
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <h4 style={{ fontSize: 14, fontWeight: 700 }}>Payment Terms & Commercial Remarks</h4>
+              {quotation.paymentMode && (
+                <div style={{ fontSize: 12.5 }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Payment Mode: </span>
+                  <strong>{quotation.paymentMode}</strong>
+                </div>
+              )}
+              {quotation.paymentTerms && (
+                <div style={{ fontSize: 12.5 }}>
+                  <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Payment Schedule: </span>
+                  <span>{quotation.paymentTerms}</span>
+                </div>
+              )}
+              {quotation.notes && (
+                <div style={{ fontSize: 12, backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border-subtle)', whiteSpace: 'pre-line' }}>
+                  <strong>Notes: </strong>{quotation.notes}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Terms & Notes */}
           <div className="card">
-            <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Terms & Conditions</h4>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'pre-line', lineHeight: 1.6 }}>
+            <h4 style={{ fontSize: 14, fontWeight: 700, marginBottom: 6 }}>Commercial Terms & Conditions</h4>
+            <div style={{ fontSize: 12, color: '#475569', whiteSpace: 'pre-line', lineHeight: 1.6 }}>
               {quotation.terms || 'Standard commercial terms apply.'}
             </div>
           </div>
@@ -390,13 +415,23 @@ export default function QuotationDetailsPage() {
             {/* Signature badge */}
             <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
               {quotation.isDigitallySigned ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#16a34a', fontSize: 13, fontWeight: 600 }}>
-                  <ShieldCheck size={18} />
-                  <div>
-                    <div>Digitally Signed</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>
-                      {quotation.signedBy} ({new Date(quotation.signedAt).toLocaleDateString()})
-                    </div>
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    backgroundColor: '#f0fdf4',
+                    border: '1.5px dashed #22c55e',
+                    borderRadius: 8,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#16a34a', fontSize: 12, fontWeight: 800 }}>
+                    <ShieldCheck size={16} />
+                    <span>{quotation.approvalText || 'DASA TECH ADMIN APPROVED'}</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#15803d', marginTop: 3, fontWeight: 700 }}>
+                    {quotation.signedBy || `${quotation.authorizedPerson || 'DASA TECH Admin'} (${quotation.authorizedDesignation || 'Authorized Signatory'})`}
+                  </div>
+                  <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                    {new Date(quotation.signedAt).toLocaleString('en-IN')} • Verified & Stamped
                   </div>
                 </div>
               ) : (

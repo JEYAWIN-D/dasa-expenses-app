@@ -158,7 +158,20 @@ export async function getQuotationById(id) {
 }
 
 export async function createQuotation(data, user) {
-  const { items, discountRate = 0, discountAmount = 0, discountType = 'PERCENTAGE', taxRate = 0, amcPackages, ...rest } = data;
+  const {
+    items,
+    discountRate = 0,
+    discountAmount = 0,
+    discountType = 'PERCENTAGE',
+    taxRate = 0,
+    amcPackages,
+    paymentTerms,
+    paymentMode,
+    approvalText,
+    authorizedPerson,
+    authorizedDesignation,
+    ...rest
+  } = data;
 
   const totals = computeQuotationTotals(items, discountRate, taxRate, discountType, discountAmount);
 
@@ -180,6 +193,11 @@ export async function createQuotation(data, user) {
         totalAmount: totals.totalAmount,
         notes: rest.notes,
         terms: rest.terms,
+        paymentTerms: paymentTerms || null,
+        paymentMode: paymentMode || null,
+        approvalText: approvalText || null,
+        authorizedPerson: authorizedPerson || null,
+        authorizedDesignation: authorizedDesignation || null,
         amcPackages: amcPackages ? (typeof amcPackages === 'string' ? amcPackages : JSON.stringify(amcPackages)) : null,
         createdBy: user.email,
         items: {
@@ -225,6 +243,11 @@ export async function reviseQuotation(id, data, user) {
     taxRate = existing.taxRate,
     notes,
     terms,
+    paymentTerms,
+    paymentMode,
+    approvalText,
+    authorizedPerson,
+    authorizedDesignation,
     amcPackages,
   } = data;
   const totals = computeQuotationTotals(items, discountRate, taxRate, discountType, discountAmount);
@@ -237,7 +260,7 @@ export async function reviseQuotation(id, data, user) {
         revisionNumber: existing.revisionNumber,
         revisedBy: user.email,
         reason: reason || 'Scope and pricing revision',
-        snapshot: JSON.stringify(existing),
+        snapshotData: JSON.stringify(existing),
       },
     });
 
@@ -260,6 +283,11 @@ export async function reviseQuotation(id, data, user) {
         totalAmount: totals.totalAmount,
         ...(notes !== undefined && { notes }),
         ...(terms !== undefined && { terms }),
+        ...(paymentTerms !== undefined && { paymentTerms }),
+        ...(paymentMode !== undefined && { paymentMode }),
+        ...(approvalText !== undefined && { approvalText }),
+        ...(authorizedPerson !== undefined && { authorizedPerson }),
+        ...(authorizedDesignation !== undefined && { authorizedDesignation }),
         ...(amcPackages !== undefined && {
           amcPackages: amcPackages ? (typeof amcPackages === 'string' ? amcPackages : JSON.stringify(amcPackages)) : null,
         }),
@@ -342,12 +370,17 @@ export async function signQuotation(id, pin, user) {
     throw new Error('Quotation not found');
   }
 
+  const signatoryName = quotation.authorizedPerson || companyProfile.authorizedPerson || user.name || 'DASA TECH Admin';
+  const signatoryDesignation = quotation.authorizedDesignation || companyProfile.authorizedDesignation || (user.role === 'SUPER_ADMIN' ? 'Authorized Signatory' : user.role);
+  const approvalStamp = quotation.approvalText || companyProfile.signatureApprovalText || 'DASA TECH ADMIN APPROVED';
+
   const updated = await prisma.quotation.update({
     where: { id },
     data: {
       isDigitallySigned: true,
       signedAt: new Date(),
-      signedBy: `${user.name} (${user.role})`,
+      signedBy: `${signatoryName} (${signatoryDesignation})`,
+      approvalText: approvalStamp,
     },
   });
 

@@ -419,9 +419,31 @@ a {
   background-color: #ffffff;
   color: #0f172a;
   outline: none;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 }
 .form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+.form-textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
@@ -441,11 +463,19 @@ a {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
+  box-sizing: border-box;
   transition: all 0.15s ease;
 }
 .form-select:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.form-group {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
 .form-label {
@@ -614,4 +644,98 @@ a {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* ==========================================================================
+   Comprehensive Executive Print System for Quotations, Invoices & Receipts
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 12mm 12mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide app navigation, sidebars, headers, modals controls & buttons */
+  .no-print,
+  .sidebar,
+  .dashboard-header,
+  .btn,
+  button,
+  nav,
+  aside,
+  header {
+    display: none !important;
+  }
+
+  /* Reset modal containers so the printable document expands naturally */
+  div[style*="position: fixed"],
+  div[style*="position:fixed"] {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  .printable-document {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .printable-document table {
+    page-break-inside: auto;
+  }
+
+  .printable-document tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto;
+  }
+
+  .printable-document thead {
+    display: table-header-group;
+  }
+
+  .printable-document tfoot {
+    display: table-footer-group;
+  }
+}
+
 
