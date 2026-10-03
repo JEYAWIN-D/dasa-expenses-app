@@ -66,23 +66,37 @@ function computeQuotationTotals(items, discountRate = 0, taxRate = 0, discountTy
   };
 }
 
-export async function getQuotationsList({ page = 1, limit = 10, search = '', status = '', clientId = '' }) {
+export async function getQuotationsList({ page = 1, limit = 10, search = '', status = '', clientId = '', projectId = '', tab = '' }) {
   const skip = (page - 1) * limit;
+
+  let statusFilter = undefined;
+  if (status) {
+    statusFilter = status;
+  } else if (tab === 'converted') {
+    statusFilter = 'CONVERTED';
+  } else if (tab === 'archived') {
+    statusFilter = { in: ['REJECTED', 'CANCELLED', 'EXPIRED'] };
+  } else if (tab === 'active') {
+    statusFilter = { notIn: ['CONVERTED', 'REJECTED', 'CANCELLED'] };
+  }
 
   const where = {
     isDeleted: false,
-    ...(status && { status }),
+    ...(statusFilter && { status: statusFilter }),
     ...(clientId && { clientId }),
+    ...(projectId && { projectId }),
     ...(search && {
       OR: [
         { quotationNumber: { contains: search, mode: 'insensitive' } },
         { client: { companyName: { contains: search, mode: 'insensitive' } } },
         { client: { contactPerson: { contains: search, mode: 'insensitive' } } },
+        { project: { name: { contains: search, mode: 'insensitive' } } },
+        { project: { projectCode: { contains: search, mode: 'insensitive' } } },
       ],
     }),
   };
 
-  const [total, quotations] = await Promise.all([
+  const [total, quotations, activeCount, convertedCount, archivedCount, allCount] = await Promise.all([
     prisma.quotation.count({ where }),
     prisma.quotation.findMany({
       where,
@@ -97,7 +111,13 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
         expiryDate: true,
         status: true,
         subtotal: true,
+        discountRate: true,
+        discountAmount: true,
+        taxRate: true,
+        taxAmount: true,
         totalAmount: true,
+        notes: true,
+        projectId: true,
         isDigitallySigned: true,
         signedAt: true,
         signedBy: true,
@@ -110,6 +130,14 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
             email: true,
           },
         },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            projectCode: true,
+            status: true,
+          },
+        },
         _count: {
           select: {
             items: true,
@@ -119,9 +147,51 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
         },
       },
     }),
+    prisma.quotation.count({
+      where: {
+        isDeleted: false,
+        status: { notIn: ['CONVERTED', 'REJECTED', 'CANCELLED'] },
+        ...(clientId && { clientId }),
+        ...(projectId && { projectId }),
+      },
+    }),
+    prisma.quotation.count({
+      where: {
+        isDeleted: false,
+        status: 'CONVERTED',
+        ...(clientId && { clientId }),
+        ...(projectId && { projectId }),
+      },
+    }),
+    prisma.quotation.count({
+      where: {
+        isDeleted: false,
+        status: { in: ['REJECTED', 'CANCELLED', 'EXPIRED'] },
+        ...(clientId && { clientId }),
+        ...(projectId && { projectId }),
+      },
+    }),
+    prisma.quotation.count({
+      where: {
+        isDeleted: false,
+        ...(clientId && { clientId }),
+        ...(projectId && { projectId }),
+      },
+    }),
   ]);
 
-  return { quotations, total, page, limit };
+  return {
+    quotations,
+    total,
+    page,
+    limit,
+    counts: {
+      active: activeCount,
+      converted: convertedCount,
+      archived: archivedCount,
+      all: allCount,
+    },
+  };
 }
 
 export async function getQuotationById(id) {
@@ -131,6 +201,16 @@ export async function getQuotationById(id) {
       client: {
         include: {
           contacts: true,
+        },
+      },
+      project: {
+        select: {
+          id: true,
+          name: true,
+          projectCode: true,
+          description: true,
+          budgetAmount: true,
+          status: true,
         },
       },
       items: {
@@ -170,6 +250,7 @@ export async function createQuotation(data, user) {
     approvalText,
     authorizedPerson,
     authorizedDesignation,
+    projectId,
     ...rest
   } = data;
 
@@ -182,6 +263,7 @@ export async function createQuotation(data, user) {
       data: {
         quotationNumber,
         clientId: rest.clientId,
+        projectId: projectId || null,
         quotationDate: new Date(rest.quotationDate),
         expiryDate: new Date(rest.expiryDate),
         status: rest.status || 'DRAFT',
@@ -206,9 +288,22 @@ export async function createQuotation(data, user) {
       },
       include: {
         client: true,
+        project: true,
         items: true,
       },
     });
+
+    // If quotation was created for a project, optionally update project quotationValue if project didn't have one
+    if (projectId) {
+      await tx.project.update({
+        where: { id: projectId },
+        data: {
+          quotationValue: quotation.totalAmount,
+          totalProjectValue: quotation.totalAmount,
+          quotationId: quotation.id,
+        },
+      }).catch(() => {});
+    }
 
     await logAudit({
       userId: user.id,
@@ -221,6 +316,99 @@ export async function createQuotation(data, user) {
     });
 
     return quotation;
+  });
+}
+
+export async function updateQuotation(id, data, user) {
+  const existing = await prisma.quotation.findFirst({
+    where: { id, isDeleted: false },
+    include: { items: true },
+  });
+
+  if (!existing) {
+    throw new Error('Quotation not found');
+  }
+
+  const {
+    items,
+    discountRate = existing.discountRate,
+    discountAmount = existing.discountAmount,
+    discountType = 'PERCENTAGE',
+    taxRate = existing.taxRate,
+    notes,
+    terms,
+    paymentTerms,
+    paymentMode,
+    approvalText,
+    authorizedPerson,
+    authorizedDesignation,
+    amcPackages,
+    clientId,
+    projectId,
+    quotationDate,
+    expiryDate,
+    status,
+  } = data;
+
+  const totals = items ? computeQuotationTotals(items, discountRate, taxRate, discountType, discountAmount) : null;
+
+  return await prisma.$transaction(async (tx) => {
+    if (items) {
+      await tx.quotationItem.deleteMany({
+        where: { quotationId: id },
+      });
+    }
+
+    const updated = await tx.quotation.update({
+      where: { id },
+      data: {
+        ...(clientId && { clientId }),
+        ...(projectId !== undefined && { projectId: projectId || null }),
+        ...(quotationDate && { quotationDate: new Date(quotationDate) }),
+        ...(expiryDate && { expiryDate: new Date(expiryDate) }),
+        ...(status && { status }),
+        ...(totals && {
+          subtotal: totals.subtotal,
+          discountRate: totals.discountRate,
+          discountAmount: totals.discountAmount,
+          taxRate,
+          taxAmount: totals.taxAmount,
+          totalAmount: totals.totalAmount,
+        }),
+        ...(notes !== undefined && { notes }),
+        ...(terms !== undefined && { terms }),
+        ...(paymentTerms !== undefined && { paymentTerms }),
+        ...(paymentMode !== undefined && { paymentMode }),
+        ...(approvalText !== undefined && { approvalText }),
+        ...(authorizedPerson !== undefined && { authorizedPerson }),
+        ...(authorizedDesignation !== undefined && { authorizedDesignation }),
+        ...(amcPackages !== undefined && {
+          amcPackages: amcPackages ? (typeof amcPackages === 'string' ? amcPackages : JSON.stringify(amcPackages)) : null,
+        }),
+        ...(items && {
+          items: {
+            create: totals.processedItems,
+          },
+        }),
+      },
+      include: {
+        client: true,
+        project: true,
+        items: true,
+      },
+    });
+
+    await logAudit({
+      userId: user.id,
+      userEmail: user.email,
+      module: 'QUOTATION',
+      action: 'UPDATE',
+      entityId: id,
+      entityType: 'QUOTATION',
+      details: `Updated quotation ${existing.quotationNumber}`,
+    });
+
+    return updated;
   });
 }
 

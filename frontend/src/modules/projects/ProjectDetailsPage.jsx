@@ -26,16 +26,60 @@ import {
   Edit3,
   AlertCircle,
   X,
+  ArrowRight,
 } from 'lucide-react';
 import { api } from '../../services/api.js';
 import { projectsService } from '../../services/projects.service.js';
 import { accountsService } from '../../services/accounts.service.js';
 import { useNotification } from '../../contexts/NotificationContext.jsx';
+import { Badge } from '../../components/common/Badge.jsx';
 import { RecordPaymentModal } from './components/RecordPaymentModal.jsx';
 import { AddProjectExpenseModal } from './components/AddProjectExpenseModal.jsx';
 import { DocumentPreviewModal } from './components/DocumentPreviewModal.jsx';
 import { CreateProjectInvoiceModal } from './components/CreateProjectInvoiceModal.jsx';
+import { PaymentRequestModal } from './components/PaymentRequestModal.jsx';
 import { DocumentPreviewModal as CommonDocumentPreviewModal } from '../../components/common/DocumentPreviewModal.jsx';
+import { PinSignatureModal } from '../../components/common/PinSignatureModal.jsx';
+
+// Compute waterfall across milestones
+export function computeMilestoneWaterfall(milestones = []) {
+  let accumulatedExcessCredit = 0;
+
+  return (milestones || []).map((m) => {
+    const amount = Number(m.amount || 0);
+    const paid = Number(m.paidAmount || 0);
+    const directDue = Math.max(0, Math.round((amount - paid) * 100) / 100);
+    const directExcess = Math.max(0, Math.round((paid - amount) * 100) / 100);
+
+    const creditApplied = Math.min(directDue, accumulatedExcessCredit);
+    const netPayableNow = Math.max(0, Math.round((directDue - creditApplied) * 100) / 100);
+
+    accumulatedExcessCredit = Math.max(0, Math.round((accumulatedExcessCredit - creditApplied + directExcess) * 100) / 100);
+
+    let status = m.status;
+    if (paid >= amount && amount > 0) {
+      status = 'PAID';
+    } else if (netPayableNow === 0 && (creditApplied > 0 || paid > 0)) {
+      status = 'PAID';
+    } else if (paid > 0 || creditApplied > 0) {
+      status = 'PARTIALLY_PAID';
+    } else {
+      status = 'PENDING';
+    }
+
+    return {
+      ...m,
+      amount,
+      paidAmount: paid,
+      directDue,
+      directExcess,
+      creditApplied,
+      netPayableNow,
+      accumulatedExcessCreditRemaining: accumulatedExcessCredit,
+      computedStatus: status,
+    };
+  });
+}
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
@@ -51,11 +95,58 @@ export default function ProjectDetailsPage() {
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [documentModalData, setDocumentModalData] = useState(null);
+  const [paymentRequestModalOpen, setPaymentRequestModalOpen] = useState(false);
+  const [selectedMilestoneForRequest, setSelectedMilestoneForRequest] = useState(null);
   const [createInvoiceOpen, setCreateInvoiceOpen] = useState(false);
   const [selectedMilestoneForInvoice, setSelectedMilestoneForInvoice] = useState(null);
   const [preselectedInvoiceForPayment, setPreselectedInvoiceForPayment] = useState(null);
   const [previewInvoiceDoc, setPreviewInvoiceDoc] = useState(null);
   const [previewPaymentDoc, setPreviewPaymentDoc] = useState(null);
+  const [previewQuotationDoc, setPreviewQuotationDoc] = useState(null);
+  const [signTargetQuotationId, setSignTargetQuotationId] = useState(null);
+
+  const handleOpenQuotationPreview = async (qId) => {
+    try {
+      const res = await api.get(`/quotations/${qId}`);
+      const doc = res?.data?.id ? res.data : (res?.data?.data || res?.data || res);
+      setPreviewQuotationDoc(doc);
+    } catch (err) {
+      notify.error(err.message || 'Failed to load quotation');
+    }
+  };
+
+  const handleSignQuotationConfirm = async (pin) => {
+    if (!signTargetQuotationId) return;
+    try {
+      await api.post(`/quotations/${signTargetQuotationId}/sign`, { pin });
+      notify.success('Quotation digitally signed successfully!');
+      fetchProjectData();
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleConvertQuotationToInvoice = async (qId, qNum) => {
+    if (!window.confirm(`Convert quotation ${qNum} directly into an Issued Invoice?`)) return;
+    try {
+      const res = await api.post(`/quotations/${qId}/convert-to-invoice`);
+      notify.success(`Created invoice ${res.data?.invoiceNumber || ''}!`);
+      fetchProjectData();
+    } catch (err) {
+      notify.error(err.message || 'Conversion failed');
+    }
+  };
+
+  const handleDeleteQuotation = async (qId, qNum) => {
+    if (!window.confirm(`Are you sure you want to delete quotation ${qNum}?`)) return;
+    try {
+      await api.delete(`/quotations/${qId}`);
+      notify.success(`Quotation ${qNum} deleted successfully`);
+      fetchProjectData();
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete quotation');
+    }
+  };
 
   // Handover Action State
   const [handoverNotes, setHandoverNotes] = useState('');
@@ -151,9 +242,9 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleGenerateDoc = async (docType) => {
+  const handleGenerateDoc = async (docType, options = {}) => {
     try {
-      const res = await projectsService.getDocumentData(id, docType);
+      const res = await projectsService.getDocumentData(id, docType, options);
       setDocumentModalData(res.data);
     } catch (err) {
       notify.error(err.message || 'Failed to generate document');
@@ -287,6 +378,28 @@ export default function ProjectDetailsPage() {
 
         {/* Quick Action Buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <Link
+            to={`/quotations/new?projectId=${project.id}&clientId=${project.clientId}`}
+            style={{
+              padding: '9px 16px',
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              textDecoration: 'none',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+          >
+            <Plus size={16} />
+            <span>Create Quotation</span>
+          </Link>
+
           <button
             onClick={() => setRecordPaymentOpen(true)}
             style={{
@@ -582,6 +695,41 @@ export default function ProjectDetailsPage() {
         </button>
 
         <button
+          onClick={() => setActiveTab('quotations')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: activeTab === 'quotations' ? '#ffffff' : 'transparent',
+            color: activeTab === 'quotations' ? '#2563eb' : '#64748b',
+            boxShadow: activeTab === 'quotations' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            fontSize: '13px',
+            fontWeight: activeTab === 'quotations' ? 700 : 600,
+            whiteSpace: 'nowrap',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <FileText size={16} />
+          <span>Quotations</span>
+          <span
+            style={{
+              fontSize: '11px',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              backgroundColor: activeTab === 'quotations' ? '#eff6ff' : '#e2e8f0',
+              color: activeTab === 'quotations' ? '#2563eb' : '#64748b',
+              fontWeight: 700,
+            }}
+          >
+            {(project.projectQuotations?.length || (project.quotation ? 1 : 0))}
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('invoices')}
           style={{
             padding: '8px 16px',
@@ -747,26 +895,52 @@ export default function ProjectDetailsPage() {
               </p>
             </div>
 
-            <button
-              onClick={() => setAddingMilestone(!addingMilestone)}
-              style={{
-                padding: '9px 16px',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: 600,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: 'var(--shadow-sm)',
-              }}
-            >
-              <Plus size={16} />
-              <span>Add Custom Phase</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                onClick={() => {
+                  setSelectedMilestoneForRequest(null);
+                  setPaymentRequestModalOpen(true);
+                }}
+                style={{
+                  padding: '9px 16px',
+                  backgroundColor: '#16a34a',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 1px 2px rgba(22, 163, 74, 0.2)',
+                }}
+              >
+                <FileText size={15} />
+                <span>Request Payment</span>
+              </button>
+
+              <button
+                onClick={() => setAddingMilestone(!addingMilestone)}
+                style={{
+                  padding: '9px 16px',
+                  backgroundColor: '#2563eb',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                <Plus size={16} />
+                <span>Add Custom Phase</span>
+              </button>
+            </div>
           </div>
 
           {/* Add Milestone Inline Form */}
@@ -839,10 +1013,10 @@ export default function ProjectDetailsPage() {
                 </tr>
               </thead>
               <tbody>
-                {project.milestones?.map((m) => {
+                {computeMilestoneWaterfall(project.milestones || []).map((m) => {
                   const amt = Number(m.amount || 0);
                   const paid = Number(m.paidAmount || 0);
-                  const remainingDue = Math.max(0, Math.round((amt - paid) * 100) / 100);
+                  const remainingDue = m.directDue;
                   const variance = Math.round((paid - amt) * 100) / 100;
                   const hasPaid = paid > 0;
 
@@ -913,7 +1087,7 @@ export default function ProjectDetailsPage() {
 
                       {/* Remaining Due Column */}
                       <td style={{ padding: '16px 18px', textAlign: 'right' }}>
-                        {remainingDue === 0 ? (
+                        {paid >= amt && amt > 0 ? (
                           <span
                             style={{
                               display: 'inline-flex',
@@ -931,6 +1105,29 @@ export default function ProjectDetailsPage() {
                             <CheckCircle2 size={13} />
                             <span>₹0 (Cleared)</span>
                           </span>
+                        ) : m.netPayableNow === 0 && m.creditApplied > 0 ? (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                color: '#15803d',
+                                backgroundColor: '#f0fdf4',
+                                border: '1px solid #bbf7d0',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                              }}
+                            >
+                              <CheckCircle2 size={13} />
+                              <span>₹0 (Covered)</span>
+                            </span>
+                            <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
+                              ₹{m.creditApplied.toLocaleString('en-IN')} advance credit
+                            </div>
+                          </div>
                         ) : (
                           <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                             <span
@@ -949,10 +1146,9 @@ export default function ProjectDetailsPage() {
                             >
                               <span>₹{remainingDue.toLocaleString('en-IN')}</span>
                             </span>
-                            {/* If prior phase had excess advance, show adjusted cash to collect */}
-                            {m.milestoneOrder === 2 && (project.milestones?.[0]?.paidAmount > project.milestones?.[0]?.amount) && (
+                            {m.creditApplied > 0 && (
                               <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
-                                Net Due: ₹{Math.max(0, remainingDue - (project.milestones[0].paidAmount - project.milestones[0].amount)).toLocaleString('en-IN')} (after credit)
+                                Net Due: ₹{m.netPayableNow.toLocaleString('en-IN')} (after credit)
                               </div>
                             )}
                           </div>
@@ -1079,17 +1275,20 @@ export default function ProjectDetailsPage() {
                           </button>
 
                           <button
-                            onClick={() => handleGenerateDoc('milestone-request')}
-                            title="Generate Official Payment Request Letter"
+                            onClick={() => {
+                              setSelectedMilestoneForRequest(m);
+                              setPaymentRequestModalOpen(true);
+                            }}
+                            title="Open Interactive Payment Request Dialog"
                             style={{
                               padding: '6px 10px',
-                              backgroundColor: '#ffffff',
-                              border: '1px solid #cbd5e1',
+                              backgroundColor: '#f0fdf4',
+                              border: '1px solid #86efac',
                               borderRadius: '7px',
                               fontSize: '12px',
-                              fontWeight: 600,
+                              fontWeight: 700,
                               cursor: 'pointer',
-                              color: '#334155',
+                              color: '#166534',
                             }}
                           >
                             Request Payment
@@ -1297,6 +1496,193 @@ export default function ProjectDetailsPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* TAB CONTENT: QUOTATIONS & COMMERCIAL PROPOSALS */}
+      {activeTab === 'quotations' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <h2 style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-main)' }}>
+                Project Quotations & Commercial Proposals
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                Commercial quotations, proposal revisions, and scope estimates specifically associated with {project.name}.
+              </p>
+            </div>
+
+            <Link
+              to={`/quotations/new?projectId=${project.id}&clientId=${project.clientId}`}
+              style={{
+                padding: '9px 18px',
+                backgroundColor: '#2563eb',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                textDecoration: 'none',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <Plus size={16} />
+              <span>Create Quotation for Project</span>
+            </Link>
+          </div>
+
+          {/* Quotations Table */}
+          {(() => {
+            const quotations = project.projectQuotations?.length > 0
+              ? project.projectQuotations
+              : (project.quotation ? [project.quotation] : []);
+
+            if (quotations.length === 0) {
+              return (
+                <div
+                  style={{
+                    padding: '48px 24px',
+                    textAlign: 'center',
+                    backgroundColor: 'var(--bg-surface)',
+                    borderRadius: '16px',
+                    border: '1px dashed var(--border-subtle)',
+                  }}
+                >
+                  <FileText size={40} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
+                  <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>No Quotations Created for this Project</h3>
+                  <p style={{ fontSize: '13px', color: '#64748b', maxWidth: 450, margin: '6px auto 16px' }}>
+                    Create a formal commercial quotation with items, milestone breakdown, GST tax calculations, and digital signature for this project.
+                  </p>
+                  <Link
+                    to={`/quotations/new?projectId=${project.id}&clientId=${project.clientId}`}
+                    className="btn btn-primary"
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Plus size={16} />
+                    <span>Create First Quotation</span>
+                  </Link>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  borderRadius: '16px',
+                  border: '1px solid var(--border-subtle)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
+                  overflow: 'hidden',
+                }}
+              >
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--border-subtle)', textAlign: 'left' }}>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Quote # / Rev</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Client</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Issue Date</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Expiry Date</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Total Amount (₹)</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Signature</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Status</th>
+                      <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {quotations.map((q) => (
+                      <tr
+                        key={q.id}
+                        style={{ borderBottom: '1px solid #f1f5f9', transition: 'background-color 0.15s ease' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fbfcfe')}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
+                      >
+                        <td style={{ padding: '16px 18px' }}>
+                          <Link
+                            to={`/quotations/${q.id}`}
+                            style={{ fontWeight: 800, fontFamily: 'var(--font-mono)', color: 'var(--primary)', textDecoration: 'none' }}
+                          >
+                            {q.quotationNumber}
+                          </Link>
+                          {q.revisionNumber > 0 && (
+                            <span style={{ fontSize: 10, backgroundColor: '#fef3c7', color: '#92400e', padding: '2px 6px', borderRadius: 4, fontWeight: 800, marginLeft: 6 }}>
+                              Rev #{q.revisionNumber}
+                            </span>
+                          )}
+                        </td>
+                        <td style={{ padding: '16px 18px', color: '#0f172a', fontWeight: 600 }}>
+                          {q.client?.companyName || project.client?.companyName}
+                        </td>
+                        <td style={{ padding: '16px 18px', color: '#475569' }}>
+                          {q.quotationDate ? new Date(q.quotationDate).toLocaleDateString('en-IN') : '-'}
+                        </td>
+                        <td style={{ padding: '16px 18px', color: '#475569' }}>
+                          {q.expiryDate ? new Date(q.expiryDate).toLocaleDateString('en-IN') : '-'}
+                        </td>
+                        <td style={{ padding: '16px 18px', textAlign: 'right', fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>
+                          ₹{Number(q.totalAmount || 0).toLocaleString('en-IN')}
+                        </td>
+                        <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                          {q.isDigitallySigned ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+                              <ShieldCheck size={12} />
+                              Signed
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => setSignTargetQuotationId(q.id)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999 }}
+                            >
+                              Sign (PIN)
+                            </button>
+                          )}
+                        </td>
+                        <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                          <Badge status={q.status} />
+                        </td>
+                        <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                          <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                            <Link to={`/quotations/${q.id}`} className="btn btn-secondary btn-sm" title="View & Edit">
+                              <Eye size={13} />
+                            </Link>
+                            <button
+                              onClick={() => handleOpenQuotationPreview(q.id)}
+                              className="btn btn-secondary btn-sm"
+                              title="Print / PDF Preview"
+                            >
+                              <Printer size={13} />
+                            </button>
+                            {q.status !== 'CONVERTED' && (
+                              <button
+                                onClick={() => handleConvertQuotationToInvoice(q.id, q.quotationNumber)}
+                                className="btn btn-secondary btn-sm"
+                                title="Convert to Invoice"
+                                style={{ color: '#059669' }}
+                              >
+                                <ArrowRight size={13} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteQuotation(q.id, q.quotationNumber)}
+                              className="btn btn-secondary btn-sm"
+                              title="Delete Quotation"
+                              style={{ color: 'var(--danger)' }}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             );
           })()}
@@ -2238,6 +2624,28 @@ export default function ProjectDetailsPage() {
         />
       )}
 
+      {paymentRequestModalOpen && (
+        <PaymentRequestModal
+          isOpen={paymentRequestModalOpen}
+          onClose={() => {
+            setPaymentRequestModalOpen(false);
+            setSelectedMilestoneForRequest(null);
+          }}
+          project={{
+            ...project,
+            waterfallMilestones: computeMilestoneWaterfall(project.milestones || []),
+          }}
+          initialMilestone={selectedMilestoneForRequest}
+          bankAccounts={accounts}
+          company={project.company}
+          onOpenDocumentPreview={(docType, options) => handleGenerateDoc(docType, options)}
+          onOpenCreateInvoice={(milestone, customAmount) => {
+            setSelectedMilestoneForInvoice(milestone);
+            setCreateInvoiceOpen(true);
+          }}
+        />
+      )}
+
       {createInvoiceOpen && (
         <CreateProjectInvoiceModal
           project={project}
@@ -2744,6 +3152,24 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       )}
+
+      {/* Quotation Document Preview Modal */}
+      {previewQuotationDoc && (
+        <CommonDocumentPreviewModal
+          isOpen={!!previewQuotationDoc}
+          onClose={() => setPreviewQuotationDoc(null)}
+          document={previewQuotationDoc}
+          type="QUOTATION"
+        />
+      )}
+
+      {/* Digital Signature PIN Modal */}
+      <PinSignatureModal
+        isOpen={!!signTargetQuotationId}
+        onClose={() => setSignTargetQuotationId(null)}
+        onConfirm={handleSignQuotationConfirm}
+        documentName="Quotation"
+      />
     </div>
   );
 }

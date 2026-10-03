@@ -8,12 +8,21 @@ export async function listQuotations(req, res) {
     const search = req.query.search || '';
     const status = req.query.status || '';
     const clientId = req.query.clientId || '';
+    const projectId = req.query.projectId || '';
+    const tab = req.query.tab || '';
 
-    const result = await quotationService.getQuotationsList({ page, limit, search, status, clientId });
-    return apiPaginated(res, result.quotations, {
-      total: result.total,
-      page: result.page,
-      limit: result.limit,
+    const result = await quotationService.getQuotationsList({ page, limit, search, status, clientId, projectId, tab });
+    return res.json({
+      success: true,
+      data: result.quotations,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+        totalPages: Math.ceil(result.total / result.limit),
+      },
+      counts: result.counts,
+      message: 'Quotations retrieved successfully',
     });
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -33,6 +42,15 @@ export async function createQuotation(req, res) {
   try {
     const quotation = await quotationService.createQuotation(req.body, req.user);
     return apiSuccess(res, quotation, 'Quotation created successfully', 201);
+  } catch (error) {
+    return apiError(res, error.message, 400);
+  }
+}
+
+export async function updateQuotation(req, res) {
+  try {
+    const quotation = await quotationService.updateQuotation(req.params.id, req.body, req.user);
+    return apiSuccess(res, quotation, 'Quotation updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
   }

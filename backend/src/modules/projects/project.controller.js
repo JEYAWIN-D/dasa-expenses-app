@@ -110,7 +110,8 @@ export async function handoverProject(req, res) {
 
 export async function getDocumentData(req, res) {
   try {
-    const data = await projectService.getProjectDocumentData(req.params.id, req.params.docType, req.query);
+    const options = { ...(req.query || {}), ...(req.body || {}) };
+    const data = await projectService.getProjectDocumentData(req.params.id, req.params.docType, options);
     return apiSuccess(res, data, 'Document data generated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

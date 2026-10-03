@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Modal } from './Modal.jsx';
 import { Printer, ShieldCheck, Calendar, Clock, FileText, CheckCircle2, Building2, User, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 import { Badge } from './Badge.jsx';
 import { useCompany } from '../../contexts/CompanyContext.jsx';
 import { AmcComparisonView } from './AmcComparisonView.jsx';
 import { numberToWordsINR } from '../../utils/numberToWordsINR.js';
+import { printDocument } from '../../utils/printDocument.js';
 
 export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTATION' }) {
   const { company: globalCompany } = useCompany();
+  const printableRef = useRef(null);
   if (!document) return null;
 
   // Merge document companyProfile with current active company profile (active branding takes precedence)
@@ -25,8 +27,8 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
     state: rawCompany.state || 'Tamil Nadu',
     postalCode: rawCompany.postalCode || '638002',
     country: rawCompany.country || 'India',
-    gstNumber: rawCompany.gstNumber || '33ABCDE1234F1Z5',
-    panNumber: rawCompany.panNumber || 'ABCDE1234F',
+    gstNumber: (rawCompany.gstNumber && rawCompany.gstNumber !== '33ABCDE1234F1Z5') ? rawCompany.gstNumber : '',
+    panNumber: (rawCompany.panNumber && rawCompany.panNumber !== 'ABCDE1234F') ? rawCompany.panNumber : '',
     email: rawCompany.email || 'dasatechmu@gmail.com',
     phone: rawCompany.phone || '+91 76399 30148',
   };
@@ -76,7 +78,11 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
   })();
 
   const handlePrint = () => {
-    window.print();
+    if (printableRef.current) {
+      printDocument(printableRef.current, `${docNumber} - ${company.companyName}`);
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -98,6 +104,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
       }
     >
       <div
+        ref={printableRef}
         className="printable-document"
         style={{
           backgroundColor: '#ffffff',
@@ -170,15 +177,20 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   )}
                   <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginTop: 5, maxWidth: 420 }}>
                     <div>{company.address}, {company.city}, {company.state} - {company.postalCode}</div>
-                    <div>Phone: <strong>{company.phone}</strong> | Email: <strong>{company.email}</strong></div>
-                    <div style={{ marginTop: 4, fontSize: 11 }}>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4, marginRight: 6 }}>
-                        <strong>GSTIN:</strong> {company.gstNumber}
-                      </span>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
-                        <strong>PAN:</strong> {company.panNumber}
-                      </span>
-                    </div>
+                    {(company.gstNumber || company.panNumber) && (
+                      <div style={{ marginTop: 4, fontSize: 11 }}>
+                        {company.gstNumber && (
+                          <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4, marginRight: 6 }}>
+                            <strong>GSTIN:</strong> {company.gstNumber}
+                          </span>
+                        )}
+                        {company.panNumber && (
+                          <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+                            <strong>PAN:</strong> {company.panNumber}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -656,9 +668,11 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   </div>
                 ) : (
                   <div style={{ width: '100%', paddingTop: 14, borderTop: '1px solid #cbd5e1' }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
-                      {document.authorizedPerson || company.authorizedPerson || 'DASA TECH Admin'}
-                    </div>
+                    {(document.authorizedPerson || company.authorizedPerson) && (
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
+                        {document.authorizedPerson || company.authorizedPerson}
+                      </div>
+                    )}
                     <div style={{ fontSize: 11, fontWeight: 600, color: '#475569' }}>
                       {document.authorizedDesignation || company.authorizedDesignation || 'Authorized Signatory'}
                     </div>
@@ -1177,9 +1191,11 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   </div>
                 ) : (
                   <div style={{ width: '100%', paddingTop: 16, borderTop: '1px solid #cbd5e1' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
-                      {company.authorizedPerson || 'DASA'}
-                    </div>
+                    {company.authorizedPerson && (
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                        {company.authorizedPerson}
+                      </div>
+                    )}
                     <div style={{ fontSize: 11, fontWeight: 600, color: '#475569' }}>Authorized Signatory</div>
                     <div style={{ fontSize: 10, color: '#64748b' }}>For {company.companyName}</div>
                   </div>

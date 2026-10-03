@@ -15,6 +15,8 @@ import {
   CheckCircle,
   XCircle,
   FolderKanban,
+  Trash2,
+  Edit3,
 } from 'lucide-react';
 import { Badge } from '../../components/common/Badge.jsx';
 import { DocumentPreviewModal } from '../../components/common/DocumentPreviewModal.jsx';
@@ -41,6 +43,11 @@ export default function QuotationDetailsPage() {
   const [revisedDiscountType, setRevisedDiscountType] = useState('PERCENTAGE');
   const [revisedDiscountValue, setRevisedDiscountValue] = useState(0);
 
+  // Direct Edit Modal
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
   // Negotiation modal
   const [showNegotiateModal, setShowNegotiateModal] = useState(false);
   const [negotiationForm, setNegotiationForm] = useState({
@@ -52,6 +59,71 @@ export default function QuotationDetailsPage() {
     status: 'PENDING',
   });
   const [submittingNegotiation, setSubmittingNegotiation] = useState(false);
+
+  const handleDeleteQuotation = async () => {
+    if (!window.confirm(`Are you sure you want to permanently delete quotation ${quotation.quotationNumber}?`)) return;
+    try {
+      await api.delete(`/quotations/${id}`);
+      notify.success('Quotation deleted successfully');
+      navigate('/quotations');
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete quotation');
+    }
+  };
+
+  const handleOpenEdit = () => {
+    if (!quotation) return;
+    setEditForm({
+      notes: quotation.notes || '',
+      terms: quotation.terms || '',
+      paymentTerms: quotation.paymentTerms || '',
+      paymentMode: quotation.paymentMode || '',
+      discountRate: quotation.discountRate || 0,
+      taxRate: quotation.taxRate || 18,
+      expiryDate: quotation.expiryDate ? new Date(quotation.expiryDate).toISOString().split('T')[0] : '',
+      items: (quotation.items || []).map((it) => ({
+        id: it.id,
+        title: it.title || '',
+        description: it.description || '',
+        quantity: Number(it.quantity) || 1,
+        unitPrice: Number(it.unitPrice) || 0,
+        discountPercent: Number(it.discountPercent) || 0,
+        taxPercent: Number(it.taxPercent) || 0,
+      })),
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      setSavingEdit(true);
+      await api.put(`/quotations/${id}`, {
+        notes: editForm.notes,
+        terms: editForm.terms,
+        paymentTerms: editForm.paymentTerms,
+        paymentMode: editForm.paymentMode,
+        expiryDate: editForm.expiryDate,
+        discountRate: Number(editForm.discountRate || 0),
+        taxRate: Number(editForm.taxRate || 0),
+        items: editForm.items.map((it) => ({
+          title: it.title?.trim() || '',
+          description: it.description?.trim() || it.title?.trim() || '',
+          quantity: Number(it.quantity) || 1,
+          unitPrice: Number(it.unitPrice) || 0,
+          discountPercent: Number(it.discountPercent) || 0,
+          taxPercent: Number(it.taxPercent) || 0,
+        })),
+      });
+      notify.success('Quotation updated successfully!');
+      setShowEditModal(false);
+      fetchQuotation();
+    } catch (err) {
+      notify.error(err.message || 'Failed to update quotation');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   const fetchQuotation = async () => {
     try {
@@ -233,6 +305,11 @@ export default function QuotationDetailsPage() {
             <span>Create Revision</span>
           </button>
 
+          <button onClick={handleOpenEdit} className="btn btn-secondary">
+            <Edit3 size={15} />
+            <span>Edit Quotation</span>
+          </button>
+
           {quotation.status !== 'CONVERTED' ? (
             <>
               <button onClick={handleConvertToProject} className="btn btn-primary" style={{ backgroundColor: '#2563eb' }}>
@@ -249,6 +326,11 @@ export default function QuotationDetailsPage() {
               <span>View Converted Invoice</span>
             </Link>
           )}
+
+          <button onClick={handleDeleteQuotation} className="btn btn-secondary" style={{ color: 'var(--danger)' }} title="Delete Quotation">
+            <Trash2 size={15} />
+            <span>Delete</span>
+          </button>
         </div>
       </div>
 
@@ -256,6 +338,39 @@ export default function QuotationDetailsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
         {/* Left Column: Scope & Line Items */}
         <div>
+          {/* Linked Project Banner */}
+          {quotation.project && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #bfdbfe',
+                borderRadius: '10px',
+                marginBottom: '18px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}>
+                  <FolderKanban size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#1e40af', textTransform: 'uppercase' }}>
+                    Linked Project Scope
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#1d4ed8' }}>
+                    {quotation.project.name} ({quotation.project.projectCode})
+                  </div>
+                </div>
+              </div>
+              <Link to={`/projects/${quotation.project.id}`} className="btn btn-secondary btn-sm" style={{ color: '#1d4ed8', fontWeight: 600 }}>
+                Open Project Workspace
+              </Link>
+            </div>
+          )}
+
           <div className="card" style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
@@ -709,6 +824,199 @@ export default function QuotationDetailsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Direct Edit Quotation Modal */}
+      {showEditModal && editForm && (
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          title={`Edit Quotation ${quotation.quotationNumber}`}
+          footer={
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => setShowEditModal(false)} className="btn btn-secondary">
+                Cancel
+              </button>
+              <button type="button" onClick={handleSaveEdit} className="btn btn-primary" disabled={savingEdit}>
+                {savingEdit ? 'Saving...' : 'Save Quotation Changes'}
+              </button>
+            </div>
+          }
+        >
+          <form onSubmit={handleSaveEdit} style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: 4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
+              <div className="form-group">
+                <label className="form-label">Expiry Date</label>
+                <input
+                  type="date"
+                  className="form-input"
+                  value={editForm.expiryDate}
+                  onChange={(e) => setEditForm({ ...editForm, expiryDate: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Overall Discount (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-input"
+                  value={editForm.discountRate}
+                  onChange={(e) => setEditForm({ ...editForm, discountRate: e.target.value })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">GST Tax Rate (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  className="form-input"
+                  value={editForm.taxRate}
+                  onChange={(e) => setEditForm({ ...editForm, taxRate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Items Editor */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <label className="form-label" style={{ fontWeight: 700, margin: 0 }}>
+                  Quotation Line Items ({editForm.items?.length || 0})
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditForm({
+                      ...editForm,
+                      items: [
+                        ...editForm.items,
+                        {
+                          title: '',
+                          description: '',
+                          quantity: 1,
+                          unitPrice: 0,
+                          discountPercent: 0,
+                          taxPercent: editForm.taxRate || 18,
+                        },
+                      ],
+                    });
+                  }}
+                  className="btn btn-secondary btn-sm"
+                  style={{ fontSize: 11, padding: '3px 8px' }}
+                >
+                  <Plus size={12} /> Add Item
+                </button>
+              </div>
+
+              {editForm.items?.map((it, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: '10px 12px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: 8,
+                    marginBottom: 10,
+                  }}
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 6 }}>
+                    <input
+                      className="form-input"
+                      value={it.title}
+                      onChange={(e) => {
+                        const items = [...editForm.items];
+                        items[idx].title = e.target.value;
+                        setEditForm({ ...editForm, items });
+                      }}
+                      placeholder="Item Heading / Title"
+                    />
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={it.quantity}
+                      onChange={(e) => {
+                        const items = [...editForm.items];
+                        items[idx].quantity = e.target.value;
+                        setEditForm({ ...editForm, items });
+                      }}
+                      placeholder="Qty"
+                    />
+                    <input
+                      type="number"
+                      className="form-input"
+                      value={it.unitPrice}
+                      onChange={(e) => {
+                        const items = [...editForm.items];
+                        items[idx].unitPrice = e.target.value;
+                        setEditForm({ ...editForm, items });
+                      }}
+                      placeholder="Unit Price (₹)"
+                    />
+                    {editForm.items.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const items = editForm.items.filter((_, i) => i !== idx);
+                          setEditForm({ ...editForm, items });
+                        }}
+                        style={{ background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', padding: 4 }}
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    rows={2}
+                    className="form-textarea"
+                    value={it.description}
+                    onChange={(e) => {
+                      const items = [...editForm.items];
+                      items[idx].description = e.target.value;
+                      setEditForm({ ...editForm, items });
+                    }}
+                    placeholder="Item scope & deliverable description..."
+                    style={{ fontSize: 12 }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 10 }}>
+              <label className="form-label">Payment Terms</label>
+              <input
+                className="form-input"
+                value={editForm.paymentTerms}
+                onChange={(e) => setEditForm({ ...editForm, paymentTerms: e.target.value })}
+                placeholder="e.g. 50% Advance, 50% On Handover"
+              />
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 10 }}>
+              <label className="form-label">Commercial Notes</label>
+              <textarea
+                rows={2}
+                className="form-textarea"
+                value={editForm.notes}
+                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                placeholder="Notes for client..."
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Terms & Conditions</label>
+              <textarea
+                rows={3}
+                className="form-textarea"
+                value={editForm.terms}
+                onChange={(e) => setEditForm({ ...editForm, terms: e.target.value })}
+                placeholder="Terms and conditions..."
+              />
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }

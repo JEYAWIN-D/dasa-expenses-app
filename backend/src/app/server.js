@@ -5,10 +5,10 @@ import { connectDatabase, prisma } from '../config/prisma.js';
 async function startServer() {
   await connectDatabase();
 
-  const server = app.listen(ENV.PORT, () => {
+  const server = app.listen(ENV.PORT, '0.0.0.0', () => {
     console.log(`🚀 Quotation & Billing Backend API server running on port ${ENV.PORT}`);
     console.log(`📡 Environment: ${ENV.NODE_ENV}`);
-    console.log(`🔗 API Base URL: http://localhost:${ENV.PORT}/api`);
+    console.log(`🔗 API Base URL: http://127.0.0.1:${ENV.PORT}/api`);
   });
 
   // Graceful shutdown handling

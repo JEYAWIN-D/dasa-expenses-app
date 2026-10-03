@@ -838,6 +838,8 @@ model Quotation {
   signedAt           DateTime?
   signedBy           String?
   convertedInvoiceId String?
+  projectId          String?
+  project            Project?               @relation("ProjectQuotations", fields: [projectId], references: [id], onDelete: SetNull)
   isDeleted          Boolean                @default(false)
   deletedAt          DateTime?
   createdBy          String?
@@ -851,6 +853,7 @@ model Quotation {
   projects           Project[]
 
   @@index([organizationId])
+  @@index([projectId])
   @@index([quotationNumber])
   @@index([clientId, status])
   @@index([quotationDate])
@@ -1150,6 +1153,7 @@ model Project {
   invoices               Invoice[]
   assignments            ProjectAssignment[]
   documents              Document[]
+  projectQuotations      Quotation[]        @relation("ProjectQuotations")
 
   @@index([organizationId])
   @@index([projectCode])

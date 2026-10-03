@@ -32,6 +32,51 @@ export function computeMilestoneVariance(amount, paidAmount) {
 }
 
 /**
+ * Computes progressive cumulative waterfall across milestones:
+ * Absorbs excess advances from earlier milestones into subsequent milestone dues automatically.
+ */
+export function computeMilestoneWaterfall(milestones = []) {
+  let accumulatedExcessCredit = 0;
+
+  return (milestones || []).map((m) => {
+    const amount = Number(m.amount || 0);
+    const paid = Number(m.paidAmount || 0);
+    const directDue = Math.max(0, Math.round((amount - paid) * 100) / 100);
+    const directExcess = Math.max(0, Math.round((paid - amount) * 100) / 100);
+
+    // Credit that can be applied from prior accumulated unabsorbed excess
+    const creditApplied = Math.min(directDue, accumulatedExcessCredit);
+    const netPayableNow = Math.max(0, Math.round((directDue - creditApplied) * 100) / 100);
+
+    // Update accumulated pool for subsequent milestones:
+    accumulatedExcessCredit = Math.max(0, Math.round((accumulatedExcessCredit - creditApplied + directExcess) * 100) / 100);
+
+    let status = m.status;
+    if (paid >= amount && amount > 0) {
+      status = 'PAID';
+    } else if (netPayableNow === 0 && (creditApplied > 0 || paid > 0)) {
+      status = 'PAID';
+    } else if (paid > 0 || creditApplied > 0) {
+      status = 'PARTIALLY_PAID';
+    } else {
+      status = 'PENDING';
+    }
+
+    return {
+      ...m,
+      amount,
+      paidAmount: paid,
+      directDue,
+      directExcess,
+      creditApplied,
+      netPayableNow,
+      accumulatedExcessCreditRemaining: accumulatedExcessCredit,
+      computedStatus: status,
+    };
+  });
+}
+
+/**
  * Computes standard financial metrics for a project object
  */
 export function calculateProjectFinancials(project) {
@@ -215,6 +260,20 @@ export async function getProjectById(id) {
           items: true,
           revisions: {
             orderBy: { revisionNumber: 'desc' },
+          },
+        },
+      },
+      projectQuotations: {
+        where: { isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          items: true,
+          client: {
+            select: {
+              id: true,
+              companyName: true,
+              contactPerson: true,
+            },
           },
         },
       },
@@ -779,6 +838,21 @@ export async function getProjectDocumentData(projectId, docType, options = {}) {
 
   const primaryContact = project.client.contacts?.find((c) => c.isPrimary) || project.client.contacts?.[0];
 
+  const waterfall = computeMilestoneWaterfall(project.milestones);
+  let targetMilestone = null;
+  let targetWaterfallItem = null;
+
+  if (options.milestoneId) {
+    targetMilestone = project.milestones.find((m) => m.id === options.milestoneId) || null;
+    targetWaterfallItem = waterfall.find((m) => m.id === options.milestoneId) || null;
+  }
+
+  const requestedAmount = options.requestedAmount !== undefined && options.requestedAmount !== ''
+    ? Number(options.requestedAmount)
+    : targetWaterfallItem
+      ? targetWaterfallItem.netPayableNow
+      : financials.outstandingBalance;
+
   return {
     docType,
     date: currentDate,
@@ -812,9 +886,21 @@ export async function getProjectDocumentData(projectId, docType, options = {}) {
       totalAmount: project.quotation.totalAmount,
     } : null,
     financials,
-    milestones: project.milestones,
+    milestones: waterfall,
+    targetMilestone: targetWaterfallItem || targetMilestone,
+    paymentRequest: {
+      requestedAmount,
+      dueDate: options.dueDate || null,
+      customNote: options.customNote || null,
+      selectedMilestoneId: options.milestoneId || null,
+      milestoneTitle: targetWaterfallItem?.title || null,
+      milestoneAmount: targetWaterfallItem?.amount || null,
+      creditApplied: targetWaterfallItem?.creditApplied || 0,
+      netPayableNow: targetWaterfallItem?.netPayableNow !== undefined ? targetWaterfallItem.netPayableNow : requestedAmount,
+    },
     payments: project.payments,
     company,
     bankAccounts: accounts,
   };
 }
+

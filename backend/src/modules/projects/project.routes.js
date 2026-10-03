@@ -24,5 +24,6 @@ router.post('/:id/handover', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER', '
 
 // Official Documents (Letter & Receipt Generation)
 router.get('/:id/documents/:docType', projectController.getDocumentData);
+router.post('/:id/documents/:docType', projectController.getDocumentData);
 
 export default router;

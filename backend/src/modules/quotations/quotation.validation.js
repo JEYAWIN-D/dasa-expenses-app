@@ -30,6 +30,7 @@ export const createQuotationSchema = z.object({
     'CONVERTED',
     'CANCELLED',
   ]).default('DRAFT'),
+  projectId: z.string().uuid().optional().nullable(),
   discountRate: z.number().min(0).default(0).optional(),
   discountAmount: z.number().min(0).default(0).optional(),
   discountType: z.enum(['PERCENTAGE', 'FIXED']).default('PERCENTAGE').optional(),
@@ -45,7 +46,37 @@ export const createQuotationSchema = z.object({
   items: z.array(quotationItemSchema).min(1, 'At least one item is required'),
 });
 
-export const updateQuotationSchema = createQuotationSchema.partial();
+export const updateQuotationSchema = z.object({
+  clientId: z.string().uuid().optional(),
+  projectId: z.string().uuid().optional().nullable(),
+  quotationDate: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
+  expiryDate: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}/)).optional(),
+  status: z.enum([
+    'DRAFT',
+    'SENT',
+    'VIEWED',
+    'NEGOTIATION',
+    'REVISED',
+    'APPROVED',
+    'REJECTED',
+    'EXPIRED',
+    'CONVERTED',
+    'CANCELLED',
+  ]).optional(),
+  discountRate: z.number().min(0).optional(),
+  discountAmount: z.number().min(0).optional(),
+  discountType: z.enum(['PERCENTAGE', 'FIXED']).optional(),
+  taxRate: z.number().min(0).max(100).optional(),
+  notes: z.string().optional().nullable(),
+  terms: z.string().optional().nullable(),
+  paymentTerms: z.string().optional().nullable(),
+  paymentMode: z.string().optional().nullable(),
+  approvalText: z.string().optional().nullable(),
+  authorizedPerson: z.string().optional().nullable(),
+  authorizedDesignation: z.string().optional().nullable(),
+  amcPackages: z.any().optional().nullable(),
+  items: z.array(quotationItemSchema).optional(),
+});
 
 export const reviseQuotationSchema = z.object({
   reason: z.string().min(2, 'Revision reason is required'),

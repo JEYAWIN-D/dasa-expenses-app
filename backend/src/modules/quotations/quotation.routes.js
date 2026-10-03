@@ -18,6 +18,8 @@ router.use(authenticate);
 router.get('/', quotationController.listQuotations);
 router.get('/:id', quotationController.getQuotation);
 router.post('/', validateBody(createQuotationSchema), quotationController.createQuotation);
+router.put('/:id', validateBody(updateQuotationSchema), quotationController.updateQuotation);
+router.patch('/:id', validateBody(updateQuotationSchema), quotationController.updateQuotation);
 router.post('/:id/revise', validateBody(reviseQuotationSchema), quotationController.reviseQuotation);
 router.patch('/:id/status', validateBody(updateStatusSchema), quotationController.updateStatus);
 router.post('/:id/sign', signaturePinLimiter, validateBody(signDocumentSchema), quotationController.signQuotation);

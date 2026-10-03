@@ -9,14 +9,112 @@ import { calculateAmcTotals } from '../../components/common/AmcComparisonView.js
 export default function QuotationCreatePage() {
   const [searchParams] = useSearchParams();
   const preselectedClientId = searchParams.get('clientId') || '';
+  const preselectedProjectId = searchParams.get('projectId') || '';
 
   const navigate = useNavigate();
   const notify = useNotification();
+
+  // Project state
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [allProjects, setAllProjects] = useState([]);
 
   // Client search state
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [clientSearchResults, setClientSearchResults] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
+
+  // Load projects list for selection
+  useEffect(() => {
+    api.get('/projects', { limit: 100 }).then((res) => {
+      const list = res?.data?.projects || res?.data || [];
+      setAllProjects(list);
+    }).catch(() => {});
+  }, []);
+
+  // Handle preselected project from URL query
+  useEffect(() => {
+    if (preselectedProjectId) {
+      api.get(`/projects/${preselectedProjectId}`).then((res) => {
+        const p = res?.data?.id ? res.data : (res?.data?.data || res?.data || res);
+        if (p) {
+          setSelectedProject(p);
+          if (p.client) setSelectedClient(p.client);
+          if (p.name) {
+            setNotes(`Project Scope: ${p.name}\nProject Code: ${p.projectCode}\n${p.description || ''}`);
+          }
+          if (p.milestones && p.milestones.length > 0) {
+            setItems(p.milestones.map((m) => ({
+              title: m.title,
+              description: `Project milestone deliverable (${m.percentage}% of project scope)`,
+              quantity: 1,
+              unitPrice: p.budgetAmount ? Math.round((p.budgetAmount * m.percentage) / 100) : '',
+              discountType: '%',
+              discountValue: 0,
+              discountPercent: 0,
+              taxPercent: 18,
+            })));
+          } else if (p.budgetAmount) {
+            setItems([{
+              title: p.name,
+              description: p.description || 'Turnkey technical deliverables and project execution',
+              quantity: 1,
+              unitPrice: p.budgetAmount,
+              discountType: '%',
+              discountValue: 0,
+              discountPercent: 0,
+              taxPercent: 18,
+            }]);
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [preselectedProjectId]);
+
+  const handleSelectProject = (projectId) => {
+    if (!projectId) {
+      setSelectedProject(null);
+      return;
+    }
+    const found = allProjects.find((p) => p.id === projectId);
+    if (found) {
+      setSelectedProject(found);
+      if (found.client) {
+        setSelectedClient(found.client);
+      }
+      if (found.name && !notes) {
+        setNotes(`Project: ${found.name} (${found.projectCode})\n${found.description || ''}`);
+      }
+    }
+  };
+
+  const handleImportProjectScope = () => {
+    if (!selectedProject) return;
+    if (selectedProject.milestones && selectedProject.milestones.length > 0) {
+      setItems(selectedProject.milestones.map((m) => ({
+        title: m.title,
+        description: `Project deliverable milestone (${m.percentage || 0}%)`,
+        quantity: 1,
+        unitPrice: selectedProject.budgetAmount ? Math.round((selectedProject.budgetAmount * (m.percentage || 0)) / 100) : '',
+        discountType: '%',
+        discountValue: 0,
+        discountPercent: 0,
+        taxPercent: 18,
+      })));
+      notify.success(`Imported ${selectedProject.milestones.length} milestones from project ${selectedProject.name}!`);
+    } else {
+      setItems([{
+        title: selectedProject.name,
+        description: selectedProject.description || 'Full turnkey software & technical deliverables',
+        quantity: 1,
+        unitPrice: selectedProject.budgetAmount || 0,
+        discountType: '%',
+        discountValue: 0,
+        discountPercent: 0,
+        taxPercent: 18,
+      }]);
+      notify.success(`Imported scope for ${selectedProject.name}`);
+    }
+  };
 
   // Form state
   const [quotationDate, setQuotationDate] = useState(new Date().toISOString().split('T')[0]);
@@ -336,6 +434,7 @@ export default function QuotationCreatePage() {
       setSaving(true);
       const res = await api.post('/quotations', {
         clientId: selectedClient.id,
+        projectId: selectedProject?.id || null,
         quotationDate,
         expiryDate,
         status,
@@ -407,7 +506,48 @@ export default function QuotationCreatePage() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 24 }}>
           {/* Left Column: Client & Details */}
           <div className="card">
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Client & Primary Information</h3>
+            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Client & Project Information</h3>
+
+            {/* Project Selector */}
+            <div className="form-group" style={{ marginBottom: 16, padding: '12px 14px', backgroundColor: '#f8fafc', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <label className="form-label" style={{ fontWeight: 700, margin: 0 }}>
+                  Link to Project (Optional)
+                </label>
+                {selectedProject && (
+                  <button
+                    type="button"
+                    onClick={handleImportProjectScope}
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: 11, padding: '2px 8px', color: 'var(--primary)' }}
+                  >
+                    Fetch / Import Project Scope & Milestones
+                  </button>
+                )}
+              </div>
+
+              <select
+                className="form-select"
+                value={selectedProject?.id || ''}
+                onChange={(e) => handleSelectProject(e.target.value)}
+              >
+                <option value="">-- Standalone Quotation (No Project) --</option>
+                {allProjects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.projectCode}) - {p.client?.companyName}
+                  </option>
+                ))}
+              </select>
+
+              {selectedProject && (
+                <div style={{ marginTop: 6, fontSize: 12, color: '#3b82f6', display: 'flex', gap: 10, alignItems: 'center' }}>
+                  <span>Linked Project: <strong>{selectedProject.name}</strong></span>
+                  {selectedProject.milestones?.length > 0 && (
+                    <span>• {selectedProject.milestones.length} milestones available</span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Client selector with on-demand search */}
             <div className="form-group">
