@@ -43,9 +43,13 @@ export function DocumentPreviewModal({ docData, onClose }) {
 
   // Sanitize address to prevent duplicate city/state text
   const cleanAddress = (() => {
-    if (!client.address) return '';
+    if (!client.address) return client.city || '';
     let addr = client.address.trim();
-    return addr;
+    const city = (client.city || '').trim();
+    if (city && addr.toLowerCase().endsWith(city.toLowerCase())) {
+      return addr;
+    }
+    return city ? `${addr}, ${city}` : addr;
   })();
 
   return (
@@ -69,7 +73,7 @@ export function DocumentPreviewModal({ docData, onClose }) {
           @media print {
             @page {
               size: A4 portrait;
-              margin: 6mm 10mm 6mm 10mm;
+              margin: 14mm 16mm 14mm 16mm;
             }
             html, body {
               background: #ffffff !important;
@@ -355,8 +359,8 @@ export function DocumentPreviewModal({ docData, onClose }) {
           {/* Document Banner */}
           <div
             style={{
-              backgroundColor: '#0f172a',
-              color: '#ffffff',
+              backgroundColor: '#f1f5f9',
+              border: '1px solid #cbd5e1',
               padding: '6px 12px',
               borderRadius: '6px',
               textAlign: 'center',
@@ -370,7 +374,7 @@ export function DocumentPreviewModal({ docData, onClose }) {
                 letterSpacing: '0.8px',
                 textTransform: 'uppercase',
                 margin: 0,
-                color: '#ffffff',
+                color: '#1e293b',
               }}
             >
               {getDocTitle()}
@@ -553,7 +557,7 @@ export function DocumentPreviewModal({ docData, onClose }) {
               <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10.5px' }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
+                    <tr style={{ backgroundColor: '#f1f5f9', color: '#1e293b', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
                       <th style={{ padding: '6px 6px', width: '24px', textAlign: 'center' }}>#</th>
                       <th style={{ padding: '6px 8px' }}>Milestone Phase</th>
                       <th style={{ padding: '6px 8px' }}>Target Date</th>

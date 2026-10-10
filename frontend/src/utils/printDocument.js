@@ -54,7 +54,7 @@ export function printDocument(elementOrId, documentTitle = 'Official Document') 
         <style>
           @page {
             size: A4 portrait;
-            margin: 6mm 10mm 6mm 10mm;
+            margin: 14mm 16mm 14mm 16mm;
           }
           * {
             box-sizing: border-box;
@@ -69,7 +69,7 @@ export function printDocument(elementOrId, documentTitle = 'Official Document') 
             color: #0f172a !important;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
             font-size: 11.5px !important;
-            line-height: 1.35 !important;
+            line-height: 1.45 !important;
             width: 100% !important;
             height: auto !important;
           }
@@ -79,7 +79,7 @@ export function printDocument(elementOrId, documentTitle = 'Official Document') 
           table {
             width: 100% !important;
             border-collapse: collapse !important;
-            page-break-inside: avoid !important;
+            page-break-inside: auto !important;
           }
           tr {
             page-break-inside: avoid !important;
@@ -93,8 +93,8 @@ export function printDocument(elementOrId, documentTitle = 'Official Document') 
           }
         </style>
       </head>
-      <body style="padding: 4px 6px; background: #ffffff;">
-        <div style="max-width: 100%; margin: 0 auto; page-break-inside: avoid;">
+      <body style="padding: 0; margin: 0; background: #ffffff;">
+        <div style="width: 100%; max-width: 100%; margin: 0 auto; page-break-inside: avoid;">
           ${targetEl.innerHTML}
         </div>
       </body>

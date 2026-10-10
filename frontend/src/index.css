@@ -651,7 +651,7 @@ a {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm 12mm 12mm;
+    margin: 14mm 16mm 14mm 16mm;
   }
 
   html, body {

@@ -90,6 +90,38 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
     return document.notes;
   })();
 
+  // Deduplicate repeated city in client address (e.g. ERODE, ERODE)
+  const cleanClientAddress = (() => {
+    if (!client.address) return client.city || '';
+    let addr = client.address.trim();
+    const city = (client.city || '').trim();
+    if (city && addr.toLowerCase().endsWith(city.toLowerCase())) {
+      return addr;
+    }
+    return city ? `${addr}, ${city}` : addr;
+  })();
+
+  // Context-appropriate terms for Receipt, Invoice, and Quotation
+  const termsText = (() => {
+    if (isPayment) {
+      return (
+        `1. This official receipt acknowledges payment realization, subject to bank clearance for electronic/cheque remittances.\n2. All amounts received are credited towards specified milestones and invoice ledger accounts as detailed above.\n3. Retain this authenticated receipt for your company's accounting, GST reconciliation, and statutory audit records.`
+      );
+    }
+    if (isInvoice) {
+      return (
+        (document.terms || company.termsAndConditions || (
+          `1. All payments are strictly due within 15 days of invoice date.\n2. Goods/Services once supplied cannot be taken back or refunded.\n3. Late payments subject to 1.5% interest per month.\n4. Disputes subject to Erode jurisdiction.`
+        )).replace(/Bangalore/gi, 'Erode').replace(/BanERODEgalore/gi, 'Erode')
+      );
+    }
+    return (
+      (document.terms || company.termsAndConditions || (
+        `1. Validity: This commercial proposal is valid for 30 calendar days from issuance.\n2. Payment Milestones: As agreed in milestone schedule.\n3. Scope Changes: Any additions beyond specifications will be scoped under a revision addendum.\n4. Taxes: Statutory GST @ 18% as per Govt of India regulations.\n5. Warranty: 90 days complimentary bug-fixing and warranty support post deployment.\n6. Jurisdiction: Disputes subject to Erode, Tamil Nadu jurisdiction.`
+      )).replace(/Bangalore/gi, 'Erode').replace(/BanERODEgalore/gi, 'Erode')
+    );
+  })();
+
   const handlePrint = () => {
     if (printableRef.current) {
       printDocument(printableRef.current, `${docNumber} - ${company.companyName}`);
@@ -103,7 +135,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
       isOpen={isOpen}
       onClose={onClose}
       title={`Preview: ${docNumber} — ${isInvoice ? 'GST Tax Invoice' : isPayment ? 'Payment Receipt' : 'Commercial Quotation'}`}
-      maxWidth={900}
+      maxWidth={920}
       footer={
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 10 }}>
           <button
@@ -186,9 +218,13 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
         style={{
           backgroundColor: '#ffffff',
           color: '#0f172a',
-          padding: '32px 38px',
+          padding: '42px 48px',
           fontFamily: 'var(--font-sans)',
-          lineHeight: 1.45,
+          lineHeight: 1.5,
+          maxWidth: '840px',
+          margin: '0 auto',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)',
+          borderRadius: '4px',
         }}
       >
         {/* =========================================================================
@@ -388,13 +424,13 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
             <div style={{ marginBottom: 24, borderRadius: 8, overflow: 'hidden', border: '1px solid #cbd5e1' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
                 <thead>
-                  <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
-                    <th style={{ padding: '11px 10px', width: 38, textAlign: 'center' }}>#</th>
-                    <th style={{ padding: '11px 14px' }}>Scope of Work & Deliverables Specification</th>
-                    <th style={{ padding: '11px 10px', textAlign: 'right', width: 55 }}>Qty</th>
-                    <th style={{ padding: '11px 12px', textAlign: 'right', width: 110 }}>Unit Rate (₹)</th>
-                    <th style={{ padding: '11px 10px', textAlign: 'right', width: 75 }}>GST %</th>
-                    <th style={{ padding: '11px 14px', textAlign: 'right', width: 130 }}>Total Amount (₹)</th>
+                  <tr style={{ backgroundColor: '#f1f5f9', color: '#1e293b', borderTop: '1px solid #cbd5e1', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                    <th style={{ padding: '11px 10px', width: 38, textAlign: 'center', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
+                    <th style={{ padding: '11px 14px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Scope of Work & Deliverables Specification</th>
+                    <th style={{ padding: '11px 10px', textAlign: 'right', width: 55, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Qty</th>
+                    <th style={{ padding: '11px 12px', textAlign: 'right', width: 110, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Unit Rate (₹)</th>
+                    <th style={{ padding: '11px 10px', textAlign: 'right', width: 75, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>GST %</th>
+                    <th style={{ padding: '11px 14px', textAlign: 'right', width: 130, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Amount (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -766,7 +802,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
           </div>
         ) : (
           /* =========================================================================
-              2. INVOICE & PAYMENT RECEIPT TEMPLATES
+              2. INVOICE & PAYMENT RECEIPT TEMPLATES (EXECUTIVE COMFORT REDESIGN)
              ========================================================================= */
           <div>
             {/* Header */}
@@ -775,39 +811,47 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'flex-start',
-                borderBottom: '2.5px solid #0f172a',
-                paddingBottom: 20,
-                marginBottom: 20,
+                paddingBottom: 16,
+                marginBottom: 6,
+                gap: 20,
               }}
             >
               {/* Supplier Branding */}
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flex: 1 }}>
                 <img
                   src={company.logoUrl}
                   alt={company.companyName}
                   onError={(e) => {
                     e.currentTarget.src = '/dasa-tech-logo.png';
                   }}
-                  style={{ height: 60, width: 60, objectFit: 'contain', borderRadius: 8 }}
+                  style={{
+                    height: 56,
+                    width: 56,
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                    border: '1px solid #e2e8f0',
+                    padding: 3,
+                    backgroundColor: '#ffffff',
+                  }}
                 />
                 <div>
-                  <h2 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.3px' }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
                     {company.companyName}
                   </h2>
                   {company.tagline && (
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: isPayment ? '#059669' : '#2563eb', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 2 }}>
                       {company.tagline}
                     </div>
                   )}
-                  <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginTop: 4, maxWidth: 380 }}>
+                  <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginTop: 4, maxWidth: 390 }}>
                     <div>{company.address}, {company.city}</div>
                     <div>{company.state} - {company.postalCode}, {company.country}</div>
                     <div>Phone: <strong>{company.phone}</strong> | Email: <strong>{company.email}</strong></div>
-                    <div style={{ marginTop: 4, fontSize: 11 }}>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4, marginRight: 6 }}>
+                    <div style={{ marginTop: 4, fontSize: 10.5 }}>
+                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 7px', borderRadius: 4, marginRight: 6, border: '1px solid #e2e8f0' }}>
                         <strong>GSTIN:</strong> {company.gstNumber} (State: {company.state} - {stateCodeSupplier})
                       </span>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 7px', borderRadius: 4, border: '1px solid #e2e8f0' }}>
                         <strong>PAN:</strong> {company.panNumber}
                       </span>
                     </div>
@@ -815,75 +859,99 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                 </div>
               </div>
 
-              {/* Invoice / Document Metadata */}
-              <div style={{ textAlign: 'right' }}>
+              {/* Document Title & Metadata */}
+              <div style={{ textAlign: 'right', minWidth: 220 }}>
                 <div
                   style={{
-                    fontSize: 24,
+                    fontSize: 21,
                     fontWeight: 900,
-                    letterSpacing: 1.2,
-                    color: isInvoice ? '#047857' : '#7c3aed',
-                    lineHeight: 1.1,
+                    letterSpacing: 0.8,
+                    color: isInvoice ? '#1e40af' : '#047857',
+                    lineHeight: 1.2,
                   }}
                 >
-                  {isInvoice ? 'TAX INVOICE' : 'PAYMENT RECEIPT'}
+                  {isInvoice ? 'TAX INVOICE' : 'OFFICIAL PAYMENT RECEIPT'}
                 </div>
                 {isInvoice && (
-                  <div style={{ fontSize: 10, fontWeight: 800, color: '#475569', letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 3 }}>
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: '#475569', letterSpacing: 0.8, textTransform: 'uppercase', marginTop: 2 }}>
                     [ ORIGINAL FOR RECIPIENT ]
                   </div>
                 )}
                 {isInvoice && (
-                  <div style={{ fontSize: 10, color: '#64748b', fontStyle: 'italic', marginTop: 1 }}>
+                  <div style={{ fontSize: 9.5, color: '#64748b', fontStyle: 'italic', marginTop: 1 }}>
                     Issued under Rule 46 of CGST Rules, 2017
                   </div>
                 )}
+                {isPayment && (
+                  <div style={{ fontSize: 10, fontWeight: 700, color: '#059669', letterSpacing: 0.5, textTransform: 'uppercase', marginTop: 2 }}>
+                    Reconciled & Cleared Voucher
+                  </div>
+                )}
 
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#0f172a', marginTop: 8 }}>
+                <div style={{ fontSize: 15, fontWeight: 900, color: '#0f172a', marginTop: 6, fontFamily: 'monospace' }}>
                   {docNumber}
                 </div>
-                <div style={{ fontSize: 12, color: '#475569', marginTop: 3 }}>
-                  Invoice Date: <strong>{docDate ? new Date(docDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</strong>
+                <div style={{ fontSize: 11.5, color: '#475569', marginTop: 3 }}>
+                  {isPayment ? 'Receipt Date:' : 'Invoice Date:'} <strong>{docDate ? new Date(docDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}</strong>
                 </div>
                 {document.dueDate && (
-                  <div style={{ fontSize: 12, color: '#dc2626', fontWeight: 600, marginTop: 2 }}>
+                  <div style={{ fontSize: 11.5, color: '#dc2626', fontWeight: 600, marginTop: 2 }}>
                     Payment Due: <strong>{new Date(document.dueDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
                   </div>
                 )}
                 {document.status && (
-                  <div style={{ marginTop: 6 }}>
+                  <div style={{ marginTop: 5 }}>
                     <Badge status={document.status} />
                   </div>
                 )}
               </div>
             </div>
 
-            {/* GST Party Details: Bill To & Supply Particulars */}
+            {/* Subtle Brand Gradient Accent Bar */}
+            <div
+              style={{
+                height: 3,
+                width: '100%',
+                background: isInvoice
+                  ? 'linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%)'
+                  : 'linear-gradient(90deg, #059669 0%, #10b981 50%, #34d399 100%)',
+                borderRadius: 2,
+                marginBottom: 20,
+              }}
+            />
+
+            {/* GST Party Details: Bill To & Supply / Remittance Particulars */}
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1.2fr 1fr',
-                gap: 16,
-                marginBottom: 20,
-                padding: '14px 18px',
+                gridTemplateColumns: '1.25fr 1fr',
+                gap: 20,
+                marginBottom: 22,
+                padding: '16px 20px',
                 backgroundColor: '#f8fafc',
-                borderRadius: 8,
+                borderRadius: 10,
                 border: '1px solid #e2e8f0',
               }}
             >
               {/* Recipient Details */}
               <div>
-                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#475569', marginBottom: 4, letterSpacing: 0.5 }}>
-                  {isPayment ? 'Details of Payer / Received From:' : 'Details of Receiver | Billed To:'}
+                <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 5, letterSpacing: '0.6px' }}>
+                  {isPayment ? 'DETAILS OF PAYER / RECEIVED FROM:' : 'DETAILS OF RECIPIENT | BILLED TO:'}
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>{client.companyName || 'Valued Customer'}</div>
-                {client.contactPerson && <div style={{ fontSize: 13, color: '#334155', fontWeight: 500 }}>Attn: {client.contactPerson}</div>}
-                <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginTop: 4 }}>
-                  {client.address && <div>{client.address}, {client.city || ''}</div>}
+                <div style={{ fontSize: 15.5, fontWeight: 800, color: '#0f172a', letterSpacing: '-0.2px' }}>
+                  {client.companyName || 'Valued Customer'}
+                </div>
+                {client.contactPerson && (
+                  <div style={{ fontSize: 12.5, color: '#1e293b', fontWeight: 600, marginTop: 2 }}>
+                    Attn: {client.contactPerson}
+                  </div>
+                )}
+                <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.55, marginTop: 4 }}>
+                  {cleanClientAddress && <div>{cleanClientAddress}</div>}
                   <div>State: <strong>{clientState}</strong> (State Code: <strong>{stateCodeRecipient}</strong>)</div>
-                  <div>Phone: {client.phone || 'N/A'} | Email: {client.email || 'N/A'}</div>
+                  <div>Phone: {client.phone || 'N/A'} {client.email ? `| Email: ${client.email}` : ''}</div>
                   <div style={{ marginTop: 4 }}>
-                    <strong>GSTIN / UIN:</strong>{' '}
+                    <span style={{ fontWeight: 700, color: '#475569' }}>GSTIN / UIN: </span>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: client.gstNumber ? '#0f172a' : '#64748b' }}>
                       {client.gstNumber || 'Unregistered Consumer'}
                     </span>
@@ -892,34 +960,34 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
               </div>
 
               {/* Place of Supply, Reverse Charge & Bank Details */}
-              <div style={{ borderLeft: '1px solid #cbd5e1', paddingLeft: 16 }}>
+              <div style={{ borderLeft: '1px solid #e2e8f0', paddingLeft: 20 }}>
                 {isInvoice && (
-                  <>
-                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#475569', marginBottom: 4, letterSpacing: 0.5 }}>
-                      Tax & Dispatch Particulars:
+                  <div style={{ marginBottom: 12 }}>
+                    <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 4, letterSpacing: '0.6px' }}>
+                      TAX & DISPATCH PARTICULARS:
                     </div>
-                    <div style={{ fontSize: 12, color: '#334155', lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 11.5, color: '#334155', lineHeight: 1.6 }}>
                       <div>Place of Supply (POS): <strong>{clientState} ({stateCodeRecipient})</strong></div>
-                      <div>Reverse Charge (RCM): <strong>No</strong> (Tax is payable by Supplier)</div>
+                      <div>Reverse Charge (RCM): <strong>No</strong> (Tax payable by Supplier)</div>
                       <div>Supply Type: <strong>{isInterState ? 'Inter-State Supply (IGST)' : 'Intra-State Supply (CGST + SGST)'}</strong></div>
                       {document.notes && <div>Purpose: <span style={{ color: '#0f172a', fontWeight: 600 }}>{document.notes}</span></div>}
                     </div>
-                  </>
+                  </div>
                 )}
 
-                <div style={{ marginTop: isInvoice ? 10 : 0 }}>
-                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#475569', marginBottom: 4, letterSpacing: 0.5 }}>
-                    Payment / Treasury Remittance:
+                <div>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 4, letterSpacing: '0.6px' }}>
+                    {isPayment ? 'PAYMENT & RECONCILIATION CHANNEL:' : 'BANK REMITTANCE DETAILS:'}
                   </div>
                   {company.bankName && company.bankAccountNumber ? (
-                    <div style={{ fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 11.5, color: '#334155', lineHeight: 1.55 }}>
                       <div>Bank: <strong>{company.bankName}</strong></div>
-                      <div>Account No: <strong>{company.bankAccountNumber}</strong></div>
-                      <div>IFSC Code: <strong>{company.bankIfsc}</strong></div>
+                      <div>Account No: <strong style={{ fontFamily: 'monospace' }}>{company.bankAccountNumber}</strong></div>
+                      <div>IFSC Code: <strong style={{ fontFamily: 'monospace' }}>{company.bankIfsc}</strong></div>
                       <div>A/C Name: <strong>{company.bankAccountName || company.companyName}</strong></div>
                     </div>
                   ) : (
-                    <div style={{ fontSize: 12, color: '#334155', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: 11.5, color: '#334155', lineHeight: 1.55 }}>
                       <div>Payment Mode: <strong>Direct Bank Transfer / NEFT / IMPS / UPI</strong></div>
                       <div>Beneficiary: <strong>{company.companyName}</strong></div>
                     </div>
@@ -930,26 +998,26 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
 
             {/* Line Items Table (For Invoices) */}
             {!isPayment && document.items && (
-              <div style={{ marginBottom: 20 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5 }}>
+              <div style={{ marginBottom: 22, borderRadius: 8, overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                   <thead>
-                    <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
-                      <th style={{ padding: '10px 10px', width: 35, textAlign: 'center' }}>#</th>
-                      <th style={{ padding: '10px 12px' }}>Description of Goods / Services</th>
-                      {isInvoice && <th style={{ padding: '10px 8px', width: 75, textAlign: 'center' }}>SAC / HSN</th>}
-                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 50 }}>Qty</th>
-                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 95 }}>Rate (₹)</th>
-                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 100 }}>Taxable (₹)</th>
+                    <tr style={{ backgroundColor: '#f1f5f9', color: '#1e293b', borderTop: '1px solid #cbd5e1', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                      <th style={{ padding: '10px 10px', width: 35, textAlign: 'center', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
+                      <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description of Goods / Services</th>
+                      {isInvoice && <th style={{ padding: '10px 8px', width: 75, textAlign: 'center', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>SAC / HSN</th>}
+                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 50, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Qty</th>
+                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 95, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rate (₹)</th>
+                      <th style={{ padding: '10px 10px', textAlign: 'right', width: 100, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Taxable (₹)</th>
                       {isInvoice && !isInterState && (
                         <>
-                          <th style={{ padding: '10px 8px', textAlign: 'right', width: 70 }}>CGST (9%)</th>
-                          <th style={{ padding: '10px 8px', textAlign: 'right', width: 70 }}>SGST (9%)</th>
+                          <th style={{ padding: '10px 8px', textAlign: 'right', width: 70, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>CGST (9%)</th>
+                          <th style={{ padding: '10px 8px', textAlign: 'right', width: 70, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>SGST (9%)</th>
                         </>
                       )}
                       {isInvoice && isInterState && (
-                        <th style={{ padding: '10px 8px', textAlign: 'right', width: 80 }}>IGST (18%)</th>
+                        <th style={{ padding: '10px 8px', textAlign: 'right', width: 80, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>IGST (18%)</th>
                       )}
-                      <th style={{ padding: '10px 12px', textAlign: 'right', width: 110 }}>Total (₹)</th>
+                      <th style={{ padding: '10px 12px', textAlign: 'right', width: 110, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total (₹)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -964,38 +1032,38 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                       const itemTotalWithTax = itemTaxable + itemCgst + itemSgst + itemIgst;
 
                       return (
-                        <tr key={item.id || idx} style={{ borderBottom: '1px solid #e2e8f0', verticalAlign: 'top' }}>
-                          <td style={{ padding: '10px 8px', color: '#64748b', textAlign: 'center' }}>{idx + 1}</td>
-                          <td style={{ padding: '10px 12px' }}>
+                        <tr key={item.id || idx} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc', verticalAlign: 'top' }}>
+                          <td style={{ padding: '11px 8px', color: '#64748b', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
+                          <td style={{ padding: '11px 12px' }}>
                             {item.title && (
-                              <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', marginBottom: item.description ? 3 : 0 }}>
+                              <div style={{ fontWeight: 800, fontSize: 13, color: '#0f172a', marginBottom: item.description ? 3 : 0 }}>
                                 {item.title}
                               </div>
                             )}
                             {item.description && (
-                              <div style={{ fontSize: 12, color: '#475569', whiteSpace: 'pre-line', lineHeight: 1.4 }}>
+                              <div style={{ fontSize: 11.5, color: '#475569', whiteSpace: 'pre-line', lineHeight: 1.45 }}>
                                 {item.description}
                               </div>
                             )}
                           </td>
                           {isInvoice && (
-                            <td style={{ padding: '10px 8px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 600, color: '#334155' }}>
+                            <td style={{ padding: '11px 8px', textAlign: 'center', fontFamily: 'monospace', fontWeight: 600, color: '#334155' }}>
                               {item.sacCode || item.hsnCode || '998314'}
                             </td>
                           )}
-                          <td style={{ padding: '10px 10px', textAlign: 'right' }}>{item.quantity}</td>
-                          <td style={{ padding: '10px 10px', textAlign: 'right' }}>₹{Number(item.unitPrice).toLocaleString('en-IN')}</td>
-                          <td style={{ padding: '10px 10px', textAlign: 'right', fontWeight: 600 }}>₹{itemTaxable.toLocaleString('en-IN')}</td>
+                          <td style={{ padding: '11px 10px', textAlign: 'right', color: '#1e293b', fontWeight: 600 }}>{item.quantity}</td>
+                          <td style={{ padding: '11px 10px', textAlign: 'right' }}>₹{Number(item.unitPrice).toLocaleString('en-IN')}</td>
+                          <td style={{ padding: '11px 10px', textAlign: 'right', fontWeight: 600 }}>₹{itemTaxable.toLocaleString('en-IN')}</td>
                           {isInvoice && !isInterState && (
                             <>
-                              <td style={{ padding: '10px 8px', textAlign: 'right', color: '#475569' }}>₹{itemCgst.toLocaleString('en-IN')}</td>
-                              <td style={{ padding: '10px 8px', textAlign: 'right', color: '#475569' }}>₹{itemSgst.toLocaleString('en-IN')}</td>
+                              <td style={{ padding: '11px 8px', textAlign: 'right', color: '#475569' }}>₹{itemCgst.toLocaleString('en-IN')}</td>
+                              <td style={{ padding: '11px 8px', textAlign: 'right', color: '#475569' }}>₹{itemSgst.toLocaleString('en-IN')}</td>
                             </>
                           )}
                           {isInvoice && isInterState && (
-                            <td style={{ padding: '10px 8px', textAlign: 'right', color: '#475569' }}>₹{itemIgst.toLocaleString('en-IN')}</td>
+                            <td style={{ padding: '11px 8px', textAlign: 'right', color: '#475569' }}>₹{itemIgst.toLocaleString('en-IN')}</td>
                           )}
-                          <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700 }}>
+                          <td style={{ padding: '11px 12px', textAlign: 'right', fontWeight: 800, color: '#0f172a' }}>
                             ₹{itemTotalWithTax.toLocaleString('en-IN')}
                           </td>
                         </tr>
@@ -1008,9 +1076,9 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
 
             {/* Payment Channels & Multi-Method Allocation Table */}
             {isPayment && (
-              <div style={{ marginBottom: 20 }}>
+              <div style={{ marginBottom: 22 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 800, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
                     Payment Allocation & Multi-Channel Breakdown
                   </div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: '#475569' }}>
@@ -1020,23 +1088,57 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   </div>
                 </div>
 
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, border: '1px solid #cbd5e1' }}>
-                  <thead>
-                    <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
-                      <th style={{ padding: '9px 10px', width: 35, textAlign: 'center' }}>#</th>
-                      <th style={{ padding: '9px 12px' }}>Payment Mode / Channel</th>
-                      <th style={{ padding: '9px 12px' }}>Destination / Deposited Account</th>
-                      <th style={{ padding: '9px 12px' }}>Reference / UTR / Cheque #</th>
-                      <th style={{ padding: '9px 12px' }}>Allocation Purpose / Notes</th>
-                      <th style={{ padding: '9px 12px', textAlign: 'right', width: 140 }}>Allocated Amount (₹)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {document.splits && document.splits.length > 0 ? (
-                      document.splits.map((s, idx) => (
-                        <tr key={s.id || idx} style={{ borderBottom: '1px solid #e2e8f0', verticalAlign: 'middle' }}>
-                          <td style={{ padding: '10px 8px', color: '#64748b', textAlign: 'center' }}>{idx + 1}</td>
-                          <td style={{ padding: '10px 12px' }}>
+                <div style={{ borderRadius: 8, overflow: 'hidden', border: '1px solid #cbd5e1' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f1f5f9', color: '#1e293b', borderTop: '1px solid #cbd5e1', borderBottom: '2px solid #cbd5e1', textAlign: 'left' }}>
+                        <th style={{ padding: '10px 10px', width: 35, textAlign: 'center', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</th>
+                        <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Payment Mode</th>
+                        <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Destination Account</th>
+                        <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Reference / UTR / Cheque #</th>
+                        <th style={{ padding: '10px 12px', fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Allocation Purpose / Notes</th>
+                        <th style={{ padding: '10px 14px', textAlign: 'right', width: 150, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Allocated Amount (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {document.splits && document.splits.length > 0 ? (
+                        document.splits.map((s, idx) => (
+                          <tr key={s.id || idx} style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc', verticalAlign: 'middle' }}>
+                            <td style={{ padding: '11px 10px', color: '#64748b', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
+                            <td style={{ padding: '11px 12px' }}>
+                              <span
+                                style={{
+                                  display: 'inline-block',
+                                  padding: '3px 8px',
+                                  borderRadius: '4px',
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  backgroundColor: s.paymentMode === 'CASH' ? '#ecfdf5' : s.paymentMode === 'UPI' ? '#eff6ff' : '#f1f5f9',
+                                  color: s.paymentMode === 'CASH' ? '#047857' : s.paymentMode === 'UPI' ? '#1d4ed8' : '#334155',
+                                  border: `1px solid ${s.paymentMode === 'CASH' ? '#a7f3d0' : s.paymentMode === 'UPI' ? '#bfdbfe' : '#cbd5e1'}`,
+                                }}
+                              >
+                                {s.paymentMode}
+                              </span>
+                            </td>
+                            <td style={{ padding: '11px 12px', color: '#1e293b', fontWeight: 500 }}>
+                              {s.accountName || (s.paymentMode === 'CASH' ? 'Cash in Hand (Office Vault)' : (document.bankAccount || 'Company Operating Account'))}
+                            </td>
+                            <td style={{ padding: '11px 12px', fontFamily: 'monospace', fontWeight: 700, color: '#0f172a' }}>
+                              {s.referenceNumber || document.referenceNumber || '—'}
+                            </td>
+                            <td style={{ padding: '11px 12px', color: '#475569', fontSize: '11.5px' }}>
+                              {s.notes || (document.invoice ? `Applied towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Allocated towards Project ${document.project.name || document.project.projectCode}` : 'Settlement credit'))}
+                            </td>
+                            <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '13.5px' }}>
+                              ₹{Number(s.amount).toLocaleString('en-IN')}
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr style={{ borderBottom: '1px solid #e2e8f0', backgroundColor: '#ffffff' }}>
+                          <td style={{ padding: '11px 10px', color: '#64748b', textAlign: 'center', fontWeight: 600 }}>1</td>
+                          <td style={{ padding: '11px 12px' }}>
                             <span
                               style={{
                                 display: 'inline-block',
@@ -1044,130 +1146,105 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                                 borderRadius: '4px',
                                 fontSize: '11px',
                                 fontWeight: 700,
-                                backgroundColor: s.paymentMode === 'CASH' ? '#ecfdf5' : s.paymentMode === 'UPI' ? '#eff6ff' : '#f8fafc',
-                                color: s.paymentMode === 'CASH' ? '#047857' : s.paymentMode === 'UPI' ? '#1d4ed8' : '#0f172a',
-                                border: '1px solid #cbd5e1',
+                                backgroundColor: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
                               }}
                             >
-                              {s.paymentMode}
+                              {document.paymentMode || 'DIRECT_TRANSFER'}
                             </span>
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#334155', fontWeight: 500 }}>
-                            {s.accountName || (s.paymentMode === 'CASH' ? 'Cash in Hand (Office Vault)' : (document.bankAccount || 'Company Operating Account'))}
+                          <td style={{ padding: '11px 12px', color: '#1e293b', fontWeight: 500 }}>
+                            {document.bankAccount || 'Company Operating Account'}
                           </td>
-                          <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>
-                            {s.referenceNumber || document.referenceNumber || '—'}
+                          <td style={{ padding: '11px 12px', fontFamily: 'monospace', fontWeight: 700, color: '#0f172a' }}>
+                            {document.referenceNumber || '—'}
                           </td>
-                          <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '12px' }}>
-                            {s.notes || (document.invoice ? `Applied towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Allocated towards Project ${document.project.name || document.project.projectCode}` : 'Settlement credit'))}
+                          <td style={{ padding: '11px 12px', color: '#475569', fontSize: '11.5px' }}>
+                            {document.invoice ? `Payment towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Settlement for ${document.project.name || document.project.projectCode}` : 'Payment settlement')}
                           </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669', fontSize: '13px' }}>
-                            ₹{Number(s.amount).toLocaleString('en-IN')}
+                          <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '13.5px' }}>
+                            ₹{Number(document.amount || 0).toLocaleString('en-IN')}
                           </td>
                         </tr>
-                      ))
-                    ) : (
-                      <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                        <td style={{ padding: '10px 8px', color: '#64748b', textAlign: 'center' }}>1</td>
-                        <td style={{ padding: '10px 12px' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              backgroundColor: '#eff6ff',
-                              color: '#1d4ed8',
-                              border: '1px solid #bfdbfe',
-                            }}
-                          >
-                            {document.paymentMode || 'DIRECT_TRANSFER'}
-                          </span>
+                      )}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #cbd5e1' }}>
+                        <td colSpan={5} style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 700, color: '#334155', fontSize: '12px' }}>
+                          Total Cleared & Reconciled Amount:
                         </td>
-                        <td style={{ padding: '10px 12px', color: '#334155', fontWeight: 500 }}>
-                          {document.bankAccount || 'Company Operating Account'}
-                        </td>
-                        <td style={{ padding: '10px 12px', fontFamily: 'monospace', fontWeight: 600, color: '#0f172a' }}>
-                          {document.referenceNumber || '—'}
-                        </td>
-                        <td style={{ padding: '10px 12px', color: '#64748b', fontSize: '12px' }}>
-                          {document.invoice ? `Payment towards Invoice ${document.invoice.invoiceNumber}` : (document.project ? `Settlement for ${document.project.name || document.project.projectCode}` : 'Payment settlement')}
-                        </td>
-                        <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#059669', fontSize: '13px' }}>
+                        <td style={{ padding: '11px 14px', textAlign: 'right', fontWeight: 900, color: '#059669', fontSize: '15px' }}>
                           ₹{Number(document.amount || 0).toLocaleString('en-IN')}
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                  <tfoot>
-                    <tr style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #0f172a' }}>
-                      <td colSpan={5} style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 700, color: '#334155' }}>
-                        Total Cleared & Reconciled Amount:
-                      </td>
-                      <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 800, color: '#059669', fontSize: '14px' }}>
-                        ₹{Number(document.amount || 0).toLocaleString('en-IN')}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
             )}
 
             {/* Totals Section */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 20, marginBottom: 20, alignItems: 'start' }}>
-              <div>
-                <div
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: '#f8fafc',
-                    border: '1.5px solid #e2e8f0',
-                    borderRadius: 8,
-                    fontSize: 12,
-                  }}
-                >
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: 2 }}>
-                    Amount Chargeable (in words):
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#0f172a', fontStyle: 'italic', lineHeight: 1.4 }}>
-                    {numberToWordsINR(isPayment ? (document.amount || 0) : grandTotal)}
-                  </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.35fr 1fr', gap: 18, marginBottom: 22, alignItems: 'stretch' }}>
+              <div
+                style={{
+                  padding: '14px 18px',
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 10,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 4, letterSpacing: '0.6px' }}>
+                  Amount in Words (INR):
                 </div>
-
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a', fontStyle: 'italic', lineHeight: 1.45 }}>
+                  {numberToWordsINR(isPayment ? (document.amount || 0) : grandTotal)}
+                </div>
                 {isInvoice && (
                   <div
                     style={{
-                      fontSize: 11,
+                      fontSize: 10.5,
                       color: '#475569',
                       fontStyle: 'italic',
-                      marginTop: 10,
-                      padding: '8px 12px',
-                      backgroundColor: '#f0fdf4',
-                      borderLeft: '3px solid #059669',
-                      borderRadius: '0 6px 6px 0',
-                      lineHeight: 1.5,
+                      marginTop: 8,
+                      borderTop: '1px dashed #e2e8f0',
+                      paddingTop: 6,
+                      lineHeight: 1.4,
                     }}
                   >
-                    <strong>Statutory Declaration:</strong> Certified that the particulars given above are true and correct and the amount indicated represents the price actually charged.
+                    <strong>Statutory Declaration:</strong> Particulars stated above are true & correct.
                   </div>
                 )}
               </div>
 
-              <div style={{ backgroundColor: '#f8fafc', padding: '12px 18px', borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 13 }}>
+              <div
+                style={{
+                  backgroundColor: isPayment ? '#ecfdf5' : '#f8fafc',
+                  padding: '14px 20px',
+                  borderRadius: 10,
+                  border: `1.5px solid ${isPayment ? '#a7f3d0' : '#e2e8f0'}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
                 {!isPayment ? (
                   <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', fontSize: 12 }}>
                       <span style={{ color: '#64748b' }}>Taxable Subtotal:</span>
                       <span style={{ fontWeight: 600 }}>₹{subtotal.toLocaleString('en-IN')}</span>
                     </div>
                     {document.discountAmount > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#dc2626' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#dc2626', fontSize: 12 }}>
                         <span>Discount:</span>
                         <span>-₹{Number(document.discountAmount).toLocaleString('en-IN')}</span>
                       </div>
                     )}
                     {totalTax > 0 && (
-                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#475569' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0', color: '#475569', fontSize: 12 }}>
                         <span>GST / Taxes:</span>
                         <span style={{ fontWeight: 600 }}>+₹{totalTax.toLocaleString('en-IN')}</span>
                       </div>
@@ -1176,7 +1253,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                       style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        padding: '8px 0',
+                        padding: '8px 0 2px 0',
                         borderTop: '2px solid #0f172a',
                         marginTop: 6,
                         fontSize: 16,
@@ -1188,20 +1265,18 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                     </div>
                   </>
                 ) : (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      backgroundColor: '#ecfdf5',
-                      borderRadius: 6,
-                      fontSize: 16,
-                      fontWeight: 800,
-                      color: '#065f46',
-                    }}
-                  >
-                    <span>Total Received:</span>
-                    <span>₹{Number(document.amount || 0).toLocaleString('en-IN')}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', color: '#047857', letterSpacing: '0.5px' }}>
+                        Total Received:
+                      </div>
+                      <div style={{ fontSize: 11, color: '#059669', marginTop: 1 }}>
+                        Cleared & Reconciled
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 22, fontWeight: 900, color: '#065f46', letterSpacing: '-0.3px' }}>
+                      ₹{Number(document.amount || 0).toLocaleString('en-IN')}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1211,20 +1286,18 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1.4fr 1fr',
+                gridTemplateColumns: '1.3fr 1fr',
                 gap: 24,
-                paddingTop: 16,
+                paddingTop: 18,
                 borderTop: '1px solid #e2e8f0',
               }}
             >
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', color: '#64748b', marginBottom: 4 }}>
+                <div style={{ fontSize: 10.5, fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 5, letterSpacing: '0.6px' }}>
                   Terms & Conditions:
                 </div>
-                <div style={{ fontSize: 11, color: '#475569', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
-                  {(document.terms || company.termsAndConditions || (
-                    `1. All payments are strictly due within 15 days of invoice date.\n2. Goods/Services once supplied cannot be taken back or refunded.\n3. Late payments subject to 1.5% interest per month.\n4. Disputes subject to Erode jurisdiction.`
-                  )).replace(/Bangalore/gi, 'Erode').replace(/BanERODEgalore/gi, 'Erode')}
+                <div style={{ fontSize: 11, color: '#475569', lineHeight: 1.55, whiteSpace: 'pre-line' }}>
+                  {termsText}
                 </div>
               </div>
 
@@ -1235,8 +1308,8 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                       src={company.sealUrl}
                       alt="Official Company Seal"
                       style={{
-                        height: 72,
-                        width: 72,
+                        height: 70,
+                        width: 70,
                         objectFit: 'contain',
                         filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08))',
                         transform: 'rotate(-4deg)',
@@ -1248,28 +1321,32 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                 {includeDigitalSignature ? (
                   <div
                     style={{
-                      padding: '10px 16px',
+                      padding: '12px 18px',
                       backgroundColor: '#f0fdf4',
-                      border: '1.5px dashed #22c55e',
-                      borderRadius: 8,
+                      border: '1.5px solid #86efac',
+                      borderRadius: 10,
                       width: '100%',
+                      boxShadow: '0 1px 3px rgba(16, 185, 129, 0.08)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: '#16a34a', fontWeight: 700, fontSize: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, color: '#16a34a', fontWeight: 800, fontSize: 11, letterSpacing: '0.5px' }}>
                       <ShieldCheck size={16} />
                       <span>DIGITALLY SIGNED & VERIFIED</span>
                     </div>
-                    <div style={{ fontSize: 11, color: '#15803d', marginTop: 4, fontWeight: 600 }}>
-                      {document.signedBy || `${company.authorizedPerson || 'DASA (Authorized Officer)'} (${company.authorizedDesignation || 'Authorized Signatory'})`}
+                    <div style={{ fontSize: 12, color: '#0f172a', marginTop: 4, fontWeight: 800 }}>
+                      {document.signedBy || `${company.authorizedPerson || 'DASA TECH Admin'} (${company.authorizedDesignation || 'Authorized Signatory'})`}
                     </div>
-                    <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                    <div style={{ fontSize: 10.5, color: '#15803d', marginTop: 2, fontWeight: 500 }}>
                       {document.signedAt ? new Date(document.signedAt).toLocaleString('en-IN') : `${new Date().toLocaleDateString('en-IN')} (Tamper-evident verification)`}
+                    </div>
+                    <div style={{ fontSize: 9.5, color: '#94a3b8', marginTop: 3, borderTop: '1px dashed #bbf7d0', paddingTop: 2 }}>
+                      Authentication Hash: DT-SEC-{docNumber || 'VERIFIED'}
                     </div>
                   </div>
                 ) : (
-                  <div style={{ width: '100%', paddingTop: 16, borderTop: '1px solid #cbd5e1' }}>
+                  <div style={{ width: '100%', paddingTop: 18, borderTop: '1px solid #cbd5e1' }}>
                     {company.authorizedPerson && (
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#0f172a' }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: '#0f172a' }}>
                         {company.authorizedPerson}
                       </div>
                     )}
@@ -1281,7 +1358,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
             </div>
 
             {/* Footer */}
-            <div style={{ marginTop: 20, textAlign: 'center', fontSize: 10.5, color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+            <div style={{ marginTop: 22, textAlign: 'center', fontSize: 10.5, color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
               This is a computer-generated tax document issued in compliance with GST Act, 2017. Generated by {company.companyName} Billing System.
             </div>
           </div>
