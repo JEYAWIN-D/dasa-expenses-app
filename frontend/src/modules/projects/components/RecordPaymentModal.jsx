@@ -2,29 +2,38 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, IndianRupee, ShieldCheck, AlertCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { api } from '../../../services/api.js';
 import { useNotification } from '../../../contexts/NotificationContext.jsx';
+import { computeMilestoneWaterfall } from '../ProjectDetailsPage.jsx';
 
-export function RecordPaymentModal({ project, accounts = [], preselectedInvoice = null, onClose, onSuccess }) {
+export function RecordPaymentModal({ project, accounts = [], preselectedInvoice = null, preselectedMilestone = null, onClose, onSuccess }) {
   const notify = useNotification();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Compute waterfall across all project milestones to account for excess advance credit absorption
+  const waterfallMilestones = computeMilestoneWaterfall(project?.milestones || []);
 
   // Form State
   const [paymentType, setPaymentType] = useState(preselectedInvoice ? 'PARTIAL' : 'ADVANCE');
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [invoiceId, setInvoiceId] = useState(preselectedInvoice?.id || '');
-  const [milestoneId, setMilestoneId] = useState(
-    preselectedInvoice?.milestoneId || project?.milestones?.find((m) => m.status !== 'PAID')?.id || ''
-  );
+  const [milestoneId, setMilestoneId] = useState(() => {
+    if (preselectedMilestone?.id) return preselectedMilestone.id;
+    if (preselectedInvoice?.milestoneId) return preselectedInvoice.milestoneId;
+    const pending = waterfallMilestones.find((m) => m.netPayableNow > 0 || m.computedStatus !== 'PAID');
+    return pending?.id || waterfallMilestones[0]?.id || '';
+  });
   const [notes, setNotes] = useState(preselectedInvoice ? `Settlement for GST Invoice ${preselectedInvoice.invoiceNumber}` : '');
 
-  // Calculate target due amount dynamically
+  // Calculate target due amount dynamically using waterfall credit deduction
   const selectedInvoice = (project?.invoices || []).find((i) => i.id === invoiceId) || preselectedInvoice;
-  const selectedMilestone = (project?.milestones || []).find((m) => m.id === milestoneId);
+  const selectedMilestone = waterfallMilestones.find((m) => m.id === milestoneId) || (project?.milestones || []).find((m) => m.id === milestoneId);
 
   const payableDueAmount = selectedInvoice
     ? Number(selectedInvoice.balanceDue ?? selectedInvoice.totalAmount ?? 0)
     : selectedMilestone
-    ? Math.max(0, Number(selectedMilestone.amount || 0) - Number(selectedMilestone.paidAmount || 0))
+    ? (selectedMilestone.netPayableNow !== undefined
+        ? selectedMilestone.netPayableNow
+        : Math.max(0, Number(selectedMilestone.amount || 0) - Number(selectedMilestone.paidAmount || 0)))
     : Number(project?.financials?.outstandingBalance || 0);
 
   // Multi-Method Splits State
@@ -332,7 +341,20 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
                 <div style={{ fontSize: '32px', fontWeight: 900, marginTop: 4, letterSpacing: '-0.5px' }}>
                   ₹{payableDueAmount.toLocaleString('en-IN')}
                 </div>
-                <div style={{ fontSize: '12px', color: '#dbeafe', marginTop: 2 }}>
+                {selectedMilestone && selectedMilestone.creditApplied > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', backgroundColor: 'rgba(255, 255, 255, 0.18)', padding: '2px 8px', borderRadius: '4px', color: '#bfdbfe' }}>
+                      Milestone Value: ₹{Number(selectedMilestone.amount).toLocaleString('en-IN')}
+                    </span>
+                    <span style={{ fontSize: '11px', backgroundColor: '#15803d', padding: '2px 8px', borderRadius: '4px', color: '#ffffff', fontWeight: 700 }}>
+                      -₹{Number(selectedMilestone.creditApplied).toLocaleString('en-IN')} Advance Credit Deducted
+                    </span>
+                    <span style={{ fontSize: '11px', backgroundColor: 'rgba(255, 255, 255, 0.25)', padding: '2px 8px', borderRadius: '4px', color: '#ffffff', fontWeight: 800 }}>
+                      = Net Due: ₹{Number(selectedMilestone.netPayableNow).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                )}
+                <div style={{ fontSize: '12px', color: '#dbeafe', marginTop: 4 }}>
                   {selectedInvoice
                     ? `Invoice Bill Total: ₹${Number(selectedInvoice.totalAmount || 0).toLocaleString('en-IN')} | Already Received: ₹${Number(selectedInvoice.paidAmount || 0).toLocaleString('en-IN')}`
                     : `Customer: ${project?.client?.companyName || 'Client'}`}
@@ -482,7 +504,17 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
                 </label>
                 <select
                   value={milestoneId}
-                  onChange={(e) => setMilestoneId(e.target.value)}
+                  onChange={(e) => {
+                    const nextId = e.target.value;
+                    setMilestoneId(nextId);
+                    const targetM = waterfallMilestones.find((m) => m.id === nextId);
+                    if (targetM) {
+                      const due = targetM.netPayableNow !== undefined ? targetM.netPayableNow : Math.max(0, targetM.amount - targetM.paidAmount);
+                      if (due > 0) {
+                        handleFillDueAmount(due);
+                      }
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: '9px 12px',
@@ -494,9 +526,15 @@ export function RecordPaymentModal({ project, accounts = [], preselectedInvoice 
                   }}
                 >
                   <option value="">General Project Account</option>
-                  {project?.milestones?.map((m) => (
+                  {waterfallMilestones.map((m) => (
                     <option key={m.id} value={m.id}>
-                      Phase {m.milestoneOrder}: {m.title} (₹{m.amount?.toLocaleString('en-IN')})
+                      Phase {m.milestoneOrder}: {m.title} — {
+                        m.computedStatus === 'PAID'
+                          ? 'Cleared (₹0 Due)'
+                          : m.creditApplied > 0
+                          ? `Net Due: ₹${m.netPayableNow?.toLocaleString('en-IN')} (Credit -₹${m.creditApplied?.toLocaleString('en-IN')})`
+                          : `Due: ₹${m.netPayableNow?.toLocaleString('en-IN')}`
+                      }
                     </option>
                   ))}
                 </select>

@@ -845,6 +845,11 @@ export async function getProjectDocumentData(projectId, docType, options = {}) {
   if (options.milestoneId) {
     targetMilestone = project.milestones.find((m) => m.id === options.milestoneId) || null;
     targetWaterfallItem = waterfall.find((m) => m.id === options.milestoneId) || null;
+  } else if (docType === 'milestone-request') {
+    targetWaterfallItem = waterfall.find((m) => m.netPayableNow > 0) || waterfall.find((m) => m.computedStatus !== 'PAID') || waterfall[0];
+    if (targetWaterfallItem) {
+      targetMilestone = project.milestones.find((m) => m.id === targetWaterfallItem.id) || null;
+    }
   }
 
   const requestedAmount = options.requestedAmount !== undefined && options.requestedAmount !== ''
@@ -890,13 +895,22 @@ export async function getProjectDocumentData(projectId, docType, options = {}) {
     targetMilestone: targetWaterfallItem || targetMilestone,
     paymentRequest: {
       requestedAmount,
-      dueDate: options.dueDate || null,
+      dueDate: options.dueDate || targetWaterfallItem?.dueDate || null,
       customNote: options.customNote || null,
-      selectedMilestoneId: options.milestoneId || null,
+      selectedMilestoneId: targetWaterfallItem?.id || options.milestoneId || null,
       milestoneTitle: targetWaterfallItem?.title || null,
       milestoneAmount: targetWaterfallItem?.amount || null,
       creditApplied: targetWaterfallItem?.creditApplied || 0,
       netPayableNow: targetWaterfallItem?.netPayableNow !== undefined ? targetWaterfallItem.netPayableNow : requestedAmount,
+    },
+    advanceDetails: {
+      requiredPercent: financials.advanceRequiredPercent,
+      requiredAmount: financials.advanceRequiredAmount,
+      totalPaid: financials.totalPaid,
+      advanceReceived: financials.advanceReceived,
+      excessAdvance: Math.max(0, financials.totalPaid - financials.advanceRequiredAmount),
+      isAdvanceCleared: financials.totalPaid >= financials.advanceRequiredAmount,
+      pendingAdvanceDue: Math.max(0, financials.advanceRequiredAmount - financials.totalPaid),
     },
     payments: project.payments,
     company,

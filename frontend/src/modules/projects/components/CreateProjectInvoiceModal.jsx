@@ -37,12 +37,15 @@ export function CreateProjectInvoiceModal({ project, preselectedMilestone, isOpe
     if (preselectedMilestone) {
       setBillingMode('milestone');
       setSelectedMilestoneId(preselectedMilestone.id);
+      const isCreditApplied = preselectedMilestone.creditApplied > 0;
       setItems([
         {
           title: preselectedMilestone.title,
-          description: preselectedMilestone.notes || `${preselectedMilestone.title} (${preselectedMilestone.percentage}% milestone for ${project?.name})`,
+          description: isCreditApplied
+            ? `${preselectedMilestone.title} (${preselectedMilestone.percentage}% phase). Phase Value: ₹${Number(preselectedMilestone.amount).toLocaleString('en-IN')} less ₹${Number(preselectedMilestone.creditApplied).toLocaleString('en-IN')} advance credit deduction`
+            : (preselectedMilestone.notes || `${preselectedMilestone.title} (${preselectedMilestone.percentage}% milestone for ${project?.name})`),
           quantity: 1,
-          unitPrice: preselectedMilestone.amount || 0,
+          unitPrice: isCreditApplied ? preselectedMilestone.netPayableNow : (preselectedMilestone.amount || 0),
           taxPercent: taxRate,
         },
       ]);
@@ -66,14 +69,17 @@ export function CreateProjectInvoiceModal({ project, preselectedMilestone, isOpe
 
   const handleMilestoneSelect = (milestoneId) => {
     setSelectedMilestoneId(milestoneId);
-    const m = project.milestones?.find((ms) => ms.id === milestoneId);
+    const m = (project.waterfallMilestones || project.milestones)?.find((ms) => ms.id === milestoneId);
     if (m) {
+      const isCredit = m.creditApplied > 0;
       setItems([
         {
           title: m.title,
-          description: m.notes || `${m.title} (${m.percentage}% milestone for ${project?.name})`,
+          description: isCredit
+            ? `${m.title} (${m.percentage}% phase). Phase Value: ₹${Number(m.amount).toLocaleString('en-IN')} less ₹${Number(m.creditApplied).toLocaleString('en-IN')} advance credit deduction`
+            : (m.notes || `${m.title} (${m.percentage}% milestone for ${project?.name})`),
           quantity: 1,
-          unitPrice: m.amount || 0,
+          unitPrice: isCredit ? m.netPayableNow : (m.amount || 0),
           taxPercent: taxRate,
         },
       ]);

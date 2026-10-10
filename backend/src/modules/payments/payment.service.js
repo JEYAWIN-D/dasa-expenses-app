@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
 import { generateNextDocumentNumber } from '../../utils/numbering.service.js';
 import { logAudit } from '../../utils/audit.service.js';
+import { computeMilestoneWaterfall } from '../projects/project.service.js';
 
 export async function getPaymentsList({ page = 1, limit = 20, search = '', paymentMode = '', clientId = '', invoiceId = '', projectId = '' }) {
   const skip = (page - 1) * limit;
@@ -298,36 +299,37 @@ export async function recordPayment(data, user) {
 
         if (milestone) {
           const newPaid = Math.round((milestone.paidAmount + Number(amount)) * 100) / 100;
+
+          // Update this milestone's paid amount first
+          await tx.projectMilestone.update({
+            where: { id: milestone.id },
+            data: { paidAmount: newPaid },
+          });
+
+          // Fetch all milestones for this project to compute waterfall
+          const allMilestones = await tx.projectMilestone.findMany({
+            where: { projectId: project.id },
+            orderBy: { milestoneOrder: 'asc' },
+          });
+
+          const waterfall = computeMilestoneWaterfall(allMilestones);
+          const currentWf = waterfall.find((w) => w.id === milestone.id);
+
+          const isComplete = currentWf ? currentWf.computedStatus === 'PAID' : newPaid >= milestone.amount;
           const variance = Math.round((newPaid - milestone.amount) * 100) / 100;
-          let paymentStatusCategory = 'UNPAID';
-          let excessAmount = 0;
-          let shortfallAmount = 0;
-
-          if (newPaid <= 0) {
-            paymentStatusCategory = 'UNPAID';
-            shortfallAmount = milestone.amount;
-          } else if (variance === 0) {
-            paymentStatusCategory = 'EXACT';
-          } else if (variance > 0) {
-            paymentStatusCategory = 'EXCESS';
-            excessAmount = variance;
-          } else {
-            paymentStatusCategory = 'SHORTFALL';
-            shortfallAmount = Math.abs(variance);
-          }
-
-          const isComplete = newPaid >= milestone.amount;
 
           await tx.projectMilestone.update({
             where: { id: milestone.id },
             data: {
-              paidAmount: newPaid,
               varianceAmount: variance,
-              paymentStatusCategory,
-              excessAmount,
-              shortfallAmount,
-              status: isComplete ? 'PAID' : 'PARTIALLY_PAID',
-              completedAt: isComplete ? new Date() : null,
+              paymentStatusCategory: isComplete ? (variance > 0 ? 'EXCESS' : 'EXACT') : (newPaid > 0 ? 'SHORTFALL' : 'UNPAID'),
+              excessAmount: currentWf ? currentWf.directExcess : Math.max(0, variance),
+              shortfallAmount: currentWf ? currentWf.netPayableNow : Math.max(0, -variance),
+              status: isComplete ? 'PAID' : (newPaid > 0 || (currentWf && currentWf.creditApplied > 0) ? 'PARTIALLY_PAID' : 'PENDING'),
+              completedAt: isComplete ? (milestone.completedAt || new Date()) : null,
+              excessAllocationNotes: currentWf && currentWf.creditApplied > 0
+                ? `₹${currentWf.creditApplied.toLocaleString('en-IN')} advance credit applied from prior milestones`
+                : null,
             },
           });
         }

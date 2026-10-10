@@ -93,6 +93,7 @@ export default function ProjectDetailsPage() {
 
   // Modals state
   const [recordPaymentOpen, setRecordPaymentOpen] = useState(false);
+  const [selectedMilestoneForPayment, setSelectedMilestoneForPayment] = useState(null);
   const [addExpenseOpen, setAddExpenseOpen] = useState(false);
   const [documentModalData, setDocumentModalData] = useState(null);
   const [paymentRequestModalOpen, setPaymentRequestModalOpen] = useState(false);
@@ -401,7 +402,10 @@ export default function ProjectDetailsPage() {
           </Link>
 
           <button
-            onClick={() => setRecordPaymentOpen(true)}
+            onClick={() => {
+              setSelectedMilestoneForPayment(null);
+              setRecordPaymentOpen(true);
+            }}
             style={{
               padding: '9px 16px',
               backgroundColor: '#10b981',
@@ -1144,11 +1148,14 @@ export default function ProjectDetailsPage() {
                                 borderRadius: '6px',
                               }}
                             >
-                              <span>₹{remainingDue.toLocaleString('en-IN')}</span>
+                              <span>₹{(m.creditApplied > 0 ? m.netPayableNow : remainingDue).toLocaleString('en-IN')}</span>
                             </span>
                             {m.creditApplied > 0 && (
                               <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
-                                Net Due: ₹{m.netPayableNow.toLocaleString('en-IN')} (after credit)
+                                -₹{m.creditApplied.toLocaleString('en-IN')} advance credit deducted
+                                <span style={{ color: '#94a3b8', fontWeight: 500, display: 'block', fontSize: '10px' }}>
+                                  (Gross: ₹{remainingDue.toLocaleString('en-IN')})
+                                </span>
                               </div>
                             )}
                           </div>
@@ -1157,7 +1164,30 @@ export default function ProjectDetailsPage() {
 
                       {/* Variance / Excess Column */}
                       <td style={{ padding: '16px 18px', textAlign: 'center' }}>
-                        {!hasPaid ? (
+                        {!hasPaid && m.creditApplied > 0 ? (
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <span
+                              style={{
+                                padding: '4px 10px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                backgroundColor: '#f0fdf4',
+                                color: '#166534',
+                                border: '1px solid #bbf7d0',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 5,
+                              }}
+                            >
+                              <CheckCircle2 size={13} color="#16a34a" />
+                              <span>-₹{m.creditApplied.toLocaleString('en-IN')} Credit Allocated</span>
+                            </span>
+                            <div style={{ fontSize: '10px', color: '#15803d', marginTop: 3, fontWeight: 500 }}>
+                              Absorbed from Phase 1 advance excess
+                            </div>
+                          </div>
+                        ) : !hasPaid ? (
                           <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
                             ₹0 (Pending)
                           </span>
@@ -1238,18 +1268,44 @@ export default function ProjectDetailsPage() {
                             fontSize: '11px',
                             fontWeight: 800,
                             letterSpacing: '0.3px',
-                            backgroundColor: m.status === 'PAID' ? '#dcfce7' : (m.status === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
-                            color: m.status === 'PAID' ? '#166534' : (m.status === 'PARTIALLY_PAID' ? '#854d0e' : '#475569'),
-                            border: `1px solid ${m.status === 'PAID' ? '#bbf7d0' : (m.status === 'PARTIALLY_PAID' ? '#fde68a' : '#e2e8f0')}`,
+                            backgroundColor: (m.computedStatus || m.status) === 'PAID' ? '#dcfce7' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
+                            color: (m.computedStatus || m.status) === 'PAID' ? '#166534' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#854d0e' : '#475569'),
+                            border: `1px solid ${(m.computedStatus || m.status) === 'PAID' ? '#bbf7d0' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fde68a' : '#e2e8f0')}`,
                           }}
                         >
-                          {m.status}
+                          {m.computedStatus === 'PARTIALLY_PAID' && m.creditApplied > 0 && paid === 0
+                            ? 'PARTIALLY CREDITED'
+                            : (m.computedStatus || m.status)}
                         </span>
                       </td>
 
                       {/* Actions Column */}
                       <td style={{ padding: '16px 18px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                          <button
+                            onClick={() => {
+                              setSelectedMilestoneForPayment(m);
+                              setRecordPaymentOpen(true);
+                            }}
+                            title="Record Payment for this Milestone Phase"
+                            style={{
+                              padding: '6px 10px',
+                              backgroundColor: '#ecfdf5',
+                              border: '1px solid #a7f3d0',
+                              borderRadius: '7px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              color: '#065f46',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <Receipt size={13} />
+                            <span>Record Payment</span>
+                          </button>
+
                           <button
                             onClick={() => {
                               setSelectedMilestoneForInvoice(m);
@@ -2255,7 +2311,15 @@ export default function ProjectDetailsPage() {
                   <span>Advance Payment Request Letter</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
-                  Formal letter requesting agreed advance payment ({fin.advanceRequiredPercent}% = ₹{fin.advanceRequiredAmount.toLocaleString('en-IN')}) with company bank details.
+                  {fin.totalPaid >= fin.advanceRequiredAmount ? (
+                    <>
+                      Agreed advance payment ({fin.advanceRequiredPercent}% = ₹{fin.advanceRequiredAmount.toLocaleString('en-IN')}) is <strong>fully received</strong> (₹{fin.totalPaid.toLocaleString('en-IN')} paid, with +₹{(fin.totalPaid - fin.advanceRequiredAmount).toLocaleString('en-IN')} excess advance credited to Phase 2). Status: <span style={{ color: '#16a34a', fontWeight: 700 }}>Cleared</span>.
+                    </>
+                  ) : (
+                    <>
+                      Formal letter requesting agreed advance payment ({fin.advanceRequiredPercent}% = ₹{fin.advanceRequiredAmount.toLocaleString('en-IN')}) with company bank details.
+                    </>
+                  )}
                 </p>
               </div>
               <button
@@ -2263,7 +2327,7 @@ export default function ProjectDetailsPage() {
                 style={{ padding: '8px 14px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
                 <Printer size={14} />
-                <span>Generate & Preview Letter</span>
+                <span>{fin.totalPaid >= fin.advanceRequiredAmount ? 'Preview Advance Letter' : 'Generate & Preview Letter'}</span>
               </button>
             </div>
 
@@ -2286,7 +2350,7 @@ export default function ProjectDetailsPage() {
                   <span>Payment Acknowledgment Letter</span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
-                  Official formal thank you note detailing receipt of funds, multi-channel payment split breakdown, and updated account balance.
+                  Official formal thank you note detailing receipt of funds (₹{fin.totalPaid.toLocaleString('en-IN')}), multi-channel payment split breakdown, and updated account balance with excess credit absorption.
                 </p>
               </div>
               <button
@@ -2299,35 +2363,45 @@ export default function ProjectDetailsPage() {
             </div>
 
             {/* Document Card 3: Milestone Payment Request */}
-            <div
-              style={{
-                backgroundColor: 'var(--bg-surface)',
-                padding: '20px',
-                borderRadius: '14px',
-                border: '1px solid var(--border-subtle)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                gap: 14,
-              }}
-            >
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6366f1', fontWeight: 700, fontSize: '14px' }}>
-                  <Layers size={18} />
-                  <span>Milestone Payment Request</span>
+            {(() => {
+              const wfList = computeMilestoneWaterfall(project.milestones || []);
+              const currentPendingM = wfList.find((m) => m.netPayableNow > 0) || wfList.find((m) => m.computedStatus !== 'PAID') || wfList[0];
+              return (
+                <div
+                  style={{
+                    backgroundColor: 'var(--bg-surface)',
+                    padding: '20px',
+                    borderRadius: '14px',
+                    border: '1px solid var(--border-subtle)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: 14,
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6366f1', fontWeight: 700, fontSize: '14px' }}>
+                      <Layers size={18} />
+                      <span>Milestone Payment Request</span>
+                    </div>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
+                      Requesting payment release for <strong>Phase {currentPendingM?.milestoneOrder}: {currentPendingM?.title}</strong>. Present Net Due: <strong style={{ color: '#0f172a' }}>₹{(currentPendingM?.netPayableNow || 0).toLocaleString('en-IN')}</strong>{currentPendingM?.creditApplied > 0 ? ` (Milestone Value: ₹${(currentPendingM?.amount || 0).toLocaleString('en-IN')} less ₹${currentPendingM.creditApplied.toLocaleString('en-IN')} advance credit deduction)` : ''}.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleGenerateDoc('milestone-request', {
+                      milestoneId: currentPendingM?.id,
+                      requestedAmount: currentPendingM?.netPayableNow,
+                      dueDate: currentPendingM?.dueDate,
+                    })}
+                    style={{ padding: '8px 14px', backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  >
+                    <Printer size={14} />
+                    <span>Generate Milestone Request</span>
+                  </button>
                 </div>
-                <p style={{ fontSize: '12px', color: '#64748b', marginTop: 6, lineHeight: 1.5 }}>
-                  Deliverable completion letter detailing milestone progress and requesting phase release as per agreed contract schedule.
-                </p>
-              </div>
-              <button
-                onClick={() => handleGenerateDoc('milestone-request')}
-                style={{ padding: '8px 14px', backgroundColor: '#6366f1', color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-              >
-                <Printer size={14} />
-                <span>Generate Milestone Request</span>
-              </button>
-            </div>
+              );
+            })()}
 
             {/* Document Card 4: Final Payment Reminder */}
             <div
@@ -2600,9 +2674,11 @@ export default function ProjectDetailsPage() {
           project={project}
           accounts={accounts}
           preselectedInvoice={preselectedInvoiceForPayment}
+          preselectedMilestone={selectedMilestoneForPayment}
           onClose={() => {
             setRecordPaymentOpen(false);
             setPreselectedInvoiceForPayment(null);
+            setSelectedMilestoneForPayment(null);
           }}
           onSuccess={() => fetchProjectData()}
         />

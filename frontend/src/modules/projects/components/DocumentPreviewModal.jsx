@@ -448,76 +448,239 @@ export function DocumentPreviewModal({ docData, onClose }) {
                 This document serves as the official confirmation of payment received towards <strong>{project.name}</strong>.
               </p>
             )}
+            {docType === 'handover-certificate' && (
+              <p style={{ margin: 0 }}>
+                This document certifies the official completion, technical sign-off, and financial settlement clearance for <strong>{project.name}</strong> ({project.code}).
+                All contracted software modules, technical deliverables, administrative controls, credentials, and configurations have been successfully tested, deployed, and formally handed over to <strong>{client.name}</strong>.
+              </p>
+            )}
           </div>
 
+          {/* HANDOVER CERTIFICATE CLEARANCE HERO CARD */}
+          {docType === 'handover-certificate' && (
+            <div
+              style={{
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                color: '#ffffff',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                marginBottom: '10px',
+                border: '1px solid #334155',
+                boxShadow: '0 2px 6px rgba(15, 23, 42, 0.12)',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#38bdf8', fontWeight: 800 }}>
+                    OFFICIAL CERTIFICATE OF HANDOVER & FORMAL ACCEPTANCE
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 900, marginTop: 2, letterSpacing: '-0.3px' }}>
+                    Clearance Reference: CERT-HDV-{project.code}-{new Date().getFullYear()}
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#cbd5e1', marginTop: 2 }}>
+                    Authorized Sign-Off: <strong>{project.handoverApprovedBy || signatoryName}</strong> &nbsp;|&nbsp; Date: <strong>{project.handoverDate ? new Date(project.handoverDate).toLocaleDateString('en-IN') : date}</strong>
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    backgroundColor: financials.outstandingBalance === 0 ? 'rgba(34, 197, 94, 0.2)' : 'rgba(234, 179, 8, 0.2)',
+                    border: `1.5px solid ${financials.outstandingBalance === 0 ? '#22c55e' : '#eab308'}`,
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '9px', textTransform: 'uppercase', color: financials.outstandingBalance === 0 ? '#86efac' : '#fde047', fontWeight: 800 }}>
+                    FINANCIAL CLEARANCE STATUS
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: 900, color: '#ffffff', marginTop: 1 }}>
+                    {financials.outstandingBalance === 0 ? '✔ 100% ZERO BALANCE CLEARED' : `₹${financials.outstandingBalance.toLocaleString('en-IN')} SETTLEMENT PENDING`}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* MILESTONE SCHEDULE TABLE */}
-          {(docType === 'milestone-request' || docType === 'acknowledgment' || docType === 'advance-request') && milestones && milestones.length > 0 && (
+          {(docType === 'milestone-request' || docType === 'acknowledgment' || docType === 'advance-request' || docType === 'final-reminder' || docType === 'handover-certificate') && milestones && milestones.length > 0 && (
             <div style={{ marginBottom: '10px' }}>
               <div style={{ fontSize: '9.5px', textTransform: 'uppercase', color: '#64748b', fontWeight: 800, letterSpacing: '0.4px', marginBottom: 4 }}>
-                MILESTONE DELIVERABLES SCHEDULE
+                MILESTONE DELIVERABLES SCHEDULE & RECONCILIATION
               </div>
               <div style={{ border: '1px solid #cbd5e1', borderRadius: '6px', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10.5px' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#0f172a', color: '#ffffff', textAlign: 'left' }}>
-                      <th style={{ padding: '6px 8px', width: '30px', textAlign: 'center' }}>#</th>
-                      <th style={{ padding: '6px 10px' }}>Milestone Phase</th>
-                      <th style={{ padding: '6px 10px' }}>Due Date</th>
-                      <th style={{ padding: '6px 8px', textAlign: 'center' }}>Share</th>
-                      <th style={{ padding: '6px 10px', textAlign: 'right' }}>Amount (₹)</th>
-                      <th style={{ padding: '6px 10px', textAlign: 'center', width: '80px' }}>Status</th>
+                      <th style={{ padding: '6px 6px', width: '24px', textAlign: 'center' }}>#</th>
+                      <th style={{ padding: '6px 8px' }}>Milestone Phase</th>
+                      <th style={{ padding: '6px 8px' }}>Target Date</th>
+                      <th style={{ padding: '6px 6px', textAlign: 'center' }}>Share</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'right' }}>Planned (₹)</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'right' }}>Paid / Credit (₹)</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'right' }}>Net Due (₹)</th>
+                      <th style={{ padding: '6px 8px', textAlign: 'center', width: '75px' }}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {milestones.map((m, idx) => (
-                      <tr
-                        key={m.id || idx}
-                        style={{
-                          backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
-                          borderBottom: '1px solid #e2e8f0',
-                        }}
-                      >
-                        <td style={{ padding: '5px 8px', textAlign: 'center', fontWeight: 700, color: '#64748b' }}>
-                          {m.milestoneOrder || idx + 1}
-                        </td>
-                        <td style={{ padding: '5px 10px', fontWeight: 600, color: '#0f172a' }}>
-                          {m.title}
-                        </td>
-                        <td style={{ padding: '5px 10px', color: '#475569' }}>
-                          {m.dueDate ? new Date(m.dueDate).toLocaleDateString('en-IN') : 'Flexible'}
-                        </td>
-                        <td style={{ padding: '5px 8px', textAlign: 'center', fontWeight: 600, color: '#334155' }}>
-                          {m.percentage}%
-                        </td>
-                        <td style={{ padding: '5px 10px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
-                          ₹{Number(m.amount || 0).toLocaleString('en-IN')}
-                        </td>
-                        <td style={{ padding: '5px 10px', textAlign: 'center' }}>
-                          <span
-                            style={{
-                              display: 'inline-block',
-                              padding: '1px 6px',
-                              borderRadius: '3px',
-                              fontSize: '9.5px',
-                              fontWeight: 800,
-                              backgroundColor: m.status === 'PAID' ? '#dcfce7' : (m.status === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
-                              color: m.status === 'PAID' ? '#15803d' : (m.status === 'PARTIALLY_PAID' ? '#b45309' : '#475569'),
-                              border: `1px solid ${m.status === 'PAID' ? '#86efac' : (m.status === 'PARTIALLY_PAID' ? '#fde68a' : '#cbd5e1')}`,
-                            }}
-                          >
-                            {m.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {milestones.map((m, idx) => {
+                      const amt = Number(m.amount || 0);
+                      const paid = Number(m.paidAmount || 0);
+                      const isPaid = (m.computedStatus || m.status) === 'PAID' || (m.netPayableNow === 0 && amt > 0);
+                      const netDue = isPaid ? 0 : (m.netPayableNow !== undefined ? m.netPayableNow : Math.max(0, amt - paid));
+
+                      return (
+                        <tr
+                          key={m.id || idx}
+                          style={{
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#f8fafc',
+                            borderBottom: '1px solid #e2e8f0',
+                          }}
+                        >
+                          <td style={{ padding: '5px 6px', textAlign: 'center', fontWeight: 700, color: '#64748b' }}>
+                            {m.milestoneOrder || idx + 1}
+                          </td>
+                          <td style={{ padding: '5px 8px', fontWeight: 600, color: '#0f172a' }}>
+                            {m.title}
+                          </td>
+                          <td style={{ padding: '5px 8px', color: '#475569' }}>
+                            {m.dueDate ? new Date(m.dueDate).toLocaleDateString('en-IN') : 'Flexible'}
+                          </td>
+                          <td style={{ padding: '5px 6px', textAlign: 'center', fontWeight: 600, color: '#334155' }}>
+                            {m.percentage}%
+                          </td>
+                          <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 700, color: '#0f172a' }}>
+                            ₹{amt.toLocaleString('en-IN')}
+                          </td>
+                          <td style={{ padding: '5px 8px', textAlign: 'right' }}>
+                            {paid >= amt && amt > 0 ? (
+                              <span style={{ color: '#15803d', fontWeight: 700 }}>
+                                ₹{paid.toLocaleString('en-IN')}
+                                {paid > amt && (
+                                  <span style={{ fontSize: '9px', display: 'block', color: '#16a34a' }}>
+                                    (+₹{(paid - amt).toLocaleString('en-IN')} Excess)
+                                  </span>
+                                )}
+                              </span>
+                            ) : m.creditApplied > 0 ? (
+                              <span style={{ color: '#15803d', fontWeight: 700 }}>
+                                ₹{paid.toLocaleString('en-IN')}
+                                <span style={{ fontSize: '9px', display: 'block', color: '#16a34a' }}>
+                                  (+₹{m.creditApplied.toLocaleString('en-IN')} Credit)
+                                </span>
+                              </span>
+                            ) : (
+                              <span style={{ color: '#64748b' }}>₹{paid.toLocaleString('en-IN')}</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '5px 8px', textAlign: 'right', fontWeight: 800, color: netDue === 0 ? '#15803d' : '#b45309' }}>
+                            {netDue === 0 ? '₹0 (Cleared)' : `₹${netDue.toLocaleString('en-IN')}`}
+                          </td>
+                          <td style={{ padding: '5px 8px', textAlign: 'center' }}>
+                            <span
+                              style={{
+                                display: 'inline-block',
+                                padding: '1px 6px',
+                                borderRadius: '3px',
+                                fontSize: '9px',
+                                fontWeight: 800,
+                                backgroundColor: isPaid ? '#dcfce7' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
+                                color: isPaid ? '#15803d' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#b45309' : '#475569'),
+                                border: `1px solid ${isPaid ? '#86efac' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fde68a' : '#cbd5e1')}`,
+                              }}
+                            >
+                              {isPaid ? 'PAID' : (m.computedStatus || m.status)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
+                  <tfoot>
+                    <tr style={{ backgroundColor: '#f1f5f9', fontWeight: 800, borderTop: '1.5px solid #cbd5e1' }}>
+                      <td colSpan={4} style={{ padding: '6px 8px', textAlign: 'right', textTransform: 'uppercase', fontSize: '10px' }}>
+                        Total Project Summary:
+                      </td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: '#0f172a' }}>
+                        ₹{financials.totalProjectValue.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: '#15803d' }}>
+                        ₹{financials.totalPaid.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '6px 8px', textAlign: 'right', color: financials.outstandingBalance === 0 ? '#15803d' : '#b45309' }}>
+                        ₹{financials.outstandingBalance.toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '6px 8px', textAlign: 'center', fontSize: '9.5px', color: financials.outstandingBalance === 0 ? '#15803d' : '#475569' }}>
+                        {financials.outstandingBalance === 0 ? 'CLEARED' : 'PENDING'}
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
           )}
 
-          {/* HERO PRESENT PAYMENT REQUEST CARD */}
-          {docData.paymentRequest && (
+          {/* HANDOVER DELIVERABLES CHECKLIST & SCOPE */}
+          {docType === 'handover-certificate' && (
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '9.5px', textTransform: 'uppercase', color: '#64748b', fontWeight: 800, letterSpacing: '0.4px', marginBottom: 4 }}>
+                VERIFIED HANDOVER DELIVERABLES & TECHNICAL SCOPE
+              </div>
+              <div
+                style={{
+                  backgroundColor: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '6px',
+                  padding: '8px 12px',
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                  gap: 8,
+                  fontSize: '10.5px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <CheckCircle2 size={14} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>Application & Cloud Deployment:</strong>
+                    <div style={{ color: '#64748b', fontSize: '10px' }}>Production build verified, DNS connected & cloud runtime active.</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <CheckCircle2 size={14} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>Administrative Credentials:</strong>
+                    <div style={{ color: '#64748b', fontSize: '10px' }}>Master administrator accounts and security tokens securely transferred.</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <CheckCircle2 size={14} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>Data Schemas & Source Config:</strong>
+                    <div style={{ color: '#64748b', fontSize: '10px' }}>Database initialized with student/staff models and workflows.</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <CheckCircle2 size={14} color="#16a34a" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div>
+                    <strong style={{ color: '#0f172a' }}>Technical Support & Warranty:</strong>
+                    <div style={{ color: '#64748b', fontSize: '10px' }}>Standard maintenance coverage and priority support SLA activated.</div>
+                  </div>
+                </div>
+              </div>
+
+              {project.handoverNotes && (
+                <div style={{ marginTop: 6, padding: '6px 10px', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '5px', fontSize: '10.5px', color: '#1e40af' }}>
+                  <strong>Handover Approval Notes:</strong> {project.handoverNotes}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* HERO PRESENT PAYMENT REQUEST CARD (Shown for milestone payment requests) */}
+          {docType === 'milestone-request' && docData.paymentRequest && (
             <div
               style={{
                 backgroundColor: '#f0fdf4',
@@ -541,7 +704,7 @@ export function DocumentPreviewModal({ docData, onClose }) {
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#166534', fontWeight: 800, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                   <CheckCircle2 size={14} color="#16a34a" />
-                  <span>PRESENT PAYMENT REQUEST DETAILS</span>
+                  <span>PRESENT MILESTONE PAYMENT REQUEST DETAILS</span>
                 </div>
                 {docData.paymentRequest.dueDate && (
                   <span style={{ fontSize: '10.5px', color: '#166534', fontWeight: 700, backgroundColor: '#dcfce7', padding: '1px 6px', borderRadius: 3, border: '1px solid #86efac' }}>
@@ -566,7 +729,7 @@ export function DocumentPreviewModal({ docData, onClose }) {
                 )}
                 {docData.paymentRequest.creditApplied > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', color: '#15803d', fontWeight: 600 }}>
-                    <span>Less: Unallocated Advance / Excess Credit Applied:</span>
+                    <span>Less: Unallocated Advance / Excess Credit Deducted:</span>
                     <span style={{ fontWeight: 800 }}>-₹{Number(docData.paymentRequest.creditApplied).toLocaleString('en-IN')}</span>
                   </div>
                 )}
@@ -586,10 +749,10 @@ export function DocumentPreviewModal({ docData, onClose }) {
                 }}
               >
                 <span style={{ fontWeight: 700, fontSize: '11px', letterSpacing: '0.4px', textTransform: 'uppercase' }}>
-                  Net Payable Amount Needed to Remit:
+                  Net Present Amount Needed to Remit:
                 </span>
                 <span style={{ fontSize: '17px', fontWeight: 900, color: '#ffffff', letterSpacing: '0.4px' }}>
-                  ₹{Number(docData.paymentRequest.requestedAmount || 0).toLocaleString('en-IN')}
+                  ₹{Number(docData.paymentRequest.requestedAmount || docData.paymentRequest.netPayableNow || 0).toLocaleString('en-IN')}
                 </span>
               </div>
 
@@ -605,8 +768,8 @@ export function DocumentPreviewModal({ docData, onClose }) {
           {docType === 'advance-request' && (
             <div
               style={{
-                backgroundColor: '#eff6ff',
-                border: '1.5px solid #bfdbfe',
+                backgroundColor: financials.totalPaid >= financials.advanceRequiredAmount ? '#f0fdf4' : '#eff6ff',
+                border: `1.5px solid ${financials.totalPaid >= financials.advanceRequiredAmount ? '#86efac' : '#bfdbfe'}`,
                 borderRadius: '8px',
                 padding: '10px 14px',
                 marginBottom: '10px',
@@ -618,11 +781,21 @@ export function DocumentPreviewModal({ docData, onClose }) {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bfdbfe', fontSize: '11px' }}>
                 <span>Agreed Advance Share:</span>
-                <span style={{ fontWeight: 700 }}>{financials.advanceRequiredPercent}%</span>
+                <span style={{ fontWeight: 700 }}>{financials.advanceRequiredPercent}% (₹{financials.advanceRequiredAmount.toLocaleString('en-IN')})</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bfdbfe', fontSize: '11px' }}>
+                <span>Advance Payment Received:</span>
+                <span style={{ fontWeight: 800, color: '#15803d' }}>₹{financials.totalPaid.toLocaleString('en-IN')}</span>
+              </div>
+              {financials.totalPaid > financials.advanceRequiredAmount && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bfdbfe', fontSize: '11px', color: '#15803d' }}>
+                  <span>Excess Advance Retained (Credited toward Phase 2):</span>
+                  <span style={{ fontWeight: 800 }}>+₹{(financials.totalPaid - financials.advanceRequiredAmount).toLocaleString('en-IN')}</span>
+                </div>
+              )}
               <div
                 style={{
-                  backgroundColor: '#1e3a8a',
+                  backgroundColor: financials.totalPaid >= financials.advanceRequiredAmount ? '#14532d' : '#1e3a8a',
                   color: '#ffffff',
                   borderRadius: '6px',
                   padding: '6px 12px',
@@ -632,8 +805,57 @@ export function DocumentPreviewModal({ docData, onClose }) {
                   alignItems: 'center',
                 }}
               >
-                <span style={{ fontWeight: 700, fontSize: '11px' }}>Advance Amount Payable:</span>
-                <span style={{ fontSize: '16px', fontWeight: 900 }}>₹{financials.advanceRequiredAmount.toLocaleString('en-IN')}</span>
+                <span style={{ fontWeight: 700, fontSize: '11px' }}>
+                  {financials.totalPaid >= financials.advanceRequiredAmount ? 'Advance Status:' : 'Remaining Advance Due:'}
+                </span>
+                <span style={{ fontSize: '16px', fontWeight: 900 }}>
+                  {financials.totalPaid >= financials.advanceRequiredAmount
+                    ? '₹0 (Fully Paid & Cleared)'
+                    : `₹${Math.max(0, financials.advanceRequiredAmount - financials.totalPaid).toLocaleString('en-IN')}`}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* PAYMENT ACKNOWLEDGMENT SUMMARY CARD */}
+          {docType === 'acknowledgment' && (
+            <div
+              style={{
+                backgroundColor: '#f0fdf4',
+                border: '1.5px solid #86efac',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                marginBottom: '10px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bbf7d0', fontSize: '11px' }}>
+                <span>Total Project Contract Value:</span>
+                <span style={{ fontWeight: 700 }}>₹{financials.totalProjectValue.toLocaleString('en-IN')}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bbf7d0', fontSize: '11px' }}>
+                <span>Total Payment Received to Date:</span>
+                <span style={{ fontWeight: 800, color: '#15803d' }}>₹{financials.totalPaid.toLocaleString('en-IN')}</span>
+              </div>
+              {financials.totalPaid > financials.advanceRequiredAmount && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #bbf7d0', fontSize: '11px', color: '#15803d' }}>
+                  <span>Excess Advance Transferred to Phase 2:</span>
+                  <span style={{ fontWeight: 800 }}>+₹{(financials.totalPaid - financials.advanceRequiredAmount).toLocaleString('en-IN')} credit</span>
+                </div>
+              )}
+              <div
+                style={{
+                  backgroundColor: '#047857',
+                  color: '#ffffff',
+                  borderRadius: '6px',
+                  padding: '6px 12px',
+                  marginTop: '6px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
+                <span style={{ fontWeight: 700, fontSize: '11px' }}>Current Outstanding Account Balance:</span>
+                <span style={{ fontSize: '16px', fontWeight: 900 }}>₹{financials.outstandingBalance.toLocaleString('en-IN')}</span>
               </div>
             </div>
           )}
@@ -710,6 +932,47 @@ export function DocumentPreviewModal({ docData, onClose }) {
                     <div style={{ fontSize: '10px', color: '#64748b', marginTop: 1 }}>Beneficiary: <strong>{cleanCompanyName}</strong></div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Dual Acceptance Sign-Off for Handover Certificate */}
+          {docType === 'handover-certificate' && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 12,
+                padding: '8px 12px',
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                marginBottom: '10px',
+                fontSize: '10px',
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: 800, color: '#166534', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.3px', marginBottom: 2 }}>
+                  SERVICE PROVIDER ACKNOWLEDGMENT:
+                </div>
+                <div style={{ color: '#334155' }}>
+                  Deliverables certified complete & handed over in working operational order.
+                </div>
+                <div style={{ marginTop: 4, fontWeight: 700, color: '#0f172a' }}>
+                  {signatoryName} ({signatoryDesignation})
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontWeight: 800, color: '#1d4ed8', textTransform: 'uppercase', fontSize: '9px', letterSpacing: '0.3px', marginBottom: 2 }}>
+                  CLIENT / RECIPIENT ACCEPTANCE:
+                </div>
+                <div style={{ color: '#334155' }}>
+                  Deliverables, modules, administrative credentials, and training received in full.
+                </div>
+                <div style={{ marginTop: 4, fontWeight: 700, color: '#0f172a' }}>
+                  {client.contactPerson || client.name} (Authorized Authority)
+                </div>
               </div>
             </div>
           )}
