@@ -27,6 +27,7 @@ import {
   AlertCircle,
   X,
   ArrowRight,
+  Send,
 } from 'lucide-react';
 import { api } from '../../services/api.js';
 import { projectsService } from '../../services/projects.service.js';
@@ -889,12 +890,40 @@ export default function ProjectDetailsPage() {
       {activeTab === 'milestones' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Header & Add Button */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 16,
+              backgroundColor: '#ffffff',
+              padding: '18px 22px',
+              borderRadius: '14px',
+              border: '1px solid var(--border-subtle)',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.3px' }}>
-                Payment Milestones, Advance & Collections Schedule
-              </h2>
-              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <h2 style={{ fontSize: '17px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.3px', margin: 0 }}>
+                  Payment Milestones, Advance & Collections Schedule
+                </h2>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    backgroundColor: '#eff6ff',
+                    color: '#2563eb',
+                    border: '1px solid #bfdbfe',
+                    padding: '2px 8px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  {project.milestones?.length || 0} Phases
+                </span>
+              </div>
+              <p style={{ fontSize: '13px', color: '#64748b', margin: '4px 0 0 0', lineHeight: 1.4 }}>
                 Track contract phases with exact breakdown of planned milestone targets, actual payments received, remaining balances, and excess advances.
               </p>
             </div>
@@ -918,6 +947,7 @@ export default function ProjectDetailsPage() {
                   alignItems: 'center',
                   gap: 6,
                   boxShadow: '0 1px 2px rgba(22, 163, 74, 0.2)',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <FileText size={15} />
@@ -939,6 +969,7 @@ export default function ProjectDetailsPage() {
                   alignItems: 'center',
                   gap: 6,
                   boxShadow: 'var(--shadow-sm)',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <Plus size={16} />
@@ -995,25 +1026,37 @@ export default function ProjectDetailsPage() {
           {/* Milestones Modern Table */}
           <div
             style={{
-              backgroundColor: 'var(--bg-surface)',
+              backgroundColor: '#ffffff',
               borderRadius: '16px',
               border: '1px solid var(--border-subtle)',
-              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.03)',
-              overflow: 'hidden',
+              boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
+              overflowX: 'auto',
+              overflowY: 'hidden',
             }}
           >
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+            <table style={{ width: '100%', minWidth: '1240px', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <colgroup>
+                <col style={{ width: '90px' }} />
+                <col style={{ width: '330px' }} />
+                <col style={{ width: '110px' }} />
+                <col style={{ width: '115px' }} />
+                <col style={{ width: '115px' }} />
+                <col style={{ width: '155px' }} />
+                <col style={{ width: '165px' }} />
+                <col style={{ width: '125px' }} />
+                <col style={{ width: '175px' }} />
+              </colgroup>
               <thead>
-                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid var(--border-subtle)', textAlign: 'left' }}>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}># Phase</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Milestone Phase Title</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase' }}>Target Date</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Planned (₹)</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Paid Amount (₹)</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#b45309', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Remaining Due (₹)</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Variance / Excess</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'center' }}>Status</th>
-                  <th style={{ padding: '14px 18px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', textAlign: 'right' }}>Actions</th>
+                <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px' }}># Phase</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Milestone Phase Title</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px' }}>Target Date</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'right' }}>Planned (₹)</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'right' }}>Paid Amount (₹)</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#b45309', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'right' }}>Remaining Due (₹)</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'center' }}>Variance / Credit</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'center' }}>Status</th>
+                  <th style={{ padding: '14px 16px', fontWeight: 700, color: '#475569', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.3px', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -1034,45 +1077,58 @@ export default function ProjectDetailsPage() {
                       onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#fbfcfe')}
                       onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
-                      <td style={{ padding: '16px 18px' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
                         <span
                           style={{
                             fontSize: '11px',
                             fontWeight: 800,
-                            padding: '4px 9px',
+                            padding: '4px 8px',
                             borderRadius: '6px',
                             backgroundColor: '#f1f5f9',
-                            color: '#0f172a',
+                            color: '#1e293b',
                             fontFamily: 'var(--font-mono)',
+                            letterSpacing: '0.2px',
+                            whiteSpace: 'nowrap',
                           }}
                         >
                           Phase {m.milestoneOrder}
                         </span>
                       </td>
 
-                      <td style={{ padding: '16px 18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '14px' }}>{m.title}</span>
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              backgroundColor: '#eff6ff',
-                              color: '#2563eb',
-                              border: '1px solid #dbeafe',
-                              padding: '2px 7px',
-                              borderRadius: '999px',
-                            }}
-                          >
-                            {m.percentage}% Share
-                          </span>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '13.5px', lineHeight: 1.35 }}>
+                              {m.title}
+                            </span>
+                            {m.percentage && (
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: 700,
+                                  backgroundColor: '#eff6ff',
+                                  color: '#2563eb',
+                                  border: '1px solid #bfdbfe',
+                                  padding: '1px 7px',
+                                  borderRadius: '999px',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {m.percentage}% Share
+                              </span>
+                            )}
+                          </div>
+                          {m.notes && (
+                            <div style={{ fontSize: '11.5px', color: '#64748b', lineHeight: 1.45, marginTop: 1 }}>
+                              {m.notes}
+                            </div>
+                          )}
                         </div>
-                        {m.notes && <div style={{ fontSize: '12px', color: '#64748b', marginTop: 3 }}>{m.notes}</div>}
                       </td>
 
-                      <td style={{ padding: '16px 18px', color: '#475569', fontSize: '13px' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', color: '#475569', fontSize: '12.5px', whiteSpace: 'nowrap' }}>
                         {m.dueDate ? (
-                          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                             <Calendar size={13} color="#64748b" />
                             <span>{new Date(m.dueDate).toLocaleDateString('en-IN')}</span>
                           </span>
@@ -1081,16 +1137,16 @@ export default function ProjectDetailsPage() {
                         )}
                       </td>
 
-                      <td style={{ padding: '16px 18px', textAlign: 'right', fontWeight: 800, color: '#0f172a', fontSize: '14px' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right', fontWeight: 800, color: '#0f172a', fontSize: '14px', whiteSpace: 'nowrap' }}>
                         ₹{amt.toLocaleString('en-IN')}
                       </td>
 
-                      <td style={{ padding: '16px 18px', textAlign: 'right', fontWeight: 800, fontSize: '14px', color: hasPaid ? '#15803d' : '#94a3b8' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right', fontWeight: 800, fontSize: '14px', color: hasPaid ? '#15803d' : '#94a3b8', whiteSpace: 'nowrap' }}>
                         ₹{paid.toLocaleString('en-IN')}
                       </td>
 
                       {/* Remaining Due Column */}
-                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
                         {paid >= amt && amt > 0 ? (
                           <span
                             style={{
@@ -1104,13 +1160,14 @@ export default function ProjectDetailsPage() {
                               border: '1px solid #bbf7d0',
                               padding: '3px 8px',
                               borderRadius: '6px',
+                              whiteSpace: 'nowrap',
                             }}
                           >
                             <CheckCircle2 size={13} />
                             <span>₹0 (Cleared)</span>
                           </span>
                         ) : m.netPayableNow === 0 && m.creditApplied > 0 ? (
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                             <span
                               style={{
                                 display: 'inline-flex',
@@ -1123,17 +1180,18 @@ export default function ProjectDetailsPage() {
                                 border: '1px solid #bbf7d0',
                                 padding: '3px 8px',
                                 borderRadius: '6px',
+                                whiteSpace: 'nowrap',
                               }}
                             >
                               <CheckCircle2 size={13} />
                               <span>₹0 (Covered)</span>
                             </span>
-                            <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
+                            <span style={{ fontSize: '10.5px', color: '#16a34a', fontWeight: 700, whiteSpace: 'nowrap' }}>
                               ₹{m.creditApplied.toLocaleString('en-IN')} advance credit
-                            </div>
+                            </span>
                           </div>
                         ) : (
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
                             <span
                               style={{
                                 display: 'inline-flex',
@@ -1146,121 +1204,124 @@ export default function ProjectDetailsPage() {
                                 border: '1px solid #fde68a',
                                 padding: '3px 8px',
                                 borderRadius: '6px',
+                                whiteSpace: 'nowrap',
                               }}
                             >
                               <span>₹{(m.creditApplied > 0 ? m.netPayableNow : remainingDue).toLocaleString('en-IN')}</span>
                             </span>
                             {m.creditApplied > 0 && (
-                              <div style={{ fontSize: '11px', color: '#16a34a', fontWeight: 700, marginTop: 3 }}>
-                                -₹{m.creditApplied.toLocaleString('en-IN')} advance credit deducted
-                                <span style={{ color: '#94a3b8', fontWeight: 500, display: 'block', fontSize: '10px' }}>
-                                  (Gross: ₹{remainingDue.toLocaleString('en-IN')})
+                              <>
+                                <span style={{ fontSize: '10.5px', color: '#16a34a', fontWeight: 700, backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '1px 6px', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                  -₹{m.creditApplied.toLocaleString('en-IN')} advance credit
                                 </span>
-                              </div>
+                                <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '10px', whiteSpace: 'nowrap' }}>
+                                  Gross: ₹{remainingDue.toLocaleString('en-IN')}
+                                </span>
+                              </>
                             )}
                           </div>
                         )}
                       </td>
 
                       {/* Variance / Excess Column */}
-                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
                         {!hasPaid && m.creditApplied > 0 ? (
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                             <span
                               style={{
-                                padding: '4px 10px',
-                                borderRadius: '8px',
-                                fontSize: '12px',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
                                 fontWeight: 700,
                                 backgroundColor: '#f0fdf4',
                                 color: '#166534',
                                 border: '1px solid #bbf7d0',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 5,
+                                gap: 4,
+                                whiteSpace: 'nowrap',
                               }}
                             >
-                              <CheckCircle2 size={13} color="#16a34a" />
-                              <span>-₹{m.creditApplied.toLocaleString('en-IN')} Credit Allocated</span>
+                              <CheckCircle2 size={12} color="#16a34a" />
+                              <span>-₹{m.creditApplied.toLocaleString('en-IN')} Credit Applied</span>
                             </span>
-                            <div style={{ fontSize: '10px', color: '#15803d', marginTop: 3, fontWeight: 500 }}>
-                              Absorbed from Phase 1 advance excess
-                            </div>
+                            <span style={{ fontSize: '10px', color: '#16a34a', whiteSpace: 'nowrap' }}>
+                              Absorbed from Phase 1 advance
+                            </span>
                           </div>
                         ) : !hasPaid ? (
-                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500 }}>
+                          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 500, whiteSpace: 'nowrap' }}>
                             ₹0 (Pending)
                           </span>
                         ) : variance > 0 ? (
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                             <span
                               style={{
-                                padding: '4px 10px',
-                                borderRadius: '8px',
-                                fontSize: '12px',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                fontSize: '11.5px',
                                 fontWeight: 800,
                                 backgroundColor: '#dcfce7',
                                 color: '#166534',
                                 border: '1px solid #86efac',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 5,
-                                boxShadow: '0 1px 2px rgba(22, 101, 52, 0.05)',
+                                gap: 4,
+                                whiteSpace: 'nowrap',
                               }}
                             >
-                              <TrendingUp size={14} color="#16a34a" />
-                              <span>+₹{variance.toLocaleString('en-IN')} Excess Advance</span>
+                              <TrendingUp size={13} color="#16a34a" />
+                              <span>+₹{variance.toLocaleString('en-IN')} Advance Excess</span>
                             </span>
                             {m.excessAllocationNotes && (
-                              <div style={{ fontSize: '10px', color: '#15803d', marginTop: 3, fontWeight: 500 }}>{m.excessAllocationNotes}</div>
+                              <span style={{ fontSize: '10px', color: '#15803d', whiteSpace: 'nowrap' }}>{m.excessAllocationNotes}</span>
                             )}
                           </div>
                         ) : variance < 0 ? (
-                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                             <span
                               style={{
-                                padding: '4px 10px',
-                                borderRadius: '8px',
-                                fontSize: '12px',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                fontSize: '11.5px',
                                 fontWeight: 800,
                                 backgroundColor: '#fef3c7',
                                 color: '#92400e',
                                 border: '1px solid #fde68a',
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                gap: 5,
+                                gap: 4,
+                                whiteSpace: 'nowrap',
                               }}
                             >
-                              <TrendingDown size={14} color="#b45309" />
+                              <TrendingDown size={13} color="#b45309" />
                               <span>-₹{Math.abs(variance).toLocaleString('en-IN')} Shortfall</span>
                             </span>
-                            {m.excessAllocationNotes && (
-                              <div style={{ fontSize: '10px', color: '#92400e', marginTop: 3 }}>{m.excessAllocationNotes}</div>
-                            )}
                           </div>
                         ) : (
                           <span
                             style={{
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              fontSize: '12px',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               backgroundColor: '#eff6ff',
                               color: '#1d4ed8',
                               border: '1px solid #bfdbfe',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 5,
+                              gap: 4,
+                              whiteSpace: 'nowrap',
                             }}
                           >
-                            <CheckCircle2 size={14} />
-                            <span>₹0 Exact Match</span>
+                            <CheckCircle2 size={13} />
+                            <span>₹0 Match</span>
                           </span>
                         )}
                       </td>
 
                       {/* Status Column */}
-                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'center' }}>
                         <span
                           style={{
                             padding: '4px 10px',
@@ -1268,20 +1329,43 @@ export default function ProjectDetailsPage() {
                             fontSize: '11px',
                             fontWeight: 800,
                             letterSpacing: '0.3px',
-                            backgroundColor: (m.computedStatus || m.status) === 'PAID' ? '#dcfce7' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fef3c7' : '#f1f5f9'),
-                            color: (m.computedStatus || m.status) === 'PAID' ? '#166534' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#854d0e' : '#475569'),
-                            border: `1px solid ${(m.computedStatus || m.status) === 'PAID' ? '#bbf7d0' : ((m.computedStatus || m.status) === 'PARTIALLY_PAID' ? '#fde68a' : '#e2e8f0')}`,
+                            whiteSpace: 'nowrap',
+                            backgroundColor:
+                              (m.computedStatus || m.status) === 'PAID'
+                                ? '#dcfce7'
+                                : m.creditApplied > 0 && paid === 0
+                                ? '#eff6ff'
+                                : (m.computedStatus || m.status) === 'PARTIALLY_PAID'
+                                ? '#fef3c7'
+                                : '#f1f5f9',
+                            color:
+                              (m.computedStatus || m.status) === 'PAID'
+                                ? '#166534'
+                                : m.creditApplied > 0 && paid === 0
+                                ? '#1d4ed8'
+                                : (m.computedStatus || m.status) === 'PARTIALLY_PAID'
+                                ? '#854d0e'
+                                : '#475569',
+                            border: `1px solid ${
+                              (m.computedStatus || m.status) === 'PAID'
+                                ? '#bbf7d0'
+                                : m.creditApplied > 0 && paid === 0
+                                ? '#bfdbfe'
+                                : (m.computedStatus || m.status) === 'PARTIALLY_PAID'
+                                ? '#fde68a'
+                                : '#e2e8f0'
+                            }`,
                           }}
                         >
                           {m.computedStatus === 'PARTIALLY_PAID' && m.creditApplied > 0 && paid === 0
-                            ? 'PARTIALLY CREDITED'
+                            ? 'CREDIT APPLIED'
                             : (m.computedStatus || m.status)}
                         </span>
                       </td>
 
                       {/* Actions Column */}
-                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>
+                      <td style={{ padding: '14px 16px', verticalAlign: 'middle', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: 5, alignItems: 'center', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
                           <button
                             onClick={() => {
                               setSelectedMilestoneForPayment(m);
@@ -1289,11 +1373,11 @@ export default function ProjectDetailsPage() {
                             }}
                             title="Record Payment for this Milestone Phase"
                             style={{
-                              padding: '6px 10px',
+                              padding: '5px 9px',
                               backgroundColor: '#ecfdf5',
                               border: '1px solid #a7f3d0',
-                              borderRadius: '7px',
-                              fontSize: '12px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
                               color: '#065f46',
@@ -1302,8 +1386,8 @@ export default function ProjectDetailsPage() {
                               gap: 4,
                             }}
                           >
-                            <Receipt size={13} />
-                            <span>Record Payment</span>
+                            <Receipt size={12} />
+                            <span>Pay</span>
                           </button>
 
                           <button
@@ -1313,21 +1397,21 @@ export default function ProjectDetailsPage() {
                             }}
                             title="Generate GST Tax Invoice for this Phase"
                             style={{
-                              padding: '6px 10px',
+                              padding: '5px 9px',
                               backgroundColor: '#eff6ff',
                               border: '1px solid #bfdbfe',
-                              borderRadius: '7px',
-                              fontSize: '12px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
                               fontWeight: 700,
                               cursor: 'pointer',
                               color: '#2563eb',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: 5,
+                              gap: 4,
                             }}
                           >
-                            <FileText size={13} />
-                            <span>Bill with GST</span>
+                            <FileText size={12} />
+                            <span>Bill</span>
                           </button>
 
                           <button
@@ -1335,19 +1419,19 @@ export default function ProjectDetailsPage() {
                               setSelectedMilestoneForRequest(m);
                               setPaymentRequestModalOpen(true);
                             }}
-                            title="Open Interactive Payment Request Dialog"
+                            title="Send Payment Request"
                             style={{
-                              padding: '6px 10px',
-                              backgroundColor: '#f0fdf4',
-                              border: '1px solid #86efac',
-                              borderRadius: '7px',
-                              fontSize: '12px',
-                              fontWeight: 700,
+                              padding: '5px 7px',
+                              backgroundColor: '#f8fafc',
+                              border: '1px solid #cbd5e1',
+                              borderRadius: '6px',
                               cursor: 'pointer',
                               color: '#166534',
+                              display: 'inline-flex',
+                              alignItems: 'center',
                             }}
                           >
-                            Request Payment
+                            <Send size={12} />
                           </button>
 
                           <button
@@ -1355,36 +1439,36 @@ export default function ProjectDetailsPage() {
                               ...m,
                               dueDate: m.dueDate ? new Date(m.dueDate).toISOString().split('T')[0] : '',
                             })}
-                            title="Edit Milestone / Adjust Advance"
+                            title="Edit Milestone Phase"
                             style={{
-                              padding: '6px 8px',
+                              padding: '5px 7px',
                               backgroundColor: '#f8fafc',
                               border: '1px solid #cbd5e1',
-                              borderRadius: '7px',
+                              borderRadius: '6px',
                               cursor: 'pointer',
                               color: '#0f172a',
                               display: 'inline-flex',
                               alignItems: 'center',
                             }}
                           >
-                            <Edit3 size={14} />
+                            <Edit3 size={12} />
                           </button>
 
                           <button
                             onClick={() => setMilestoneToDelete(m)}
                             title="Delete Milestone Phase"
                             style={{
-                              padding: '6px 8px',
+                              padding: '5px 7px',
                               backgroundColor: '#fee2e2',
                               border: '1px solid #fecaca',
-                              borderRadius: '7px',
+                              borderRadius: '6px',
                               cursor: 'pointer',
                               color: '#dc2626',
                               display: 'inline-flex',
                               alignItems: 'center',
                             }}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={12} />
                           </button>
                         </div>
                       </td>
@@ -1401,23 +1485,23 @@ export default function ProjectDetailsPage() {
 
                   return (
                     <tr style={{ backgroundColor: '#f8fafc', borderTop: '2px solid #cbd5e1', fontWeight: 800 }}>
-                      <td style={{ padding: '16px 18px', color: '#0f172a' }}>
+                      <td style={{ padding: '14px 16px', color: '#0f172a', whiteSpace: 'nowrap' }}>
                         TOTALS
                       </td>
-                      <td style={{ padding: '16px 18px', color: '#0f172a' }}>
+                      <td style={{ padding: '14px 16px', color: '#0f172a' }}>
                         <span>All {project.milestones?.length || 0} Project Phases</span>
                       </td>
-                      <td style={{ padding: '16px 18px', color: '#64748b', fontSize: '12px' }}>
+                      <td style={{ padding: '14px 16px', color: '#64748b', fontSize: '12px', whiteSpace: 'nowrap' }}>
                         100% Contract
                       </td>
-                      <td style={{ padding: '16px 18px', textAlign: 'right', fontSize: '15px', color: '#0f172a' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'right', fontSize: '15px', color: '#0f172a', whiteSpace: 'nowrap' }}>
                         ₹{totalPlanned.toLocaleString('en-IN')}
                       </td>
-                      <td style={{ padding: '16px 18px', textAlign: 'right', fontSize: '15px', color: '#15803d' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'right', fontSize: '15px', color: '#15803d', whiteSpace: 'nowrap' }}>
                         ₹{totalPaid.toLocaleString('en-IN')}
                       </td>
                       {/* Exact Net Remaining Due */}
-                      <td style={{ padding: '16px 18px', textAlign: 'right' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                           <span
                             style={{
@@ -1426,25 +1510,26 @@ export default function ProjectDetailsPage() {
                               color: exactNetRemaining > 0 ? '#b45309' : '#15803d',
                               backgroundColor: exactNetRemaining > 0 ? '#fffbeb' : '#f0fdf4',
                               border: `1px solid ${exactNetRemaining > 0 ? '#fde68a' : '#bbf7d0'}`,
-                              padding: '4px 10px',
-                              borderRadius: '8px',
+                              padding: '3px 9px',
+                              borderRadius: '6px',
+                              whiteSpace: 'nowrap',
                             }}
                           >
                             ₹{exactNetRemaining.toLocaleString('en-IN')}
                           </span>
-                          <span style={{ fontSize: '10px', color: '#64748b', marginTop: 2, fontWeight: 600 }}>
+                          <span style={{ fontSize: '10px', color: '#64748b', marginTop: 2, fontWeight: 600, whiteSpace: 'nowrap' }}>
                             Exact Net Remaining Due
                           </span>
                         </div>
                       </td>
                       {/* Total Excess Received */}
-                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                         {totalExcess > 0 ? (
                           <span
                             style={{
-                              padding: '4px 10px',
-                              borderRadius: '8px',
-                              fontSize: '12px',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
                               fontWeight: 800,
                               backgroundColor: '#dcfce7',
                               color: '#166534',
@@ -1452,22 +1537,24 @@ export default function ProjectDetailsPage() {
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: 4,
+                              whiteSpace: 'nowrap',
                             }}
                           >
-                            <TrendingUp size={14} color="#16a34a" />
-                            <span>+₹{totalExcess.toLocaleString('en-IN')} Net Excess</span>
+                            <TrendingUp size={13} color="#16a34a" />
+                            <span>+₹{totalExcess.toLocaleString('en-IN')} Excess</span>
                           </span>
                         ) : (
-                          <span style={{ fontSize: '12px', color: '#64748b' }}>₹0 Balanced</span>
+                          <span style={{ fontSize: '12px', color: '#64748b', whiteSpace: 'nowrap' }}>₹0 Balanced</span>
                         )}
                       </td>
-                      <td style={{ padding: '16px 18px', textAlign: 'center' }}>
+                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                         <span
                           style={{
                             padding: '4px 10px',
                             borderRadius: '999px',
                             fontSize: '11px',
                             fontWeight: 800,
+                            whiteSpace: 'nowrap',
                             backgroundColor: exactNetRemaining === 0 ? '#dcfce7' : '#eff6ff',
                             color: exactNetRemaining === 0 ? '#166534' : '#1d4ed8',
                             border: `1px solid ${exactNetRemaining === 0 ? '#bbf7d0' : '#bfdbfe'}`,
@@ -1476,7 +1563,7 @@ export default function ProjectDetailsPage() {
                           {fin.totalProjectValue > 0 ? Math.round((fin.totalPaid / fin.totalProjectValue) * 100) : 0}% Collected
                         </span>
                       </td>
-                      <td style={{ padding: '16px 18px' }}></td>
+                      <td style={{ padding: '14px 16px' }}></td>
                     </tr>
                   );
                 })()}
