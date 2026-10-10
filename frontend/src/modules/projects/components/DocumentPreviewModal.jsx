@@ -139,26 +139,30 @@ export function DocumentPreviewModal({ docData, onClose }) {
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <label
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button
+              type="button"
+              onClick={() => setUseDigitalSignature(!useDigitalSignature)}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: 6,
-                fontSize: '12px',
-                color: '#cbd5e1',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '11.5px',
+                fontWeight: 700,
                 cursor: 'pointer',
-                userSelect: 'none',
+                border: 'none',
+                backgroundColor: useDigitalSignature ? '#16a34a' : '#475569',
+                color: '#ffffff',
+                boxShadow: useDigitalSignature ? '0 0 10px rgba(34, 197, 94, 0.4)' : 'none',
+                transition: 'all 0.15s ease',
               }}
+              title="Click to ADD or REMOVE digital signature"
             >
-              <input
-                type="checkbox"
-                checked={useDigitalSignature}
-                onChange={(e) => setUseDigitalSignature(e.target.checked)}
-                style={{ cursor: 'pointer', width: 14, height: 14, accentColor: '#22c55e' }}
-              />
-              <span>Digital Signature</span>
-            </label>
+              <ShieldCheck size={14} />
+              <span>Digital Signature: <strong>{useDigitalSignature ? 'ADDED (ON)' : 'REMOVED (OFF)'}</strong></span>
+            </button>
 
             <button
               onClick={handlePrint}
@@ -213,6 +217,44 @@ export function DocumentPreviewModal({ docData, onClose }) {
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           }}
         >
+          {/* In-Document Digital Signature Status Banner (Hidden during print) */}
+          <div
+            className="no-print"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: useDigitalSignature ? '#f0fdf4' : '#f8fafc',
+              border: `1.5px solid ${useDigitalSignature ? '#86efac' : '#cbd5e1'}`,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              marginBottom: '16px',
+              gap: 12,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '11.5px' }}>
+              <ShieldCheck size={16} color={useDigitalSignature ? '#16a34a' : '#94a3b8'} />
+              <span style={{ color: useDigitalSignature ? '#166534' : '#475569', fontWeight: 600 }}>
+                Digital Signature: <strong>{useDigitalSignature ? 'Active (Cryptographic stamp applied)' : 'Removed (Clean line for manual signing)'}</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setUseDigitalSignature(!useDigitalSignature)}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                border: 'none',
+                backgroundColor: useDigitalSignature ? '#ef4444' : '#16a34a',
+                color: '#ffffff',
+              }}
+            >
+              {useDigitalSignature ? '✕ Remove Signature' : '✓ Add Digital Signature'}
+            </button>
+          </div>
           {/* Top Brand Accent Bar */}
           <div
             style={{

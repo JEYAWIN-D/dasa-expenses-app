@@ -83,6 +83,15 @@ export async function signQuotation(req, res) {
   }
 }
 
+export async function unsignQuotation(req, res) {
+  try {
+    const quotation = await quotationService.unsignQuotation(req.params.id, req.user);
+    return apiSuccess(res, quotation, 'Digital signature removed successfully');
+  } catch (error) {
+    return apiError(res, error.message, 400);
+  }
+}
+
 export async function convertToInvoice(req, res) {
   try {
     const invoice = await quotationService.convertQuotationToInvoice(req.params.id, req.user);

@@ -585,6 +585,38 @@ export async function signQuotation(id, pin, user) {
   return updated;
 }
 
+export async function unsignQuotation(id, user) {
+  const quotation = await prisma.quotation.findFirst({
+    where: { id, isDeleted: false },
+  });
+
+  if (!quotation) {
+    throw new Error('Quotation not found');
+  }
+
+  const updated = await prisma.quotation.update({
+    where: { id },
+    data: {
+      isDigitallySigned: false,
+      signedAt: null,
+      signedBy: null,
+      approvalText: null,
+    },
+  });
+
+  await logAudit({
+    userId: user.id,
+    userEmail: user.email,
+    module: 'QUOTATION',
+    action: 'UNSIGN',
+    entityId: id,
+    entityType: 'QUOTATION',
+    details: `Digital signature removed from quotation ${quotation.quotationNumber}`,
+  });
+
+  return updated;
+}
+
 export async function convertQuotationToInvoice(quotationId, user) {
   return await prisma.$transaction(async (tx) => {
     const quotation = await tx.quotation.findFirst({

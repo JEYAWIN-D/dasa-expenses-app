@@ -47,6 +47,15 @@ export async function signInvoice(req, res) {
   }
 }
 
+export async function unsignInvoice(req, res) {
+  try {
+    const invoice = await invoiceService.unsignInvoice(req.params.id, req.user);
+    return apiSuccess(res, invoice, 'Digital signature removed from invoice successfully');
+  } catch (error) {
+    return apiError(res, error.message, 400);
+  }
+}
+
 export async function getReminders(req, res) {
   try {
     const summary = await invoiceService.getPaymentRemindersSummary();

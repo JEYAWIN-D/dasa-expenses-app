@@ -108,7 +108,12 @@ export default function ProjectDetailsPage() {
   const [previewInvoiceDoc, setPreviewInvoiceDoc] = useState(null);
   const [previewPaymentDoc, setPreviewPaymentDoc] = useState(null);
   const [previewQuotationDoc, setPreviewQuotationDoc] = useState(null);
-  const [signTargetQuotationId, setSignTargetQuotationId] = useState(null);
+  const [signModalState, setSignModalState] = useState({
+    isOpen: false,
+    type: null, // 'QUOTATION' | 'INVOICE' | 'PAYMENT'
+    id: null,
+    name: '',
+  });
 
   const handleOpenQuotationPreview = async (qId) => {
     try {
@@ -120,14 +125,37 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleSignQuotationConfirm = async (pin) => {
-    if (!signTargetQuotationId) return;
+  const handleSignConfirm = async (pin) => {
+    if (!signModalState.id || !signModalState.type) return;
     try {
-      await api.post(`/quotations/${signTargetQuotationId}/sign`, { pin });
-      notify.success('Quotation digitally signed successfully!');
+      if (signModalState.type === 'QUOTATION') {
+        await api.post(`/quotations/${signModalState.id}/sign`, { pin });
+      } else if (signModalState.type === 'INVOICE') {
+        await api.post(`/invoices/${signModalState.id}/sign`, { pin });
+      } else if (signModalState.type === 'PAYMENT') {
+        await api.post(`/payments/${signModalState.id}/sign`, { pin });
+      }
+      notify.success(`${signModalState.name} digitally signed successfully!`);
       fetchProjectData();
     } catch (err) {
       throw err;
+    }
+  };
+
+  const handleRemoveSignature = async (type, itemId, itemName) => {
+    if (!window.confirm(`Are you sure you want to remove the digital signature from ${itemName}?`)) return;
+    try {
+      if (type === 'QUOTATION') {
+        await api.post(`/quotations/${itemId}/unsign`);
+      } else if (type === 'INVOICE') {
+        await api.post(`/invoices/${itemId}/unsign`);
+      } else if (type === 'PAYMENT') {
+        await api.post(`/payments/${itemId}/unsign`);
+      }
+      notify.success(`Digital signature removed from ${itemName}`);
+      fetchProjectData();
+    } catch (err) {
+      notify.error(err.message || 'Failed to remove digital signature');
     }
   };
 
@@ -1929,17 +1957,27 @@ export default function ProjectDetailsPage() {
                         </td>
                         <td style={{ padding: '16px 18px', textAlign: 'center' }}>
                           {q.isDigitallySigned ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
-                              <ShieldCheck size={12} />
-                              Signed
-                            </span>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+                                <ShieldCheck size={12} />
+                                Signed
+                              </span>
+                              <button
+                                onClick={() => handleRemoveSignature('QUOTATION', q.id, `Quotation ${q.quotationNumber}`)}
+                                className="btn btn-secondary btn-sm"
+                                style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, color: '#dc2626' }}
+                                title="Remove Digital Signature"
+                              >
+                                Remove
+                              </button>
+                            </div>
                           ) : (
                             <button
-                              onClick={() => setSignTargetQuotationId(q.id)}
+                              onClick={() => setSignModalState({ isOpen: true, type: 'QUOTATION', id: q.id, name: `Quotation ${q.quotationNumber}` })}
                               className="btn btn-secondary btn-sm"
-                              style={{ fontSize: 11, padding: '2px 8px', borderRadius: 999 }}
+                              style={{ fontSize: 11, padding: '3px 8px', borderRadius: 999, color: '#2563eb', fontWeight: 600 }}
                             >
-                              Sign (PIN)
+                              + Add Sign (PIN)
                             </button>
                           )}
                         </td>
@@ -2122,6 +2160,7 @@ export default function ProjectDetailsPage() {
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>GST Tax</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>Total Bill (₹)</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>Balance Due</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center' }}>Digital Signature</th>
                     <th style={{ padding: '12px 16px', textAlign: 'center' }}>Status</th>
                     <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
                   </tr>
@@ -2164,6 +2203,32 @@ export default function ProjectDetailsPage() {
                       </td>
                       <td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: inv.balanceDue > 0 ? '#b45309' : '#059669' }}>
                         ₹{Number(inv.balanceDue || 0).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '14px 16px', textAlign: 'center' }}>
+                        {inv.isDigitallySigned ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+                              <ShieldCheck size={12} />
+                              Signed
+                            </span>
+                            <button
+                              onClick={() => handleRemoveSignature('INVOICE', inv.id, `Invoice ${inv.invoiceNumber}`)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, color: '#dc2626' }}
+                              title="Remove Digital Signature"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setSignModalState({ isOpen: true, type: 'INVOICE', id: inv.id, name: `Invoice ${inv.invoiceNumber}` })}
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontSize: 11, padding: '3px 8px', borderRadius: 999, color: '#2563eb', fontWeight: 600 }}
+                          >
+                            + Add Sign (PIN)
+                          </button>
+                        )}
                       </td>
                       <td style={{ padding: '14px 16px', textAlign: 'center' }}>
                         <span
@@ -2294,6 +2359,7 @@ export default function ProjectDetailsPage() {
                   <th style={{ padding: '12px 18px' }}>Type</th>
                   <th style={{ padding: '12px 18px' }}>Payment Channels & Multi-Method Split Breakdown</th>
                   <th style={{ padding: '12px 18px', textAlign: 'right' }}>Total (₹)</th>
+                  <th style={{ padding: '12px 18px', textAlign: 'center' }}>Digital Signature</th>
                   <th style={{ padding: '12px 18px', textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
@@ -2339,6 +2405,32 @@ export default function ProjectDetailsPage() {
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 800, fontSize: '15px', color: '#0f172a' }}>
                         ₹{Number(p.amount).toLocaleString('en-IN')}
+                      </td>
+                      <td style={{ padding: '14px 18px', textAlign: 'center' }}>
+                        {p.isDigitallySigned ? (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 700 }}>
+                              <ShieldCheck size={12} />
+                              Signed
+                            </span>
+                            <button
+                              onClick={() => handleRemoveSignature('PAYMENT', p.id, `Receipt ${p.receiptNumber}`)}
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, color: '#dc2626' }}
+                              title="Remove Digital Signature"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setSignModalState({ isOpen: true, type: 'PAYMENT', id: p.id, name: `Receipt ${p.receiptNumber}` })}
+                            className="btn btn-secondary btn-sm"
+                            style={{ fontSize: 11, padding: '3px 8px', borderRadius: 999, color: '#2563eb', fontWeight: 600 }}
+                          >
+                            + Add Sign (PIN)
+                          </button>
+                        )}
                       </td>
                       <td style={{ padding: '14px 18px', textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -3484,10 +3576,10 @@ export default function ProjectDetailsPage() {
 
       {/* Digital Signature PIN Modal */}
       <PinSignatureModal
-        isOpen={!!signTargetQuotationId}
-        onClose={() => setSignTargetQuotationId(null)}
-        onConfirm={handleSignQuotationConfirm}
-        documentName="Quotation"
+        isOpen={signModalState.isOpen}
+        onClose={() => setSignModalState({ isOpen: false, type: null, id: null, name: '' })}
+        onConfirm={handleSignConfirm}
+        documentName={signModalState.name}
       />
     </div>
   );

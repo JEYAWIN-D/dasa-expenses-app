@@ -416,3 +416,34 @@ export async function signPayment(id, pin, user) {
 
   return updated;
 }
+
+export async function unsignPayment(id, user) {
+  const payment = await prisma.payment.findFirst({
+    where: { id, isDeleted: false },
+  });
+
+  if (!payment) {
+    throw new Error('Payment not found');
+  }
+
+  const updated = await prisma.payment.update({
+    where: { id },
+    data: {
+      isDigitallySigned: false,
+      signedAt: null,
+      signedBy: null,
+    },
+  });
+
+  await logAudit({
+    userId: user.id,
+    userEmail: user.email,
+    module: 'PAYMENT',
+    action: 'UNSIGN',
+    entityId: id,
+    entityType: 'PAYMENT',
+    details: `Digital signature removed from payment receipt ${payment.receiptNumber}`,
+  });
+
+  return updated;
+}

@@ -13,5 +13,6 @@ router.get('/', paymentController.listPayments);
 router.get('/:id', paymentController.getPayment);
 router.post('/', validateBody(recordPaymentSchema), paymentController.createPayment);
 router.post('/:id/sign', signaturePinLimiter, validateBody(signPaymentSchema), paymentController.signPayment);
+router.post('/:id/unsign', paymentController.unsignPayment);
 
 export default router;

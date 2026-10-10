@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Modal } from './Modal.jsx';
 import { Printer, ShieldCheck, Calendar, Clock, FileText, CheckCircle2, Building2, User, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 import { Badge } from './Badge.jsx';
@@ -10,6 +10,19 @@ import { printDocument } from '../../utils/printDocument.js';
 export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTATION' }) {
   const { company: globalCompany } = useCompany();
   const printableRef = useRef(null);
+
+  const [includeDigitalSignature, setIncludeDigitalSignature] = useState(
+    document?.isDigitallySigned !== undefined ? Boolean(document.isDigitallySigned) : true
+  );
+
+  useEffect(() => {
+    if (document) {
+      setIncludeDigitalSignature(
+        document.isDigitallySigned !== undefined ? Boolean(document.isDigitallySigned) : true
+      );
+    }
+  }, [document?.id, document?.isDigitallySigned]);
+
   if (!document) return null;
 
   // Merge document companyProfile with current active company profile (active branding takes precedence)
@@ -92,17 +105,81 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
       title={`Preview: ${docNumber} — ${isInvoice ? 'GST Tax Invoice' : isPayment ? 'Payment Receipt' : 'Commercial Quotation'}`}
       maxWidth={900}
       footer={
-        <>
-          <button type="button" className="btn btn-secondary no-print" onClick={onClose}>
-            Close
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: 10 }}>
+          <button
+            type="button"
+            className="no-print"
+            onClick={() => setIncludeDigitalSignature((prev) => !prev)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 7,
+              padding: '7px 14px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              backgroundColor: includeDigitalSignature ? '#ecfdf5' : '#f1f5f9',
+              color: includeDigitalSignature ? '#047857' : '#475569',
+              border: `1.5px solid ${includeDigitalSignature ? '#10b981' : '#cbd5e1'}`,
+            }}
+            title="Click to ADD or REMOVE digital signature"
+          >
+            <ShieldCheck size={16} color={includeDigitalSignature ? '#059669' : '#94a3b8'} />
+            <span>Digital Signature: <strong>{includeDigitalSignature ? 'ADDED (Click to Remove)' : 'REMOVED (Click to Add)'}</strong></span>
           </button>
-          <button type="button" className="btn btn-primary no-print" onClick={handlePrint}>
-            <Printer size={16} />
-            Print / Save Official PDF
-          </button>
-        </>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button type="button" className="btn btn-secondary no-print" onClick={onClose}>
+              Close
+            </button>
+            <button type="button" className="btn btn-primary no-print" onClick={handlePrint}>
+              <Printer size={16} />
+              Print / Save Official PDF
+            </button>
+          </div>
+        </div>
       }
     >
+      {/* Top Banner to Add/Remove Digital Signature */}
+      <div
+        className="no-print"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: includeDigitalSignature ? '#f0fdf4' : '#f8fafc',
+          border: `1.5px solid ${includeDigitalSignature ? '#86efac' : '#e2e8f0'}`,
+          borderRadius: 8,
+          padding: '8px 14px',
+          margin: '0 0 16px 0',
+          gap: 12,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '12px' }}>
+          <ShieldCheck size={16} color={includeDigitalSignature ? '#16a34a' : '#94a3b8'} />
+          <span style={{ color: includeDigitalSignature ? '#166534' : '#475569', fontWeight: 600 }}>
+            Digital Signature: <strong>{includeDigitalSignature ? 'Active (Cryptographic stamp applied)' : 'Removed (Clean line for manual signing)'}</strong>
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setIncludeDigitalSignature((prev) => !prev)}
+          style={{
+            padding: '4px 12px',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            border: 'none',
+            backgroundColor: includeDigitalSignature ? '#ef4444' : '#16a34a',
+            color: '#ffffff',
+          }}
+        >
+          {includeDigitalSignature ? '✕ Remove Signature' : '✓ Add Digital Signature'}
+        </button>
+      </div>
       <div
         ref={printableRef}
         className="printable-document"
@@ -645,7 +722,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   </div>
                 )}
 
-                {document.isDigitallySigned ? (
+                {includeDigitalSignature ? (
                   <div
                     style={{
                       padding: '10px 16px',
@@ -663,7 +740,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                       {document.signedBy || `${document.authorizedPerson || company.authorizedPerson || 'DASA TECH Admin'} (${document.authorizedDesignation || company.authorizedDesignation || 'Authorized Signatory'})`}
                     </div>
                     <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
-                      {document.signedAt ? new Date(document.signedAt).toLocaleString('en-IN') : 'Tamper-evident verification'}
+                      {document.signedAt ? new Date(document.signedAt).toLocaleString('en-IN') : `${new Date().toLocaleDateString('en-IN')} (Tamper-evident verification)`}
                     </div>
                   </div>
                 ) : (
@@ -1168,7 +1245,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                   </div>
                 )}
 
-                {document.isDigitallySigned ? (
+                {includeDigitalSignature ? (
                   <div
                     style={{
                       padding: '10px 16px',
@@ -1183,10 +1260,10 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                       <span>DIGITALLY SIGNED & VERIFIED</span>
                     </div>
                     <div style={{ fontSize: 11, color: '#15803d', marginTop: 4, fontWeight: 600 }}>
-                      {document.signedBy || company.authorizedPerson || 'DASA (Authorized Officer)'}
+                      {document.signedBy || `${company.authorizedPerson || 'DASA (Authorized Officer)'} (${company.authorizedDesignation || 'Authorized Signatory'})`}
                     </div>
                     <div style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
-                      {document.signedAt ? new Date(document.signedAt).toLocaleString('en-IN') : 'Tamper-evident verification'}
+                      {document.signedAt ? new Date(document.signedAt).toLocaleString('en-IN') : `${new Date().toLocaleDateString('en-IN')} (Tamper-evident verification)`}
                     </div>
                   </div>
                 ) : (

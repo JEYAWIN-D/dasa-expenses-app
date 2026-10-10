@@ -14,6 +14,7 @@ router.get('/', invoiceController.listInvoices);
 router.get('/:id', invoiceController.getInvoice);
 router.post('/', validateBody(createInvoiceSchema), invoiceController.createInvoice);
 router.post('/:id/sign', signaturePinLimiter, validateBody(signInvoiceSchema), invoiceController.signInvoice);
+router.post('/:id/unsign', invoiceController.unsignInvoice);
 router.delete('/:id', invoiceController.deleteInvoice);
 
 export default router;

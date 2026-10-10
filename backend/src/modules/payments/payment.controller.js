@@ -47,3 +47,12 @@ export async function signPayment(req, res) {
     return apiError(res, error.message, 400);
   }
 }
+
+export async function unsignPayment(req, res) {
+  try {
+    const payment = await paymentService.unsignPayment(req.params.id, req.user);
+    return apiSuccess(res, payment, 'Digital signature removed from payment successfully');
+  } catch (error) {
+    return apiError(res, error.message, 400);
+  }
+}

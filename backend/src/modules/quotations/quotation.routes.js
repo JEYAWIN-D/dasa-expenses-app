@@ -23,6 +23,7 @@ router.patch('/:id', validateBody(updateQuotationSchema), quotationController.up
 router.post('/:id/revise', validateBody(reviseQuotationSchema), quotationController.reviseQuotation);
 router.patch('/:id/status', validateBody(updateStatusSchema), quotationController.updateStatus);
 router.post('/:id/sign', signaturePinLimiter, validateBody(signDocumentSchema), quotationController.signQuotation);
+router.post('/:id/unsign', quotationController.unsignQuotation);
 router.post('/:id/convert-to-invoice', quotationController.convertToInvoice);
 router.delete('/:id', quotationController.deleteQuotation);
 

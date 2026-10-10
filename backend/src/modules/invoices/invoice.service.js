@@ -283,6 +283,37 @@ export async function signInvoice(id, pin, user) {
   return updated;
 }
 
+export async function unsignInvoice(id, user) {
+  const invoice = await prisma.invoice.findFirst({
+    where: { id, isDeleted: false },
+  });
+
+  if (!invoice) {
+    throw new Error('Invoice not found');
+  }
+
+  const updated = await prisma.invoice.update({
+    where: { id },
+    data: {
+      isDigitallySigned: false,
+      signedAt: null,
+      signedBy: null,
+    },
+  });
+
+  await logAudit({
+    userId: user.id,
+    userEmail: user.email,
+    module: 'INVOICE',
+    action: 'UNSIGN',
+    entityId: id,
+    entityType: 'INVOICE',
+    details: `Digital signature removed from invoice ${invoice.invoiceNumber}`,
+  });
+
+  return updated;
+}
+
 export async function getPaymentRemindersSummary() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
