@@ -347,9 +347,23 @@ export async function createProject(data, user) {
   return await prisma.$transaction(async (tx) => {
     const projectCode = await generateNextDocumentNumber('PROJECT', tx);
 
+    let resolvedOrgId = data.organizationId;
+    if (!resolvedOrgId && data.clientId) {
+      const clientRec = await tx.client.findUnique({ where: { id: data.clientId }, select: { organizationId: true } });
+      resolvedOrgId = clientRec?.organizationId;
+    }
+    if (!resolvedOrgId && user?.id) {
+      const membership = await tx.organizationMembership.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+        select: { organizationId: true },
+      });
+      resolvedOrgId = membership?.organizationId;
+    }
+
     const project = await tx.project.create({
       data: {
         projectCode,
+        organizationId: resolvedOrgId || null,
         name: data.name,
         description: data.description || null,
         clientId: data.clientId,
@@ -454,6 +468,7 @@ export async function convertQuotationToProject(quotationId, data = {}, user) {
     const project = await tx.project.create({
       data: {
         projectCode,
+        organizationId: quotation.organizationId || quotation.client?.organizationId || null,
         name: data.name || `${quotation.client.companyName} - Software Implementation`,
         description: data.description || quotation.notes || `Project initiated from approved quotation ${quotation.quotationNumber}`,
         clientId: quotation.clientId,

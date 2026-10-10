@@ -187,11 +187,19 @@ export async function createClient(data, user) {
   const { contacts, ...clientData } = data;
 
   return await prisma.$transaction(async (tx) => {
-    const clientCode = await generateNextDocumentNumber('CLIENT', tx);
+    let resolvedOrgId = clientData.organizationId;
+    if (!resolvedOrgId && user?.id) {
+      const membership = await tx.organizationMembership.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+        select: { organizationId: true },
+      });
+      resolvedOrgId = membership?.organizationId;
+    }
 
     const client = await tx.client.create({
       data: {
         ...clientData,
+        organizationId: resolvedOrgId || null,
         clientCode,
         ...(contacts && contacts.length > 0 && {
           contacts: {

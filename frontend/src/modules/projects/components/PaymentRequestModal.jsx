@@ -28,12 +28,10 @@ export function PaymentRequestModal({
   company,
 }) {
   const notify = useNotification();
-  if (!isOpen || !project) return null;
+  const milestones = project?.waterfallMilestones || project?.milestones || [];
+  const selectedMilestoneId = initialMilestone?.id || milestones.find((m) => (m.netPayableNow > 0 || m.status !== 'PAID'))?.id || milestones[0]?.id || '';
 
-  const milestones = project.waterfallMilestones || project.milestones || [];
-  const selectedMilestoneId = initialMilestone?.id || milestones.find((m) => (m.netPayableNow > 0 || m.status !== 'PAID'))?.id || milestones[0]?.id;
-
-  const [targetType, setTargetType] = useState(initialMilestone ? 'milestone' : 'milestone');
+  const [targetType, setTargetType] = useState('milestone');
   const [targetMilestoneId, setTargetMilestoneId] = useState(selectedMilestoneId);
   const [customAmount, setCustomAmount] = useState('');
   const [dueDate, setDueDate] = useState(() => {
@@ -43,9 +41,11 @@ export function PaymentRequestModal({
   });
   const [customNote, setCustomNote] = useState('');
   const [selectedAccountId, setSelectedAccountId] = useState(
-    bankAccounts.find((a) => a.isDefault)?.id || bankAccounts[0]?.id || ''
+    bankAccounts?.find((a) => a.isDefault)?.id || bankAccounts?.[0]?.id || ''
   );
   const [copiedType, setCopiedType] = useState(null);
+
+  if (!isOpen || !project) return null;
 
   // Find target milestone
   const activeMilestone = milestones.find((m) => m.id === targetMilestoneId) || milestones[0];

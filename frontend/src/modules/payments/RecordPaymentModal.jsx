@@ -5,10 +5,8 @@ import { Modal } from '../../components/common/Modal.jsx';
 import { CreditCard, CheckCircle2 } from 'lucide-react';
 
 export function RecordPaymentModal({ isOpen, onClose, invoice, onSuccess }) {
-  if (!invoice) return null;
-
   const [paymentType, setPaymentType] = useState('PARTIAL');
-  const [amount, setAmount] = useState(invoice.balanceDue || 0);
+  const [amount, setAmount] = useState(invoice?.balanceDue || 0);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentMode, setPaymentMode] = useState('BANK_TRANSFER');
   const [referenceNumber, setReferenceNumber] = useState('');
@@ -17,6 +15,8 @@ export function RecordPaymentModal({ isOpen, onClose, invoice, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const notify = useNotification();
+
+  if (!invoice) return null;
 
   const handleAmountChange = (val) => {
     const num = Number(val);

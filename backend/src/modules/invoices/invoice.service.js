@@ -182,9 +182,27 @@ export async function createInvoice(data, user) {
   return await prisma.$transaction(async (tx) => {
     const invoiceNumber = await generateNextDocumentNumber('INVOICE', tx);
 
+    let resolvedOrgId = rest.organizationId;
+    if (!resolvedOrgId && rest.projectId) {
+      const proj = await tx.project.findUnique({ where: { id: rest.projectId }, select: { organizationId: true } });
+      resolvedOrgId = proj?.organizationId;
+    }
+    if (!resolvedOrgId && rest.clientId) {
+      const clientRec = await tx.client.findUnique({ where: { id: rest.clientId }, select: { organizationId: true } });
+      resolvedOrgId = clientRec?.organizationId;
+    }
+    if (!resolvedOrgId && user?.id) {
+      const membership = await tx.organizationMembership.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+        select: { organizationId: true },
+      });
+      resolvedOrgId = membership?.organizationId;
+    }
+
     const invoice = await tx.invoice.create({
       data: {
         invoiceNumber,
+        organizationId: resolvedOrgId || null,
         clientId: rest.clientId,
         quotationId: rest.quotationId || null,
         projectId: rest.projectId || null,

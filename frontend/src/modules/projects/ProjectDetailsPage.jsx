@@ -13,6 +13,7 @@ import {
   Wallet,
   FileText,
   Printer,
+  Eye,
   Plus,
   TrendingUp,
   TrendingDown,

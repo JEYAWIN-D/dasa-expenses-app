@@ -158,10 +158,25 @@ export async function recordPayment(data, user) {
     // 3. Generate next receipt sequence atomically
     const receiptNumber = await generateNextDocumentNumber('PAYMENT', tx);
 
+    // Resolve organizationId securely to prevent orphaned payment records
+    let resolvedOrgId = data.organizationId || project?.organizationId || invoice?.organizationId;
+    if (!resolvedOrgId && clientId) {
+      const clientRecord = await tx.client.findUnique({ where: { id: clientId }, select: { organizationId: true } });
+      resolvedOrgId = clientRecord?.organizationId;
+    }
+    if (!resolvedOrgId && user?.id) {
+      const membership = await tx.organizationMembership.findFirst({
+        where: { userId: user.id, status: 'ACTIVE' },
+        select: { organizationId: true },
+      });
+      resolvedOrgId = membership?.organizationId;
+    }
+
     // 4. Create payment record
     const payment = await tx.payment.create({
       data: {
         receiptNumber,
+        organizationId: resolvedOrgId || null,
         invoiceId: invoiceId || null,
         clientId,
         projectId: projectId || null,

@@ -72,7 +72,7 @@ app.use(
       if (isAllowed) {
         callback(null, true);
       } else {
-        callback(null, true); // Permissive fallback to prevent 500 errors
+        callback(new Error(`Blocked by CORS policy: Origin '${origin}' is not permitted.`));
       }
     },
     credentials: true,
