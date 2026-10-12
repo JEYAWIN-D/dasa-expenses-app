@@ -13,6 +13,7 @@ import { prisma } from '../config/prisma.js';
  * @param {string|Object} [params.details]
  */
 export async function logAudit({
+  organizationId = null,
   userId = null,
   userEmail = null,
   module,
@@ -27,6 +28,7 @@ export async function logAudit({
 
     await prisma.auditLog.create({
       data: {
+        organizationId,
         userId,
         userEmail,
         module,

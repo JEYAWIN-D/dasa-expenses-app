@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import * as accountController from './account.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { authorizeRoles } from '../../middleware/rbac.middleware.js';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireTenant);
 
 router.get('/', accountController.getAccounts);
 router.post('/', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'FINANCE'), accountController.createAccount);

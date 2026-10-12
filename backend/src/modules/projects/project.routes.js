@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import * as projectController from './project.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { authorizeRoles } from '../../middleware/rbac.middleware.js';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, requireTenant);
 
 router.get('/', projectController.listProjects);
 router.post('/', authorizeRoles('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'SALES'), projectController.createProject);

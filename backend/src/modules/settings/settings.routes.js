@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as settingsController from './settings.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { authorizeRoles } from '../../middleware/rbac.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { signaturePinLimiter } from '../../middleware/security.middleware.js';
@@ -21,6 +22,7 @@ const router = Router();
 router.get('/company/public', settingsController.getPublicCompany);
 
 router.use(authenticate);
+router.use(requireTenant);
 
 // Company Profile (Full internal details restricted to authorized staff)
 router.get('/company', settingsController.getCompany);

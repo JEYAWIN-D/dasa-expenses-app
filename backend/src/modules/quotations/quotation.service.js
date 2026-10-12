@@ -66,7 +66,7 @@ function computeQuotationTotals(items, discountRate = 0, taxRate = 0, discountTy
   };
 }
 
-export async function getQuotationsList({ page = 1, limit = 10, search = '', status = '', clientId = '', projectId = '', tab = '' }) {
+export async function getQuotationsList({ page = 1, limit = 10, search = '', status = '', clientId = '', projectId = '', tab = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   let statusFilter = undefined;
@@ -82,6 +82,7 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(statusFilter && { status: statusFilter }),
     ...(clientId && { clientId }),
     ...(projectId && { projectId }),
@@ -151,6 +152,7 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
       where: {
         isDeleted: false,
         status: { notIn: ['CONVERTED', 'REJECTED', 'CANCELLED'] },
+        ...(organizationId && { organizationId }),
         ...(clientId && { clientId }),
         ...(projectId && { projectId }),
       },
@@ -159,6 +161,7 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
       where: {
         isDeleted: false,
         status: 'CONVERTED',
+        ...(organizationId && { organizationId }),
         ...(clientId && { clientId }),
         ...(projectId && { projectId }),
       },
@@ -167,6 +170,7 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
       where: {
         isDeleted: false,
         status: { in: ['REJECTED', 'CANCELLED', 'EXPIRED'] },
+        ...(organizationId && { organizationId }),
         ...(clientId && { clientId }),
         ...(projectId && { projectId }),
       },
@@ -174,6 +178,7 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
     prisma.quotation.count({
       where: {
         isDeleted: false,
+        ...(organizationId && { organizationId }),
         ...(clientId && { clientId }),
         ...(projectId && { projectId }),
       },
@@ -194,9 +199,13 @@ export async function getQuotationsList({ page = 1, limit = 10, search = '', sta
   };
 }
 
-export async function getQuotationById(id) {
+export async function getQuotationById(id, organizationId = null) {
   const quotation = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       client: {
         include: {
@@ -231,6 +240,9 @@ export async function getQuotationById(id) {
 
   // Fetch company profile for branding in PDF/preview
   const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
     include: { assets: true },
   });
 
@@ -319,9 +331,13 @@ export async function createQuotation(data, user) {
   });
 }
 
-export async function updateQuotation(id, data, user) {
+export async function updateQuotation(id, data, user, organizationId = null) {
   const existing = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: { items: true },
   });
 
@@ -412,9 +428,13 @@ export async function updateQuotation(id, data, user) {
   });
 }
 
-export async function reviseQuotation(id, data, user) {
+export async function reviseQuotation(id, data, user, organizationId = null) {
   const existing = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: { items: true },
   });
 
@@ -503,9 +523,13 @@ export async function reviseQuotation(id, data, user) {
   });
 }
 
-export async function updateQuotationStatus(id, status, user) {
+export async function updateQuotationStatus(id, status, user, organizationId = null) {
   const quotation = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!quotation) {
@@ -530,8 +554,12 @@ export async function updateQuotationStatus(id, status, user) {
   return updated;
 }
 
-export async function signQuotation(id, pin, user) {
-  const companyProfile = await prisma.companyProfile.findFirst();
+export async function signQuotation(id, pin, user, organizationId = null) {
+  const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
+  });
   if (!companyProfile || !companyProfile.signaturePinHash) {
     throw new Error('Digital signature PIN is not set up in Company Settings');
   }
@@ -551,7 +579,11 @@ export async function signQuotation(id, pin, user) {
   }
 
   const quotation = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!quotation) {
@@ -585,9 +617,13 @@ export async function signQuotation(id, pin, user) {
   return updated;
 }
 
-export async function unsignQuotation(id, user) {
+export async function unsignQuotation(id, user, organizationId = null) {
   const quotation = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!quotation) {
@@ -617,10 +653,14 @@ export async function unsignQuotation(id, user) {
   return updated;
 }
 
-export async function convertQuotationToInvoice(quotationId, user) {
+export async function convertQuotationToInvoice(quotationId, user, organizationId = null) {
   return await prisma.$transaction(async (tx) => {
     const quotation = await tx.quotation.findFirst({
-      where: { id: quotationId, isDeleted: false },
+      where: {
+        id: quotationId,
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       include: { items: true },
     });
 
@@ -641,6 +681,7 @@ export async function convertQuotationToInvoice(quotationId, user) {
     const invoice = await tx.invoice.create({
       data: {
         invoiceNumber,
+        organizationId: quotation.organizationId,
         clientId: quotation.clientId,
         quotationId: quotation.id,
         invoiceDate: new Date(),
@@ -693,9 +734,13 @@ export async function convertQuotationToInvoice(quotationId, user) {
   });
 }
 
-export async function deleteQuotation(id, user) {
+export async function deleteQuotation(id, user, organizationId = null) {
   const quotation = await prisma.quotation.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!quotation) {

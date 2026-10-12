@@ -42,16 +42,6 @@ export async function loginUser(email, password, rememberMe = false, ipAddress =
 
   let isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
-  // If standard bcrypt comparison failed, check if password matches user's DOB format
-  if (!isPasswordValid && user.avatar?.startsWith('dob:')) {
-    const rawDob = user.avatar.replace('dob:', '').trim(); // e.g. "15-08-1995"
-    const cleanInput = (password || '').replace(/[-/._ ]/g, '');
-    const cleanDob = rawDob.replace(/[-/._ ]/g, '');
-    if (cleanInput && cleanInput === cleanDob) {
-      isPasswordValid = true;
-    }
-  }
-
   if (!isPasswordValid) {
     await logAudit({
       userId: user.id,
@@ -96,7 +86,7 @@ export async function loginUser(email, password, rememberMe = false, ipAddress =
       name: user.name,
       role: user.role,
       phone: user.phone,
-      avatar: user.avatar,
+      avatar: user.avatar?.startsWith('dob:') ? null : user.avatar,
     },
   };
 }
@@ -118,6 +108,10 @@ export async function getCurrentUser(userId) {
 
   if (!user) {
     throw new Error('User not found');
+  }
+
+  if (user.avatar?.startsWith('dob:')) {
+    user.avatar = null;
   }
 
   return user;

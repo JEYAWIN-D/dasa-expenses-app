@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as invoiceController from './invoice.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { signaturePinLimiter } from '../../middleware/security.middleware.js';
 import { createInvoiceSchema, signInvoiceSchema } from './invoice.validation.js';
@@ -8,6 +9,7 @@ import { createInvoiceSchema, signInvoiceSchema } from './invoice.validation.js'
 const router = Router();
 
 router.use(authenticate);
+router.use(requireTenant);
 
 router.get('/reminders', invoiceController.getReminders);
 router.get('/', invoiceController.listInvoices);

@@ -13,11 +13,13 @@ export async function getExpensesList({
   isReimbursable = '',
   startDate = '',
   endDate = '',
+  organizationId = null,
 }) {
   const skip = (page - 1) * limit;
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(category && { category }),
     ...(vendorId && { vendorId }),
     ...(projectId && { projectId }),
@@ -81,9 +83,13 @@ export async function getExpensesList({
   };
 }
 
-export async function getExpenseById(id) {
+export async function getExpenseById(id, organizationId = null) {
   const expense = await prisma.expense.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       vendor: true,
       project: true,
@@ -193,9 +199,13 @@ export async function createExpense(data, user) {
   });
 }
 
-export async function updateExpense(id, data, user) {
+export async function updateExpense(id, data, user, organizationId = null) {
   const existing = await prisma.expense.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
@@ -234,7 +244,19 @@ export async function updateExpense(id, data, user) {
   return updated;
 }
 
-export async function approveExpense(id, user) {
+export async function approveExpense(id, user, organizationId = null) {
+  const existing = await prisma.expense.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
+  });
+
+  if (!existing) {
+    throw new Error('Expense record not found');
+  }
+
   const updated = await prisma.expense.update({
     where: { id },
     data: {
@@ -257,13 +279,24 @@ export async function approveExpense(id, user) {
   return updated;
 }
 
-export async function reimburseExpense(id, accountId, user) {
+export async function reimburseExpense(id, accountId, user, organizationId = null) {
   return await prisma.$transaction(async (tx) => {
-    const expense = await tx.expense.findUnique({ where: { id } });
+    const expense = await tx.expense.findFirst({
+      where: {
+        id,
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
+    });
     if (!expense) throw new Error('Expense not found');
     if (!expense.isReimbursable) throw new Error('Expense is not marked as reimbursable');
 
-    const account = await tx.financialAccount.findUnique({ where: { id: accountId } });
+    const account = await tx.financialAccount.findFirst({
+      where: {
+        id: accountId,
+        ...(organizationId && { organizationId }),
+      },
+    });
     if (!account) throw new Error('Payment account not found');
 
     const newBal = account.currentBalance - expense.amount;
@@ -309,9 +342,13 @@ export async function reimburseExpense(id, accountId, user) {
   });
 }
 
-export async function deleteExpense(id, user) {
+export async function deleteExpense(id, user, organizationId = null) {
   const existing = await prisma.expense.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
@@ -339,7 +376,7 @@ export async function deleteExpense(id, user) {
   return { message: 'Expense deleted successfully' };
 }
 
-export async function getCashflowOverview({ period = 'month', startDate = '', endDate = '' }) {
+export async function getCashflowOverview({ period = 'month', startDate = '', endDate = '', organizationId = null }) {
   const now = new Date();
   let fromDate;
   let toDate = new Date();
@@ -366,6 +403,7 @@ export async function getCashflowOverview({ period = 'month', startDate = '', en
   const paymentsAggregate = await prisma.payment.aggregate({
     where: {
       paymentDate: { gte: fromDate, lte: toDate },
+      ...(organizationId && { organizationId }),
     },
     _sum: { amount: true },
   });
@@ -374,6 +412,7 @@ export async function getCashflowOverview({ period = 'month', startDate = '', en
     where: {
       isDeleted: false,
       expenseDate: { gte: fromDate, lte: toDate },
+      ...(organizationId && { organizationId }),
     },
     _sum: { amount: true },
   });
@@ -383,6 +422,7 @@ export async function getCashflowOverview({ period = 'month', startDate = '', en
     where: {
       isDeleted: false,
       expenseDate: { gte: fromDate, lte: toDate },
+      ...(organizationId && { organizationId }),
     },
     _sum: { amount: true },
     orderBy: {
@@ -392,11 +432,18 @@ export async function getCashflowOverview({ period = 'month', startDate = '', en
 
   const [priorIncome, priorExpense] = await Promise.all([
     prisma.payment.aggregate({
-      where: { paymentDate: { lt: fromDate } },
+      where: {
+        paymentDate: { lt: fromDate },
+        ...(organizationId && { organizationId }),
+      },
       _sum: { amount: true },
     }),
     prisma.expense.aggregate({
-      where: { isDeleted: false, expenseDate: { lt: fromDate } },
+      where: {
+        isDeleted: false,
+        expenseDate: { lt: fromDate },
+        ...(organizationId && { organizationId }),
+      },
       _sum: { amount: true },
     }),
   ]);

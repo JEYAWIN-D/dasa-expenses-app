@@ -31,10 +31,11 @@ export async function createDemoLead(data) {
 /**
  * List all demo leads with filters and pagination for internal SaaS admin
  */
-export async function getDemoLeadsList({ page = 1, limit = 20, status = '', search = '' } = {}) {
+export async function getDemoLeadsList({ page = 1, limit = 20, status = '', search = '', organizationId = null } = {}) {
   const skip = (page - 1) * limit;
 
   const where = {
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(search && {
       OR: [
@@ -57,6 +58,7 @@ export async function getDemoLeadsList({ page = 1, limit = 20, status = '', sear
     }),
     prisma.demoLead.groupBy({
       by: ['status'],
+      where: organizationId ? { organizationId } : undefined,
       _count: { status: true },
     }),
   ]);
@@ -72,12 +74,12 @@ export async function getDemoLeadsList({ page = 1, limit = 20, status = '', sear
 /**
  * Get lead details by ID
  */
-export async function getDemoLeadById(id) {
+export async function getDemoLeadById(id, organizationId = null) {
   const lead = await prisma.demoLead.findUnique({
     where: { id },
   });
 
-  if (!lead) {
+  if (!lead || (organizationId && lead.organizationId && lead.organizationId !== organizationId)) {
     throw new Error('Demo lead not found');
   }
 
@@ -87,9 +89,9 @@ export async function getDemoLeadById(id) {
 /**
  * Update lead status, notes, assignment, follow-up date
  */
-export async function updateDemoLead(id, updates, currentUser) {
+export async function updateDemoLead(id, updates, currentUser, organizationId = null) {
   const existing = await prisma.demoLead.findUnique({ where: { id } });
-  if (!existing) {
+  if (!existing || (organizationId && existing.organizationId && existing.organizationId !== organizationId)) {
     throw new Error('Demo lead not found');
   }
 
@@ -107,6 +109,7 @@ export async function updateDemoLead(id, updates, currentUser) {
 
   if (currentUser) {
     await logAudit({
+      organizationId,
       userId: currentUser.id,
       userEmail: currentUser.email,
       module: 'DEMO_LEADS',
@@ -123,9 +126,9 @@ export async function updateDemoLead(id, updates, currentUser) {
 /**
  * Delete a demo lead
  */
-export async function deleteDemoLead(id, currentUser) {
+export async function deleteDemoLead(id, currentUser, organizationId = null) {
   const lead = await prisma.demoLead.findUnique({ where: { id } });
-  if (!lead) {
+  if (!lead || (organizationId && lead.organizationId && lead.organizationId !== organizationId)) {
     throw new Error('Demo lead not found');
   }
 
@@ -133,6 +136,7 @@ export async function deleteDemoLead(id, currentUser) {
 
   if (currentUser) {
     await logAudit({
+      organizationId,
       userId: currentUser.id,
       userEmail: currentUser.email,
       module: 'DEMO_LEADS',

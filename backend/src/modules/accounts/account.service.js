@@ -1,9 +1,14 @@
 import { prisma } from '../../config/prisma.js';
 import { logAudit } from '../../utils/audit.service.js';
 
-export async function getAccountsSummary() {
+export async function getAccountsSummary(organizationId = null) {
+  const where = { isActive: true };
+  if (organizationId) {
+    where.organizationId = organizationId;
+  }
+
   const accounts = await prisma.financialAccount.findMany({
-    where: { isActive: true },
+    where,
     orderBy: [{ isDefault: 'desc' }, { accountName: 'asc' }],
     include: {
       transactions: {
@@ -24,6 +29,7 @@ export async function getAccountsSummary() {
   const totalLiquidity = totalCashInHand + totalBankBalance;
 
   const recentTransactions = await prisma.accountTransaction.findMany({
+    where: organizationId ? { account: { organizationId } } : undefined,
     take: 15,
     orderBy: { transactionDate: 'desc' },
     include: {
@@ -53,6 +59,7 @@ export async function getAccountsSummary() {
 export async function createAccount(data, user) {
   const account = await prisma.financialAccount.create({
     data: {
+      organizationId: data.organizationId || null,
       accountCode: data.accountCode.toUpperCase(),
       accountName: data.accountName,
       accountType: data.accountType,
@@ -91,7 +98,14 @@ export async function createAccount(data, user) {
   return account;
 }
 
-export async function updateAccount(id, data, user) {
+export async function updateAccount(id, data, user, organizationId = null) {
+  if (organizationId) {
+    const existing = await prisma.financialAccount.findUnique({ where: { id } });
+    if (!existing || (existing.organizationId && existing.organizationId !== organizationId)) {
+      throw new Error('Account not found');
+    }
+  }
+
   const updated = await prisma.financialAccount.update({
     where: { id },
     data: {
@@ -118,7 +132,7 @@ export async function updateAccount(id, data, user) {
   return updated;
 }
 
-export async function transferBetweenAccounts({ fromAccountId, toAccountId, amount, referenceNumber, notes }, user) {
+export async function transferBetweenAccounts({ fromAccountId, toAccountId, amount, referenceNumber, notes }, user, organizationId = null) {
   const transferAmount = Number(amount);
   if (!transferAmount || transferAmount <= 0) {
     throw new Error('Valid transfer amount greater than 0 is required');
@@ -134,6 +148,13 @@ export async function transferBetweenAccounts({ fromAccountId, toAccountId, amou
 
     if (!fromAccount || !toAccount) {
       throw new Error('One or both specified accounts could not be found');
+    }
+
+    if (organizationId) {
+      if ((fromAccount.organizationId && fromAccount.organizationId !== organizationId) ||
+          (toAccount.organizationId && toAccount.organizationId !== organizationId)) {
+        throw new Error('Access denied: accounts belong to different tenant organization');
+      }
     }
 
     if (fromAccount.currentBalance < transferAmount) {
@@ -198,7 +219,14 @@ export async function transferBetweenAccounts({ fromAccountId, toAccountId, amou
   });
 }
 
-export async function getAccountTransactions(accountId, { page = 1, limit = 20 }) {
+export async function getAccountTransactions(accountId, { page = 1, limit = 20 }, organizationId = null) {
+  if (organizationId) {
+    const acc = await prisma.financialAccount.findUnique({ where: { id: accountId } });
+    if (!acc || (acc.organizationId && acc.organizationId !== organizationId)) {
+      throw new Error('Account not found');
+    }
+  }
+
   const skip = (page - 1) * limit;
   const where = { accountId };
 

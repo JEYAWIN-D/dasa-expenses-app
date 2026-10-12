@@ -2,11 +2,12 @@ import { prisma } from '../../config/prisma.js';
 import { generateNextDocumentNumber } from '../../utils/numbering.service.js';
 import { logAudit } from '../../utils/audit.service.js';
 
-export async function getClientsList({ page = 1, limit = 10, search = '', status = '', tag = '' }) {
+export async function getClientsList({ page = 1, limit = 10, search = '', status = '', tag = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(tag && { tags: { contains: tag, mode: 'insensitive' } }),
     ...(search && {
@@ -55,36 +56,24 @@ export async function getClientsList({ page = 1, limit = 10, search = '', status
   return { clients, total, page, limit };
 }
 
-export async function searchClientsQuick(query = '') {
-  if (!query) {
-    return prisma.client.findMany({
-      where: { isDeleted: false, status: 'ACTIVE' },
-      take: 15,
-      select: {
-        id: true,
-        clientCode: true,
-        companyName: true,
-        contactPerson: true,
-        email: true,
-        phone: true,
-        gstNumber: true,
-        address: true,
-        city: true,
-      },
-      orderBy: { companyName: 'asc' },
-    });
-  }
+export async function searchClientsQuick(query = '', organizationId = null) {
+  const where = {
+    isDeleted: false,
+    ...(organizationId && { organizationId }),
+    ...(query
+      ? {
+          OR: [
+            { companyName: { contains: query, mode: 'insensitive' } },
+            { contactPerson: { contains: query, mode: 'insensitive' } },
+            { clientCode: { contains: query, mode: 'insensitive' } },
+            { email: { contains: query, mode: 'insensitive' } },
+          ],
+        }
+      : { status: 'ACTIVE' }),
+  };
 
   return prisma.client.findMany({
-    where: {
-      isDeleted: false,
-      OR: [
-        { companyName: { contains: query, mode: 'insensitive' } },
-        { contactPerson: { contains: query, mode: 'insensitive' } },
-        { clientCode: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } },
-      ],
-    },
+    where,
     take: 15,
     select: {
       id: true,
@@ -101,9 +90,13 @@ export async function searchClientsQuick(query = '') {
   });
 }
 
-export async function getClientById(id) {
+export async function getClientById(id, organizationId = null) {
   const client = await prisma.client.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       contacts: {
         orderBy: { isPrimary: 'desc' },
@@ -226,15 +219,19 @@ export async function createClient(data, user) {
   });
 }
 
-export async function updateClient(id, data, user) {
+export async function updateClient(id, data, user, organizationId = null) {
   const { contacts, ...clientData } = data;
 
   const existing = await prisma.client.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
-    throw new Error('Client not found');
+    throw new Error('Client not found or unauthorized');
   }
 
   const updated = await prisma.client.update({
@@ -258,13 +255,17 @@ export async function updateClient(id, data, user) {
   return updated;
 }
 
-export async function deleteClient(id, user) {
+export async function deleteClient(id, user, organizationId = null) {
   const existing = await prisma.client.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
-    throw new Error('Client not found');
+    throw new Error('Client not found or unauthorized');
   }
 
   await prisma.client.update({

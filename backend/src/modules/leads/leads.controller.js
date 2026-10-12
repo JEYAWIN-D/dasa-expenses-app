@@ -22,7 +22,7 @@ export async function listDemoLeads(req, res) {
     const limit = parseInt(req.query.limit, 10) || 20;
     const { status, search } = req.query;
 
-    const result = await leadService.getDemoLeadsList({ page, limit, status, search });
+    const result = await leadService.getDemoLeadsList({ page, limit, status, search, organizationId: req.orgId });
     return apiPaginated(res, result.leads, { total: result.total, page, limit }, 'Demo leads fetched successfully', {
       countsByStatus: result.countsByStatus,
     });
@@ -34,7 +34,7 @@ export async function listDemoLeads(req, res) {
 
 export async function getDemoLead(req, res) {
   try {
-    const lead = await leadService.getDemoLeadById(req.params.id);
+    const lead = await leadService.getDemoLeadById(req.params.id, req.orgId);
     return apiSuccess(res, lead, 'Demo lead retrieved');
   } catch (error) {
     console.error('Error in getDemoLead:', error);
@@ -44,7 +44,7 @@ export async function getDemoLead(req, res) {
 
 export async function updateDemoLead(req, res) {
   try {
-    const updated = await leadService.updateDemoLead(req.params.id, req.body, req.user);
+    const updated = await leadService.updateDemoLead(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, updated, 'Demo lead updated successfully');
   } catch (error) {
     console.error('Error in updateDemoLead:', error);
@@ -54,7 +54,7 @@ export async function updateDemoLead(req, res) {
 
 export async function deleteDemoLead(req, res) {
   try {
-    await leadService.deleteDemoLead(req.params.id, req.user);
+    await leadService.deleteDemoLead(req.params.id, req.user, req.orgId);
     return apiSuccess(res, null, 'Demo lead removed successfully');
   } catch (error) {
     console.error('Error in deleteDemoLead:', error);

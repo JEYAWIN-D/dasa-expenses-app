@@ -155,11 +155,12 @@ export function calculateProjectFinancials(project) {
   };
 }
 
-export async function getProjectsList({ page = 1, limit = 20, search = '', status = '', clientId = '', handoverStatus = '' }) {
+export async function getProjectsList({ page = 1, limit = 20, search = '', status = '', clientId = '', handoverStatus = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(clientId && { clientId }),
     ...(handoverStatus && { handoverStatus }),
@@ -246,9 +247,14 @@ export async function getProjectsList({ page = 1, limit = 20, search = '', statu
   return { projects, total, page, limit, portfolioSummary };
 }
 
-export async function getProjectById(id) {
+export async function getProjectById(id, organizationId = null) {
+  const where = {
+    id,
+    isDeleted: false,
+    ...(organizationId && { organizationId }),
+  };
   const project = await prisma.project.findFirst({
-    where: { id, isDeleted: false },
+    where,
     include: {
       client: {
         include: {
@@ -547,8 +553,14 @@ export async function convertQuotationToProject(quotationId, data = {}, user) {
   });
 }
 
-export async function updateProject(id, data, user) {
-  const existing = await prisma.project.findUnique({ where: { id } });
+export async function updateProject(id, data, user, organizationId = null) {
+  const existing = await prisma.project.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
+  });
   if (!existing) {
     throw new Error('Project not found');
   }
@@ -588,9 +600,13 @@ export async function updateProject(id, data, user) {
   return updated;
 }
 
-export async function deleteProject(id, user) {
-  const existing = await prisma.project.findUnique({
-    where: { id },
+export async function deleteProject(id, user, organizationId = null) {
+  const existing = await prisma.project.findFirst({
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
@@ -814,9 +830,13 @@ export async function verifyAndHandoverProject(projectId, { handoverNotes, autho
  * - final-reminder: Final payment reminder before handover
  * - handover-certificate: Project handover & settlement clearance certificate
  */
-export async function getProjectDocumentData(projectId, docType, options = {}) {
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+export async function getProjectDocumentData(projectId, docType, options = {}, organizationId = null) {
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       client: {
         include: { contacts: true },
@@ -837,11 +857,17 @@ export async function getProjectDocumentData(projectId, docType, options = {}) {
 
   const financials = calculateProjectFinancials(project);
   const company = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
     include: { assets: true },
   });
 
   const accounts = await prisma.financialAccount.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      ...(organizationId && { organizationId }),
+    },
     orderBy: { isDefault: 'desc' },
   });
 

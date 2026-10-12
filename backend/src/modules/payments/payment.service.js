@@ -4,10 +4,11 @@ import { generateNextDocumentNumber } from '../../utils/numbering.service.js';
 import { logAudit } from '../../utils/audit.service.js';
 import { computeMilestoneWaterfall } from '../projects/project.service.js';
 
-export async function getPaymentsList({ page = 1, limit = 20, search = '', paymentMode = '', clientId = '', invoiceId = '', projectId = '' }) {
+export async function getPaymentsList({ page = 1, limit = 20, search = '', paymentMode = '', clientId = '', invoiceId = '', projectId = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   const where = {
+    ...(organizationId && { organizationId }),
     ...(paymentMode && { paymentMode }),
     ...(clientId && { clientId }),
     ...(invoiceId && { invoiceId }),
@@ -62,9 +63,12 @@ export async function getPaymentsList({ page = 1, limit = 20, search = '', payme
   return { payments, total, page, limit };
 }
 
-export async function getPaymentById(id) {
-  const payment = await prisma.payment.findUnique({
-    where: { id },
+export async function getPaymentById(id, organizationId = null) {
+  const payment = await prisma.payment.findFirst({
+    where: {
+      id,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       client: true,
       invoice: {
@@ -86,6 +90,9 @@ export async function getPaymentById(id) {
   }
 
   const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
     include: { assets: true },
   });
 
@@ -382,8 +389,12 @@ export async function recordPayment(data, user) {
   });
 }
 
-export async function signPayment(id, pin, user) {
-  const companyProfile = await prisma.companyProfile.findFirst();
+export async function signPayment(id, pin, user, organizationId = null) {
+  const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
+  });
   if (!companyProfile || !companyProfile.signaturePinHash) {
     throw new Error('Digital signature PIN is not configured');
   }
@@ -402,8 +413,11 @@ export async function signPayment(id, pin, user) {
     throw new Error('Invalid 4-digit PIN for digital signature authorization');
   }
 
-  const payment = await prisma.payment.findUnique({
-    where: { id },
+  const payment = await prisma.payment.findFirst({
+    where: {
+      id,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!payment) {
@@ -432,9 +446,13 @@ export async function signPayment(id, pin, user) {
   return updated;
 }
 
-export async function unsignPayment(id, user) {
+export async function unsignPayment(id, user, organizationId = null) {
   const payment = await prisma.payment.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!payment) {

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as quotationController from './quotation.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { signaturePinLimiter } from '../../middleware/security.middleware.js';
 import {
@@ -14,6 +15,7 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(requireTenant);
 
 router.get('/', quotationController.listQuotations);
 router.get('/:id', quotationController.getQuotation);

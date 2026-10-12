@@ -11,7 +11,7 @@ export async function listQuotations(req, res) {
     const projectId = req.query.projectId || '';
     const tab = req.query.tab || '';
 
-    const result = await quotationService.getQuotationsList({ page, limit, search, status, clientId, projectId, tab });
+    const result = await quotationService.getQuotationsList({ page, limit, search, status, clientId, projectId, tab, organizationId: req.orgId });
     return res.json({
       success: true,
       data: result.quotations,
@@ -31,7 +31,7 @@ export async function listQuotations(req, res) {
 
 export async function getQuotation(req, res) {
   try {
-    const quotation = await quotationService.getQuotationById(req.params.id);
+    const quotation = await quotationService.getQuotationById(req.params.id, req.orgId);
     return apiSuccess(res, quotation, 'Quotation retrieved successfully');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -40,7 +40,8 @@ export async function getQuotation(req, res) {
 
 export async function createQuotation(req, res) {
   try {
-    const quotation = await quotationService.createQuotation(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const quotation = await quotationService.createQuotation(payload, req.user);
     return apiSuccess(res, quotation, 'Quotation created successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -49,7 +50,7 @@ export async function createQuotation(req, res) {
 
 export async function updateQuotation(req, res) {
   try {
-    const quotation = await quotationService.updateQuotation(req.params.id, req.body, req.user);
+    const quotation = await quotationService.updateQuotation(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, quotation, 'Quotation updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -58,7 +59,7 @@ export async function updateQuotation(req, res) {
 
 export async function reviseQuotation(req, res) {
   try {
-    const quotation = await quotationService.reviseQuotation(req.params.id, req.body, req.user);
+    const quotation = await quotationService.reviseQuotation(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, quotation, 'Quotation revised successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -67,7 +68,7 @@ export async function reviseQuotation(req, res) {
 
 export async function updateStatus(req, res) {
   try {
-    const quotation = await quotationService.updateQuotationStatus(req.params.id, req.body.status, req.user);
+    const quotation = await quotationService.updateQuotationStatus(req.params.id, req.body.status, req.user, req.orgId);
     return apiSuccess(res, quotation, 'Quotation status updated');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -76,7 +77,7 @@ export async function updateStatus(req, res) {
 
 export async function signQuotation(req, res) {
   try {
-    const quotation = await quotationService.signQuotation(req.params.id, req.body.pin, req.user);
+    const quotation = await quotationService.signQuotation(req.params.id, req.body.pin, req.user, req.orgId);
     return apiSuccess(res, quotation, 'Quotation digitally signed successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -85,7 +86,7 @@ export async function signQuotation(req, res) {
 
 export async function unsignQuotation(req, res) {
   try {
-    const quotation = await quotationService.unsignQuotation(req.params.id, req.user);
+    const quotation = await quotationService.unsignQuotation(req.params.id, req.user, req.orgId);
     return apiSuccess(res, quotation, 'Digital signature removed successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -94,7 +95,7 @@ export async function unsignQuotation(req, res) {
 
 export async function convertToInvoice(req, res) {
   try {
-    const invoice = await quotationService.convertQuotationToInvoice(req.params.id, req.user);
+    const invoice = await quotationService.convertQuotationToInvoice(req.params.id, req.user, req.orgId);
     return apiSuccess(res, invoice, 'Quotation successfully converted to invoice', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -103,7 +104,7 @@ export async function convertToInvoice(req, res) {
 
 export async function deleteQuotation(req, res) {
   try {
-    const result = await quotationService.deleteQuotation(req.params.id, req.user);
+    const result = await quotationService.deleteQuotation(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Quotation deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

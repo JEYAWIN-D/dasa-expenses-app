@@ -1,8 +1,9 @@
 import { prisma } from '../../config/prisma.js';
 
-export async function getSalesReport({ startDate, endDate }) {
+export async function getSalesReport({ startDate, endDate, organizationId = null }) {
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(startDate || endDate ? {
       quotationDate: {
         ...(startDate && { gte: new Date(startDate) }),
@@ -19,6 +20,7 @@ export async function getSalesReport({ startDate, endDate }) {
     prisma.invoice.aggregate({
       where: {
         isDeleted: false,
+        ...(organizationId && { organizationId }),
         ...(startDate || endDate ? {
           invoiceDate: {
             ...(startDate && { gte: new Date(startDate) }),
@@ -43,13 +45,14 @@ export async function getSalesReport({ startDate, endDate }) {
   };
 }
 
-export async function getRevenueReport({ year = new Date().getFullYear() }) {
+export async function getRevenueReport({ year = new Date().getFullYear(), organizationId = null }) {
   const startOfYear = new Date(year, 0, 1);
   const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
 
   const payments = await prisma.payment.findMany({
     where: {
       paymentDate: { gte: startOfYear, lte: endOfYear },
+      ...(organizationId && { organizationId }),
     },
     select: {
       amount: true,
@@ -91,9 +94,10 @@ export async function getRevenueReport({ year = new Date().getFullYear() }) {
   };
 }
 
-export async function getExpensesReport({ startDate, endDate }) {
+export async function getExpensesReport({ startDate, endDate, organizationId = null }) {
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(startDate || endDate ? {
       expenseDate: {
         ...(startDate && { gte: new Date(startDate) }),
@@ -111,7 +115,10 @@ export async function getExpensesReport({ startDate, endDate }) {
       orderBy: { _sum: { amount: 'desc' } },
     }),
     prisma.vendor.findMany({
-      where: { isDeleted: false },
+      where: {
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       select: {
         id: true,
         vendorName: true,
@@ -139,9 +146,12 @@ export async function getExpensesReport({ startDate, endDate }) {
   };
 }
 
-export async function getClientBalancesReport() {
+export async function getClientBalancesReport(organizationId = null) {
   const clients = await prisma.client.findMany({
-    where: { isDeleted: false },
+    where: {
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     select: {
       id: true,
       clientCode: true,
@@ -177,9 +187,10 @@ export async function getClientBalancesReport() {
   }).filter((c) => c.totalBilled > 0 || c.pendingDue > 0);
 }
 
-export async function getProjectsFinancialReport({ status, clientId, startDate, endDate } = {}) {
+export async function getProjectsFinancialReport({ status, clientId, startDate, endDate, organizationId = null } = {}) {
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(clientId && { clientId }),
     ...(startDate || endDate ? {
@@ -272,12 +283,17 @@ export async function getProjectsFinancialReport({ status, clientId, startDate, 
   return { summary, projects: projectRows };
 }
 
-export async function getGstTaxReport({ startDate, endDate, clientId } = {}) {
-  const companyProfile = await prisma.companyProfile.findFirst();
+export async function getGstTaxReport({ startDate, endDate, clientId, organizationId = null } = {}) {
+  const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
+  });
   const companyState = companyProfile?.state?.toLowerCase().trim() || 'tamil nadu';
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(clientId && { clientId }),
     ...(startDate || endDate ? {
       invoiceDate: {
@@ -387,8 +403,9 @@ export async function getGstTaxReport({ startDate, endDate, clientId } = {}) {
   };
 }
 
-export async function getPaymentsCollectedReport({ startDate, endDate, paymentMode, clientId, projectId } = {}) {
+export async function getPaymentsCollectedReport({ startDate, endDate, paymentMode, clientId, projectId, organizationId = null } = {}) {
   const where = {
+    ...(organizationId && { organizationId }),
     ...(paymentMode && { paymentMode }),
     ...(clientId && { clientId }),
     ...(projectId && { projectId }),

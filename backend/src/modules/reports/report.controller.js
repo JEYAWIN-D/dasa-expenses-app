@@ -4,7 +4,7 @@ import { apiSuccess, apiError } from '../../utils/response.js';
 export async function getSalesReport(req, res) {
   try {
     const { startDate, endDate } = req.query;
-    const report = await reportService.getSalesReport({ startDate, endDate });
+    const report = await reportService.getSalesReport({ startDate, endDate, organizationId: req.orgId });
     return apiSuccess(res, report, 'Sales report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -14,7 +14,7 @@ export async function getSalesReport(req, res) {
 export async function getRevenueReport(req, res) {
   try {
     const year = parseInt(req.query.year || new Date().getFullYear(), 10);
-    const report = await reportService.getRevenueReport({ year });
+    const report = await reportService.getRevenueReport({ year, organizationId: req.orgId });
     return apiSuccess(res, report, 'Revenue report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -24,7 +24,7 @@ export async function getRevenueReport(req, res) {
 export async function getExpensesReport(req, res) {
   try {
     const { startDate, endDate } = req.query;
-    const report = await reportService.getExpensesReport({ startDate, endDate });
+    const report = await reportService.getExpensesReport({ startDate, endDate, organizationId: req.orgId });
     return apiSuccess(res, report, 'Expenses report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -33,7 +33,7 @@ export async function getExpensesReport(req, res) {
 
 export async function getClientBalances(req, res) {
   try {
-    const report = await reportService.getClientBalancesReport();
+    const report = await reportService.getClientBalancesReport(req.orgId);
     return apiSuccess(res, report, 'Client balances report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -43,7 +43,7 @@ export async function getClientBalances(req, res) {
 export async function getProjectsFinancialReport(req, res) {
   try {
     const { status, clientId, startDate, endDate } = req.query;
-    const report = await reportService.getProjectsFinancialReport({ status, clientId, startDate, endDate });
+    const report = await reportService.getProjectsFinancialReport({ status, clientId, startDate, endDate, organizationId: req.orgId });
     return apiSuccess(res, report, 'Projects financial report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -53,7 +53,7 @@ export async function getProjectsFinancialReport(req, res) {
 export async function getGstTaxReport(req, res) {
   try {
     const { startDate, endDate, clientId } = req.query;
-    const report = await reportService.getGstTaxReport({ startDate, endDate, clientId });
+    const report = await reportService.getGstTaxReport({ startDate, endDate, clientId, organizationId: req.orgId });
     return apiSuccess(res, report, 'GST tax report generated');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -63,7 +63,7 @@ export async function getGstTaxReport(req, res) {
 export async function getPaymentsCollectedReport(req, res) {
   try {
     const { startDate, endDate, paymentMode, clientId, projectId } = req.query;
-    const report = await reportService.getPaymentsCollectedReport({ startDate, endDate, paymentMode, clientId, projectId });
+    const report = await reportService.getPaymentsCollectedReport({ startDate, endDate, paymentMode, clientId, projectId, organizationId: req.orgId });
     return apiSuccess(res, report, 'Payments collected report generated');
   } catch (error) {
     return apiError(res, error.message, 500);

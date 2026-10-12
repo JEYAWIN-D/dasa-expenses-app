@@ -9,7 +9,7 @@ export async function listInvoices(req, res) {
     const status = req.query.status || '';
     const clientId = req.query.clientId || '';
 
-    const result = await invoiceService.getInvoicesList({ page, limit, search, status, clientId });
+    const result = await invoiceService.getInvoicesList({ page, limit, search, status, clientId, organizationId: req.orgId });
     return apiPaginated(res, result.invoices, {
       total: result.total,
       page: result.page,
@@ -22,7 +22,7 @@ export async function listInvoices(req, res) {
 
 export async function getInvoice(req, res) {
   try {
-    const invoice = await invoiceService.getInvoiceById(req.params.id);
+    const invoice = await invoiceService.getInvoiceById(req.params.id, req.orgId);
     return apiSuccess(res, invoice, 'Invoice retrieved successfully');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -31,7 +31,8 @@ export async function getInvoice(req, res) {
 
 export async function createInvoice(req, res) {
   try {
-    const invoice = await invoiceService.createInvoice(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const invoice = await invoiceService.createInvoice(payload, req.user);
     return apiSuccess(res, invoice, 'Invoice created successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -40,7 +41,7 @@ export async function createInvoice(req, res) {
 
 export async function signInvoice(req, res) {
   try {
-    const invoice = await invoiceService.signInvoice(req.params.id, req.body.pin, req.user);
+    const invoice = await invoiceService.signInvoice(req.params.id, req.body.pin, req.user, req.orgId);
     return apiSuccess(res, invoice, 'Invoice digitally signed successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -49,7 +50,7 @@ export async function signInvoice(req, res) {
 
 export async function unsignInvoice(req, res) {
   try {
-    const invoice = await invoiceService.unsignInvoice(req.params.id, req.user);
+    const invoice = await invoiceService.unsignInvoice(req.params.id, req.user, req.orgId);
     return apiSuccess(res, invoice, 'Digital signature removed from invoice successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -58,7 +59,7 @@ export async function unsignInvoice(req, res) {
 
 export async function getReminders(req, res) {
   try {
-    const summary = await invoiceService.getPaymentRemindersSummary();
+    const summary = await invoiceService.getPaymentRemindersSummary(req.orgId);
     return apiSuccess(res, summary, 'Payment reminders summary fetched');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -67,7 +68,7 @@ export async function getReminders(req, res) {
 
 export async function deleteInvoice(req, res) {
   try {
-    const result = await invoiceService.deleteInvoice(req.params.id, req.user);
+    const result = await invoiceService.deleteInvoice(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Invoice deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

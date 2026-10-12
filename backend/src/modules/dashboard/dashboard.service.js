@@ -1,7 +1,7 @@
 import { prisma } from '../../config/prisma.js';
 import { calculateProjectFinancials } from '../projects/project.service.js';
 
-export async function getDashboardMetrics() {
+export async function getDashboardMetrics(organizationId = null) {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -24,7 +24,10 @@ export async function getDashboardMetrics() {
   ] = await Promise.all([
     // Total Revenue (all paid invoices) & Pending Receivables (all active balance due)
     prisma.invoice.aggregate({
-      where: { isDeleted: false },
+      where: {
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       _sum: {
         paidAmount: true,
         balanceDue: true,
@@ -37,6 +40,7 @@ export async function getDashboardMetrics() {
         isDeleted: false,
         balanceDue: { gt: 0 },
         dueDate: { lt: startOfToday },
+        ...(organizationId && { organizationId }),
       },
       _sum: { balanceDue: true },
     }),
@@ -44,6 +48,7 @@ export async function getDashboardMetrics() {
     prisma.payment.aggregate({
       where: {
         paymentDate: { gte: startOfToday, lte: endOfToday },
+        ...(organizationId && { organizationId }),
       },
       _sum: { amount: true },
     }),
@@ -51,6 +56,7 @@ export async function getDashboardMetrics() {
     prisma.payment.aggregate({
       where: {
         paymentDate: { gte: startOfMonth },
+        ...(organizationId && { organizationId }),
       },
       _sum: { amount: true },
     }),
@@ -59,6 +65,7 @@ export async function getDashboardMetrics() {
       where: {
         isDeleted: false,
         expenseDate: { gte: startOfToday, lte: endOfToday },
+        ...(organizationId && { organizationId }),
       },
       _sum: { amount: true },
     }),
@@ -67,22 +74,33 @@ export async function getDashboardMetrics() {
       where: {
         isDeleted: false,
         expenseDate: { gte: startOfMonth },
+        ...(organizationId && { organizationId }),
       },
       _sum: { amount: true },
     }),
     // Vendor Payables (outstanding)
     prisma.vendor.aggregate({
-      where: { isDeleted: false },
+      where: {
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       _sum: { outstanding: true },
     }).catch(() => ({ _sum: { outstanding: 0 } })),
     // Active Clients
     prisma.client.count({
-      where: { isDeleted: false, status: 'ACTIVE' },
+      where: {
+        isDeleted: false,
+        status: 'ACTIVE',
+        ...(organizationId && { organizationId }),
+      },
     }).catch(() => 0),
     // Quotations Status Breakdown
     prisma.quotation.groupBy({
       by: ['status'],
-      where: { isDeleted: false },
+      where: {
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       _count: { id: true },
     }).catch(() => []),
     // Pending Invoices Count (ISSUED or PARTIALLY_PAID)
@@ -90,11 +108,15 @@ export async function getDashboardMetrics() {
       where: {
         isDeleted: false,
         status: { in: ['ISSUED', 'PARTIALLY_PAID', 'OVERDUE'] },
+        ...(organizationId && { organizationId }),
       },
     }).catch(() => 0),
     // Projects for Centralized Dashboard & Profitability Table
     prisma.project.findMany({
-      where: { isDeleted: false },
+      where: {
+        isDeleted: false,
+        ...(organizationId && { organizationId }),
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         client: {
@@ -109,7 +131,10 @@ export async function getDashboardMetrics() {
     }).catch(() => []),
     // Financial Accounts (Cash, UPI, Bank)
     prisma.financialAccount.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        ...(organizationId && { organizationId }),
+      },
     }).catch(() => []),
   ]);
 
@@ -198,7 +223,7 @@ export async function getDashboardMetrics() {
   const totalLiquidity = totalCashInHand + totalBankBalance;
 
   // Monthly trends for past 6 months
-  const monthlyTrends = await getMonthlyFinancialTrends();
+  const monthlyTrends = await getMonthlyFinancialTrends(organizationId);
 
   // Quotation conversion rate
   const totalQuotes = Object.values(quotationCounts).reduce((a, b) => a + b, 0);
@@ -207,6 +232,9 @@ export async function getDashboardMetrics() {
 
   // Recent 6 activities
   const recentActivities = await prisma.auditLog.findMany({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
     take: 6,
     orderBy: { createdAt: 'desc' },
     select: {
@@ -257,7 +285,7 @@ export async function getDashboardMetrics() {
   };
 }
 
-async function getMonthlyFinancialTrends() {
+async function getMonthlyFinancialTrends(organizationId = null) {
   const months = [];
   const now = new Date();
 
@@ -268,11 +296,18 @@ async function getMonthlyFinancialTrends() {
 
     const [income, expense] = await Promise.all([
       prisma.payment.aggregate({
-        where: { paymentDate: { gte: d, lte: endD } },
+        where: {
+          paymentDate: { gte: d, lte: endD },
+          ...(organizationId && { organizationId }),
+        },
         _sum: { amount: true },
       }),
       prisma.expense.aggregate({
-        where: { isDeleted: false, expenseDate: { gte: d, lte: endD } },
+        where: {
+          isDeleted: false,
+          expenseDate: { gte: d, lte: endD },
+          ...(organizationId && { organizationId }),
+        },
         _sum: { amount: true },
       }),
     ]);

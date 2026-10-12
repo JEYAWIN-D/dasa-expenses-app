@@ -62,11 +62,12 @@ function computeInvoiceTotals(items, discountAmount = 0, taxRate = 0, discountTy
   };
 }
 
-export async function getInvoicesList({ page = 1, limit = 10, search = '', status = '', clientId = '', projectId = '' }) {
+export async function getInvoicesList({ page = 1, limit = 10, search = '', status = '', clientId = '', projectId = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(clientId && { clientId }),
     ...(projectId && { projectId }),
@@ -130,9 +131,13 @@ export async function getInvoicesList({ page = 1, limit = 10, search = '', statu
   return { invoices, total, page, limit };
 }
 
-export async function getInvoiceById(id) {
+export async function getInvoiceById(id, organizationId = null) {
   const invoice = await prisma.invoice.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       client: {
         include: {
@@ -169,6 +174,9 @@ export async function getInvoiceById(id) {
   }
 
   const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
     include: { assets: true },
   });
 
@@ -251,8 +259,12 @@ export async function createInvoice(data, user) {
   });
 }
 
-export async function signInvoice(id, pin, user) {
-  const companyProfile = await prisma.companyProfile.findFirst();
+export async function signInvoice(id, pin, user, organizationId = null) {
+  const companyProfile = await prisma.companyProfile.findFirst({
+    where: {
+      ...(organizationId && { organizationId }),
+    },
+  });
   if (!companyProfile || !companyProfile.signaturePinHash) {
     throw new Error('Digital signature PIN is not set up in Company Settings');
   }
@@ -272,7 +284,11 @@ export async function signInvoice(id, pin, user) {
   }
 
   const invoice = await prisma.invoice.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!invoice) {
@@ -301,9 +317,13 @@ export async function signInvoice(id, pin, user) {
   return updated;
 }
 
-export async function unsignInvoice(id, user) {
+export async function unsignInvoice(id, user, organizationId = null) {
   const invoice = await prisma.invoice.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!invoice) {
@@ -332,7 +352,7 @@ export async function unsignInvoice(id, user) {
   return updated;
 }
 
-export async function getPaymentRemindersSummary() {
+export async function getPaymentRemindersSummary(organizationId = null) {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -347,6 +367,7 @@ export async function getPaymentRemindersSummary() {
         isDeleted: false,
         balanceDue: { gt: 0 },
         dueDate: { gte: startOfToday, lte: endOfToday },
+        ...(organizationId && { organizationId }),
       },
       include: { client: { select: { companyName: true, contactPerson: true, phone: true, email: true } } },
     }),
@@ -356,6 +377,7 @@ export async function getPaymentRemindersSummary() {
         isDeleted: false,
         balanceDue: { gt: 0 },
         dueDate: { gt: endOfToday, lte: endOfWeek },
+        ...(organizationId && { organizationId }),
       },
       include: { client: { select: { companyName: true, contactPerson: true, phone: true, email: true } } },
     }),
@@ -365,6 +387,7 @@ export async function getPaymentRemindersSummary() {
         isDeleted: false,
         balanceDue: { gt: 0 },
         dueDate: { lt: startOfToday },
+        ...(organizationId && { organizationId }),
       },
       include: { client: { select: { companyName: true, contactPerson: true, phone: true, email: true } } },
     }),
@@ -373,6 +396,7 @@ export async function getPaymentRemindersSummary() {
       where: {
         isDeleted: false,
         status: 'PAID',
+        ...(organizationId && { organizationId }),
       },
     }),
   ]);
@@ -389,9 +413,13 @@ export async function getPaymentRemindersSummary() {
   };
 }
 
-export async function deleteInvoice(id, user) {
+export async function deleteInvoice(id, user, organizationId = null) {
   const invoice = await prisma.invoice.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: { payments: true },
   });
 

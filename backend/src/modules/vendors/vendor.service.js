@@ -2,11 +2,12 @@ import { prisma } from '../../config/prisma.js';
 import { generateNextDocumentNumber } from '../../utils/numbering.service.js';
 import { logAudit } from '../../utils/audit.service.js';
 
-export async function getVendorsList({ page = 1, limit = 10, search = '', status = '' }) {
+export async function getVendorsList({ page = 1, limit = 10, search = '', status = '', organizationId = null }) {
   const skip = (page - 1) * limit;
 
   const where = {
     isDeleted: false,
+    ...(organizationId && { organizationId }),
     ...(status && { status }),
     ...(search && {
       OR: [
@@ -37,11 +38,12 @@ export async function getVendorsList({ page = 1, limit = 10, search = '', status
   return { vendors, total, page, limit };
 }
 
-export async function searchVendorsQuick(query = '') {
+export async function searchVendorsQuick(query = '', organizationId = null) {
   return prisma.vendor.findMany({
     where: {
       isDeleted: false,
       status: 'ACTIVE',
+      ...(organizationId && { organizationId }),
       ...(query && {
         OR: [
           { vendorName: { contains: query, mode: 'insensitive' } },
@@ -65,9 +67,13 @@ export async function searchVendorsQuick(query = '') {
   });
 }
 
-export async function getVendorById(id) {
+export async function getVendorById(id, organizationId = null) {
   const vendor = await prisma.vendor.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
     include: {
       expenses: {
         orderBy: { expenseDate: 'desc' },
@@ -115,9 +121,13 @@ export async function createVendor(data, user) {
   });
 }
 
-export async function updateVendor(id, data, user) {
+export async function updateVendor(id, data, user, organizationId = null) {
   const existing = await prisma.vendor.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {
@@ -151,9 +161,13 @@ export async function updateVendor(id, data, user) {
   return updated;
 }
 
-export async function deleteVendor(id, user) {
+export async function deleteVendor(id, user, organizationId = null) {
   const existing = await prisma.vendor.findFirst({
-    where: { id, isDeleted: false },
+    where: {
+      id,
+      isDeleted: false,
+      ...(organizationId && { organizationId }),
+    },
   });
 
   if (!existing) {

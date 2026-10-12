@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import * as clientController from './client.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { createClientSchema, updateClientSchema } from './client.validation.js';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, requireTenant);
 
 router.get('/', clientController.listClients);
 router.get('/search', clientController.quickSearchClients);

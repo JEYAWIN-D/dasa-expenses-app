@@ -10,7 +10,7 @@ export async function listProjects(req, res) {
     const clientId = req.query.clientId || '';
     const handoverStatus = req.query.handoverStatus || '';
 
-    const result = await projectService.getProjectsList({ page, limit, search, status, clientId, handoverStatus });
+    const result = await projectService.getProjectsList({ page, limit, search, status, clientId, handoverStatus, organizationId: req.orgId });
     return apiPaginated(
       res,
       result.projects,
@@ -29,7 +29,7 @@ export async function listProjects(req, res) {
 
 export async function getProject(req, res) {
   try {
-    const project = await projectService.getProjectById(req.params.id);
+    const project = await projectService.getProjectById(req.params.id, req.orgId);
     return apiSuccess(res, project, 'Project retrieved successfully');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -38,7 +38,8 @@ export async function getProject(req, res) {
 
 export async function createProject(req, res) {
   try {
-    const project = await projectService.createProject(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const project = await projectService.createProject(payload, req.user);
     return apiSuccess(res, project, 'Project created successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -47,7 +48,8 @@ export async function createProject(req, res) {
 
 export async function convertQuotation(req, res) {
   try {
-    const project = await projectService.convertQuotationToProject(req.params.quotationId, req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const project = await projectService.convertQuotationToProject(req.params.quotationId, payload, req.user);
     return apiSuccess(res, project, 'Quotation converted to project successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -56,7 +58,7 @@ export async function convertQuotation(req, res) {
 
 export async function updateProject(req, res) {
   try {
-    const project = await projectService.updateProject(req.params.id, req.body, req.user);
+    const project = await projectService.updateProject(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, project, 'Project updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -65,7 +67,7 @@ export async function updateProject(req, res) {
 
 export async function deleteProject(req, res) {
   try {
-    const result = await projectService.deleteProject(req.params.id, req.user);
+    const result = await projectService.deleteProject(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Project deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -111,7 +113,7 @@ export async function handoverProject(req, res) {
 export async function getDocumentData(req, res) {
   try {
     const options = { ...(req.query || {}), ...(req.body || {}) };
-    const data = await projectService.getProjectDocumentData(req.params.id, req.params.docType, options);
+    const data = await projectService.getProjectDocumentData(req.params.id, req.params.docType, options, req.orgId);
     return apiSuccess(res, data, 'Document data generated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

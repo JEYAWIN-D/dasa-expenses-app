@@ -25,6 +25,7 @@ export async function listExpenses(req, res) {
       isReimbursable,
       startDate,
       endDate,
+      organizationId: req.orgId,
     });
     return apiPaginated(res, result.expenses, {
       total: result.total,
@@ -38,7 +39,7 @@ export async function listExpenses(req, res) {
 
 export async function getExpense(req, res) {
   try {
-    const expense = await expenseService.getExpenseById(req.params.id);
+    const expense = await expenseService.getExpenseById(req.params.id, req.orgId);
     return apiSuccess(res, expense, 'Expense details retrieved');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -47,7 +48,8 @@ export async function getExpense(req, res) {
 
 export async function createExpense(req, res) {
   try {
-    const expense = await expenseService.createExpense(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const expense = await expenseService.createExpense(payload, req.user);
     return apiSuccess(res, expense, 'Expense recorded successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -56,7 +58,7 @@ export async function createExpense(req, res) {
 
 export async function updateExpense(req, res) {
   try {
-    const expense = await expenseService.updateExpense(req.params.id, req.body, req.user);
+    const expense = await expenseService.updateExpense(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, expense, 'Expense updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -65,7 +67,7 @@ export async function updateExpense(req, res) {
 
 export async function approveExpense(req, res) {
   try {
-    const expense = await expenseService.approveExpense(req.params.id, req.user);
+    const expense = await expenseService.approveExpense(req.params.id, req.user, req.orgId);
     return apiSuccess(res, expense, 'Expense approved successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -78,7 +80,7 @@ export async function reimburseExpense(req, res) {
     if (!accountId) {
       return apiError(res, 'Payment accountId is required for reimbursement', 400);
     }
-    const expense = await expenseService.reimburseExpense(req.params.id, accountId, req.user);
+    const expense = await expenseService.reimburseExpense(req.params.id, accountId, req.user, req.orgId);
     return apiSuccess(res, expense, 'Expense marked as reimbursed and paid out');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -87,7 +89,7 @@ export async function reimburseExpense(req, res) {
 
 export async function deleteExpense(req, res) {
   try {
-    const result = await expenseService.deleteExpense(req.params.id, req.user);
+    const result = await expenseService.deleteExpense(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Expense deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -97,7 +99,7 @@ export async function deleteExpense(req, res) {
 export async function getCashflow(req, res) {
   try {
     const { period, startDate, endDate } = req.query;
-    const cashflow = await expenseService.getCashflowOverview({ period, startDate, endDate });
+    const cashflow = await expenseService.getCashflowOverview({ period, startDate, endDate, organizationId: req.orgId });
     return apiSuccess(res, cashflow, 'Cashflow overview calculated successfully');
   } catch (error) {
     return apiError(res, error.message, 500);

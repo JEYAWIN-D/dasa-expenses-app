@@ -8,7 +8,7 @@ export async function listVendors(req, res) {
     const search = req.query.search || '';
     const status = req.query.status || '';
 
-    const result = await vendorService.getVendorsList({ page, limit, search, status });
+    const result = await vendorService.getVendorsList({ page, limit, search, status, organizationId: req.orgId });
     return apiPaginated(res, result.vendors, {
       total: result.total,
       page: result.page,
@@ -22,7 +22,7 @@ export async function listVendors(req, res) {
 export async function quickSearchVendors(req, res) {
   try {
     const query = req.query.q || '';
-    const vendors = await vendorService.searchVendorsQuick(query);
+    const vendors = await vendorService.searchVendorsQuick(query, req.orgId);
     return apiSuccess(res, vendors, 'Vendors retrieved');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -31,7 +31,7 @@ export async function quickSearchVendors(req, res) {
 
 export async function getVendor(req, res) {
   try {
-    const vendor = await vendorService.getVendorById(req.params.id);
+    const vendor = await vendorService.getVendorById(req.params.id, req.orgId);
     return apiSuccess(res, vendor, 'Vendor details retrieved');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -40,7 +40,8 @@ export async function getVendor(req, res) {
 
 export async function createVendor(req, res) {
   try {
-    const vendor = await vendorService.createVendor(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const vendor = await vendorService.createVendor(payload, req.user);
     return apiSuccess(res, vendor, 'Vendor created successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -49,7 +50,7 @@ export async function createVendor(req, res) {
 
 export async function updateVendor(req, res) {
   try {
-    const vendor = await vendorService.updateVendor(req.params.id, req.body, req.user);
+    const vendor = await vendorService.updateVendor(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, vendor, 'Vendor updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -58,7 +59,7 @@ export async function updateVendor(req, res) {
 
 export async function deleteVendor(req, res) {
   try {
-    const result = await vendorService.deleteVendor(req.params.id, req.user);
+    const result = await vendorService.deleteVendor(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Vendor deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

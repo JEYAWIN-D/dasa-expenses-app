@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import * as vendorController from './vendor.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { createVendorSchema, updateVendorSchema } from './vendor.validation.js';
 
 const router = Router();
 
 router.use(authenticate);
+router.use(requireTenant);
 
 router.get('/', vendorController.listVendors);
 router.get('/search', vendorController.quickSearchVendors);

@@ -12,7 +12,7 @@ export async function getPublicCompany(req, res) {
 
 export async function getCompany(req, res) {
   try {
-    const profile = await settingsService.getCompanyProfile();
+    const profile = await settingsService.getCompanyProfile(req.orgId);
     return apiSuccess(res, profile, 'Company profile fetched');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -21,7 +21,7 @@ export async function getCompany(req, res) {
 
 export async function updateCompany(req, res) {
   try {
-    const profile = await settingsService.updateCompanyProfile(req.body, req.user);
+    const profile = await settingsService.updateCompanyProfile(req.body, req.user, req.orgId);
     return apiSuccess(res, profile, 'Company profile updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -76,7 +76,7 @@ export async function changePin(req, res) {
 
 export async function getTemplates(req, res) {
   try {
-    const templates = await settingsService.getDocumentTemplates();
+    const templates = await settingsService.getDocumentTemplates(req.orgId);
     return apiSuccess(res, templates, 'Document templates fetched');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -85,7 +85,7 @@ export async function getTemplates(req, res) {
 
 export async function updateTemplate(req, res) {
   try {
-    const template = await settingsService.updateDocumentTemplate(req.params.id, req.body, req.user);
+    const template = await settingsService.updateDocumentTemplate(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, template, 'Document template updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -94,7 +94,7 @@ export async function updateTemplate(req, res) {
 
 export async function getNumbering(req, res) {
   try {
-    const configs = await settingsService.getNumberingConfigs();
+    const configs = await settingsService.getNumberingConfigs(req.orgId);
     return apiSuccess(res, configs, 'Numbering configurations fetched');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -103,7 +103,7 @@ export async function getNumbering(req, res) {
 
 export async function updateNumbering(req, res) {
   try {
-    const config = await settingsService.updateNumberingConfig(req.params.id, req.body, req.user);
+    const config = await settingsService.updateNumberingConfig(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, config, 'Numbering configuration updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -117,7 +117,7 @@ export async function getAuditLogs(req, res) {
     const module = req.query.module || '';
     const action = req.query.action || '';
 
-    const result = await settingsService.getAuditLogsList({ page, limit, module, action });
+    const result = await settingsService.getAuditLogsList({ page, limit, module, action }, req.orgId);
     return apiPaginated(res, result.logs, {
       total: result.total,
       page: result.page,
@@ -130,7 +130,7 @@ export async function getAuditLogs(req, res) {
 
 export async function getUsers(req, res) {
   try {
-    const users = await settingsService.getUsersList();
+    const users = await settingsService.getUsersList(req.orgId);
     return apiSuccess(res, users, 'Users fetched');
   } catch (error) {
     return apiError(res, error.message, 500);
@@ -139,7 +139,7 @@ export async function getUsers(req, res) {
 
 export async function createUser(req, res) {
   try {
-    const user = await settingsService.createUser(req.body, req.user);
+    const user = await settingsService.createUser(req.body, req.user, req.orgId);
     return apiSuccess(res, user, 'Staff user created successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -148,7 +148,7 @@ export async function createUser(req, res) {
 
 export async function updateUser(req, res) {
   try {
-    const user = await settingsService.updateUser(req.params.id, req.body, req.user);
+    const user = await settingsService.updateUser(req.params.id, req.body, req.user, req.orgId);
     return apiSuccess(res, user, 'Staff user updated successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -157,7 +157,7 @@ export async function updateUser(req, res) {
 
 export async function deleteUser(req, res) {
   try {
-    const result = await settingsService.deleteUser(req.params.id, req.user);
+    const result = await settingsService.deleteUser(req.params.id, req.user, req.orgId);
     return apiSuccess(res, result, 'Staff user deleted successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

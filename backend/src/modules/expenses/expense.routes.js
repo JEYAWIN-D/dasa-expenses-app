@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as expenseController from './expense.controller.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
+import { requireTenant } from '../../middleware/tenant.middleware.js';
 import { authorizeRoles } from '../../middleware/rbac.middleware.js';
 import { validateBody } from '../../middleware/validate.middleware.js';
 import { createExpenseSchema, updateExpenseSchema } from './expense.validation.js';
@@ -8,6 +9,7 @@ import { createExpenseSchema, updateExpenseSchema } from './expense.validation.j
 const router = Router();
 
 router.use(authenticate);
+router.use(requireTenant);
 
 router.get('/cashflow', expenseController.getCashflow);
 router.get('/', expenseController.listExpenses);

@@ -26,7 +26,40 @@ export async function getPublicCompanyProfile() {
   return company;
 }
 
-export async function getCompanyProfile() {
+export async function getCompanyProfile(organizationId = null) {
+  if (organizationId) {
+    const org = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+    if (org) {
+      const baseCompany = await prisma.companyProfile.findFirst({
+        include: {
+          assets: {
+            orderBy: { createdAt: 'desc' },
+          },
+        },
+      });
+      const { signaturePinHash: _pin, ...safeBase } = baseCompany || {};
+
+      return {
+        ...safeBase,
+        id: org.id,
+        companyName: org.name,
+        legalName: org.legalName,
+        phone: org.phone || safeBase?.phone,
+        email: org.email || safeBase?.email,
+        address: org.address || safeBase?.address,
+        city: org.city || safeBase?.city,
+        state: org.state || safeBase?.state,
+        country: org.country || safeBase?.country,
+        gstNumber: org.gstNumber,
+        panNumber: org.panNumber,
+        currency: org.currency || safeBase?.currency || 'INR',
+        authorizedPerson: org.authorizedPerson || safeBase?.authorizedPerson,
+      };
+    }
+  }
+
   const company = await prisma.companyProfile.findFirst({
     include: {
       assets: {
@@ -230,7 +263,32 @@ export async function deleteCompanyAsset(assetId, user) {
   });
 }
 
-export async function updateCompanyProfile(data, user) {
+export async function updateCompanyProfile(data, user, organizationId = null) {
+  if (organizationId) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org) {
+      await prisma.organization.update({
+        where: { id: organizationId },
+        data: {
+          name: data.companyName || undefined,
+          legalName: data.legalName !== undefined ? data.legalName : undefined,
+          phone: data.phone !== undefined ? data.phone : undefined,
+          email: data.email !== undefined ? data.email : undefined,
+          website: data.website !== undefined ? data.website : undefined,
+          address: data.address !== undefined ? data.address : undefined,
+          city: data.city !== undefined ? data.city : undefined,
+          state: data.state !== undefined ? data.state : undefined,
+          country: data.country !== undefined ? data.country : undefined,
+          postalCode: data.postalCode !== undefined ? data.postalCode : undefined,
+          gstNumber: data.gstNumber !== undefined ? data.gstNumber : undefined,
+          panNumber: data.panNumber !== undefined ? data.panNumber : undefined,
+          currency: data.currency !== undefined ? data.currency : undefined,
+          authorizedPerson: data.authorizedPerson !== undefined ? data.authorizedPerson : undefined,
+        },
+      });
+    }
+  }
+
   const existing = await prisma.companyProfile.findFirst();
 
   let updated;
@@ -251,6 +309,7 @@ export async function updateCompanyProfile(data, user) {
   }
 
   await logAudit({
+    organizationId,
     userId: user.id,
     userEmail: user.email,
     module: 'SETTINGS',
@@ -297,19 +356,32 @@ export async function changeSignaturePin({ currentPin, newPin }, user) {
   return { message: 'Digital signature PIN changed successfully' };
 }
 
-export async function getDocumentTemplates() {
+export async function getDocumentTemplates(organizationId = null) {
+  const where = {};
+  if (organizationId) {
+    where.organizationId = organizationId;
+  }
   return await prisma.documentTemplate.findMany({
+    where,
     orderBy: { type: 'asc' },
   });
 }
 
-export async function updateDocumentTemplate(id, data, user) {
+export async function updateDocumentTemplate(id, data, user, organizationId = null) {
+  if (organizationId) {
+    const existing = await prisma.documentTemplate.findUnique({ where: { id } });
+    if (!existing || (existing.organizationId && existing.organizationId !== organizationId)) {
+      throw new Error('Document template not found');
+    }
+  }
+
   const updated = await prisma.documentTemplate.update({
     where: { id },
     data,
   });
 
   await logAudit({
+    organizationId,
     userId: user.id,
     userEmail: user.email,
     module: 'SETTINGS',
@@ -320,19 +392,32 @@ export async function updateDocumentTemplate(id, data, user) {
   return updated;
 }
 
-export async function getNumberingConfigs() {
+export async function getNumberingConfigs(organizationId = null) {
+  const where = {};
+  if (organizationId) {
+    where.organizationId = organizationId;
+  }
   return await prisma.numberingConfig.findMany({
+    where,
     orderBy: { documentType: 'asc' },
   });
 }
 
-export async function updateNumberingConfig(id, data, user) {
+export async function updateNumberingConfig(id, data, user, organizationId = null) {
+  if (organizationId) {
+    const existing = await prisma.numberingConfig.findUnique({ where: { id } });
+    if (!existing || (existing.organizationId && existing.organizationId !== organizationId)) {
+      throw new Error('Numbering configuration not found');
+    }
+  }
+
   const updated = await prisma.numberingConfig.update({
     where: { id },
     data,
   });
 
   await logAudit({
+    organizationId,
     userId: user.id,
     userEmail: user.email,
     module: 'SETTINGS',
@@ -343,12 +428,13 @@ export async function updateNumberingConfig(id, data, user) {
   return updated;
 }
 
-export async function getAuditLogsList({ page = 1, limit = 20, module = '', action = '' }) {
+export async function getAuditLogsList({ page = 1, limit = 20, module = '', action = '' }, organizationId = null) {
   const skip = (page - 1) * limit;
 
   const where = {
     ...(module && { module }),
     ...(action && { action }),
+    ...(organizationId && { organizationId }),
   };
 
   const [total, logs] = await Promise.all([
@@ -373,8 +459,16 @@ export async function getAuditLogsList({ page = 1, limit = 20, module = '', acti
   return { logs, total, page, limit };
 }
 
-export async function getUsersList() {
+export async function getUsersList(organizationId = null) {
+  const where = {};
+  if (organizationId) {
+    where.memberships = {
+      some: { organizationId },
+    };
+  }
+
   return await prisma.user.findMany({
+    where,
     select: {
       id: true,
       email: true,
@@ -389,7 +483,7 @@ export async function getUsersList() {
   });
 }
 
-export async function createUser(data, adminUser) {
+export async function createUser(data, adminUser, organizationId = null) {
   // Only SUPER_ADMIN can create another SUPER_ADMIN
   if (data.role === 'SUPER_ADMIN' && adminUser.role !== 'SUPER_ADMIN') {
     throw new Error('Unauthorized: Only a Super Admin can create accounts with the Super Admin role');
@@ -412,6 +506,15 @@ export async function createUser(data, adminUser) {
       role: data.role,
       phone: data.phone,
       status: 'ACTIVE',
+      ...(organizationId ? {
+        memberships: {
+          create: {
+            organizationId,
+            roleTitle: data.role,
+            isOwner: false,
+          },
+        },
+      } : {}),
     },
     select: {
       id: true,
@@ -425,6 +528,7 @@ export async function createUser(data, adminUser) {
   });
 
   await logAudit({
+    organizationId,
     userId: adminUser.id,
     userEmail: adminUser.email,
     module: 'SETTINGS',
@@ -435,13 +539,21 @@ export async function createUser(data, adminUser) {
   return user;
 }
 
-export async function updateUser(id, data, adminUser) {
+export async function updateUser(id, data, adminUser, organizationId = null) {
   const existing = await prisma.user.findUnique({
     where: { id },
+    include: { memberships: true },
   });
 
   if (!existing) {
     throw new Error('User not found');
+  }
+
+  if (organizationId && adminUser.role !== 'SUPER_ADMIN') {
+    const isMember = existing.memberships?.some((m) => m.organizationId === organizationId);
+    if (!isMember) {
+      throw new Error('User not found in your organization');
+    }
   }
 
   // Privilege Escalation Protection: Only SUPER_ADMIN can assign SUPER_ADMIN role
@@ -503,6 +615,7 @@ export async function updateUser(id, data, adminUser) {
   });
 
   await logAudit({
+    organizationId,
     userId: adminUser.id,
     userEmail: adminUser.email,
     module: 'SETTINGS',
@@ -513,17 +626,25 @@ export async function updateUser(id, data, adminUser) {
   return updated;
 }
 
-export async function deleteUser(id, adminUser) {
+export async function deleteUser(id, adminUser, organizationId = null) {
   if (id === adminUser.id) {
     throw new Error('You cannot delete your own account while logged in');
   }
 
   const existing = await prisma.user.findUnique({
     where: { id },
+    include: { memberships: true },
   });
 
   if (!existing) {
     throw new Error('User not found');
+  }
+
+  if (organizationId && adminUser.role !== 'SUPER_ADMIN') {
+    const isMember = existing.memberships?.some((m) => m.organizationId === organizationId);
+    if (!isMember) {
+      throw new Error('User not found in your organization');
+    }
   }
 
   // Non-superadmin cannot delete a Super Admin
@@ -552,6 +673,7 @@ export async function deleteUser(id, adminUser) {
   });
 
   await logAudit({
+    organizationId,
     userId: adminUser.id,
     userEmail: adminUser.email,
     module: 'SETTINGS',

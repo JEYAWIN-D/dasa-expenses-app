@@ -10,7 +10,7 @@ export async function listPayments(req, res) {
     const clientId = req.query.clientId || '';
     const invoiceId = req.query.invoiceId || '';
 
-    const result = await paymentService.getPaymentsList({ page, limit, search, paymentMode, clientId, invoiceId });
+    const result = await paymentService.getPaymentsList({ page, limit, search, paymentMode, clientId, invoiceId, organizationId: req.orgId });
     return apiPaginated(res, result.payments, {
       total: result.total,
       page: result.page,
@@ -23,7 +23,7 @@ export async function listPayments(req, res) {
 
 export async function getPayment(req, res) {
   try {
-    const payment = await paymentService.getPaymentById(req.params.id);
+    const payment = await paymentService.getPaymentById(req.params.id, req.orgId);
     return apiSuccess(res, payment, 'Payment receipt retrieved successfully');
   } catch (error) {
     return apiError(res, error.message, 404);
@@ -32,7 +32,8 @@ export async function getPayment(req, res) {
 
 export async function createPayment(req, res) {
   try {
-    const payment = await paymentService.recordPayment(req.body, req.user);
+    const payload = { ...req.body, organizationId: req.orgId || req.body.organizationId };
+    const payment = await paymentService.recordPayment(payload, req.user);
     return apiSuccess(res, payment, 'Payment recorded successfully', 201);
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -41,7 +42,7 @@ export async function createPayment(req, res) {
 
 export async function signPayment(req, res) {
   try {
-    const payment = await paymentService.signPayment(req.params.id, req.body.pin, req.user);
+    const payment = await paymentService.signPayment(req.params.id, req.body.pin, req.user, req.orgId);
     return apiSuccess(res, payment, 'Payment receipt digitally signed successfully');
   } catch (error) {
     return apiError(res, error.message, 400);
@@ -50,7 +51,7 @@ export async function signPayment(req, res) {
 
 export async function unsignPayment(req, res) {
   try {
-    const payment = await paymentService.unsignPayment(req.params.id, req.user);
+    const payment = await paymentService.unsignPayment(req.params.id, req.user, req.orgId);
     return apiSuccess(res, payment, 'Digital signature removed from payment successfully');
   } catch (error) {
     return apiError(res, error.message, 400);

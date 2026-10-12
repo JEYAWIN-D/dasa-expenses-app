@@ -1,19 +1,35 @@
 import { prisma } from '../../config/prisma.js';
 import { logAudit } from '../../utils/audit.service.js';
 
-export async function getNegotiationsByQuotation(quotationId) {
+export async function getNegotiationsByQuotation(quotationId, organizationId = null) {
+  const quotation = await prisma.quotation.findFirst({
+    where: {
+      id: quotationId,
+      isDeleted: false,
+      ...(organizationId ? { organizationId } : {}),
+    },
+  });
+
+  if (!quotation) {
+    throw new Error('Quotation not found');
+  }
+
   return await prisma.quotationNegotiation.findMany({
     where: { quotationId },
     orderBy: { round: 'asc' },
   });
 }
 
-export async function addNegotiationRound(data, user) {
+export async function addNegotiationRound(data, user, organizationId = null) {
   const { quotationId, proposedBy, personName, offeredAmount, reason, notes, status } = data;
 
   return await prisma.$transaction(async (tx) => {
     const quotation = await tx.quotation.findFirst({
-      where: { id: quotationId, isDeleted: false },
+      where: {
+        id: quotationId,
+        isDeleted: false,
+        ...(organizationId ? { organizationId } : {}),
+      },
       include: { negotiations: { orderBy: { round: 'desc' }, take: 1 } },
     });
 
