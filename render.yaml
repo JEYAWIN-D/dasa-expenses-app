@@ -1,0 +1,38 @@
+# Render Blueprint for Automated Continuous Deployment from GitHub
+# Connect this repo (https://github.com/JEYAWIN-D/dasa-expenses-app) to Render.com
+# Every 'git push origin main' automatically builds and deploys live with zero downtime.
+
+services:
+  - type: web
+    name: dasa-expences-app
+    env: node
+    region: singapore # or oregon / frankfurt
+    plan: starter
+    autoDeploy: true
+    branch: main
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dasa-expences-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      - key: CORS_ORIGIN
+        value: "*"
+
+databases:
+  - name: dasa-expences-db
+    region: singapore
+    plan: starter
+    databaseName: dasa_expences
+    user: dasa_admin
+

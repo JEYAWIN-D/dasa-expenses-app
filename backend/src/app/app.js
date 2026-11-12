@@ -2,10 +2,17 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { ENV } from '../config/env.js';
 import apiRouter from './routes.js';
 import { errorHandler, notFoundHandler } from '../middleware/error.middleware.js';
 import { sanitizeInputs, customSecurityHeaders } from '../middleware/security.middleware.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDist = path.resolve(__dirname, '../../../frontend/dist');
 
 const app = express();
 
@@ -23,7 +30,16 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
         imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
-        connectSrc: ["'self'", 'http://localhost:*', 'https://*.dasatech.in', 'https://*.supabase.co'],
+        connectSrc: [
+          "'self'",
+          'http://localhost:*',
+          'https://*.dasatech.in',
+          'https://*.supabase.co',
+          'https://*.onrender.com',
+          'https://*.railway.app',
+          'https://*.vercel.app',
+          'https:',
+        ],
       },
     },
     hsts: {
@@ -107,7 +123,19 @@ app.use(sanitizeInputs);
 // Mount Modular API Routes
 app.use('/api', apiRouter);
 
-// 404 Route Catch-all
+// Serve Static Frontend Assets (Vite Production Build)
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  // Client-Side Routing Fallback for Single-Page Application (SPA)
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
+// 404 Route Catch-all for API endpoints
 app.use(notFoundHandler);
 
 // Global Error Handler

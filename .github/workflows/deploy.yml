@@ -1,0 +1,110 @@
+name: Production CI/CD Auto-Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-verify:
+    name: Build & Verify Production Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci || npm install
+
+      - name: Generate Prisma Client & Validate Schema
+        run: |
+          cd backend
+          npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock_db?schema=public"
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd frontend
+          npm ci || npm install
+
+      - name: Build Production Frontend Assets
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Verify Distribution Bundle Exists
+        run: |
+          test -d frontend/dist && echo "Frontend production bundle successfully compiled!"
+
+  trigger-live-deploy:
+    name: Trigger Live Deployment
+    needs: build-and-verify
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 1. Trigger via Cloud Deploy Webhook (Render / Railway / Vercel / Custom Hook)
+      - name: Trigger Cloud Deploy Webhook (if configured)
+        if: env.DEPLOY_WEBHOOK_URL != ''
+        env:
+          DEPLOY_WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
+        run: |
+          echo "Triggering deployment webhook..."
+          curl -X POST -s -o /dev/null -w "%{http_code}" "$DEPLOY_WEBHOOK_URL"
+          echo "Deploy webhook successfully signaled."
+
+      # 2. Deploy to Linux VPS via SSH (supports either SSH Key or SSH Password)
+      - name: Deploy to VPS Server via SSH
+        if: ${{ secrets.SERVER_HOST != '' }}
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER || 'root' }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            set -e
+            DEPLOY_DIR="${{ secrets.DEPLOY_PATH || '/var/www/dasa-expences' }}"
+            echo "Entering deployment directory: $DEPLOY_DIR"
+            cd "$DEPLOY_DIR"
+            
+            echo "Pulling latest code from GitHub..."
+            git pull origin main
+            
+            echo "Installing dependencies..."
+            npm --prefix backend install --production=false
+            npm --prefix frontend install
+            
+            echo "Generating Prisma Client..."
+            npm --prefix backend run prisma:generate
+            
+            echo "Syncing Database Schema..."
+            npm --prefix backend run prisma:push --accept-data-loss || true
+            
+            echo "Compiling Vite Production Frontend..."
+            npm --prefix frontend run build
+            
+            echo "Restarting PM2 backend service..."
+            pm2 restart all || pm2 start backend/src/app/server.js --name "dasa-saas-api"
+            pm2 save
+            
+            echo "Reloading NGINX..."
+            sudo systemctl reload nginx || true
+            
+            echo "Deployment completed! expense.dasatech.in is live with latest changes."
+

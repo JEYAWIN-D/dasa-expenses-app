@@ -4,10 +4,14 @@
   "private": true,
   "description": "Quotation, Billing, Client & Finance Management System for DASA TECH",
   "scripts": {
-    "start": "start.bat",
+    "start": "node backend/src/app/server.js",
+    "build": "npm --prefix backend run prisma:generate && npm --prefix frontend run build",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install",
+    "dev:start": "start.bat",
     "backend": "npm --prefix backend run dev",
     "backend:start": "npm --prefix backend start",
     "frontend": "npm --prefix frontend run dev",
-    "build:frontend": "npm --prefix frontend run build"
+    "build:frontend": "npm --prefix frontend run build",
+    "db:push": "npm --prefix backend run prisma:push"
   }
 }
