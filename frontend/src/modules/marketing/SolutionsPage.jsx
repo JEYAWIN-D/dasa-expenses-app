@@ -43,7 +43,7 @@ export default function SolutionsPage() {
         'Subcontractor developer payouts categorized by project budget',
         'Signed Handover Certificates with authorized digital PIN verification',
       ],
-      badgeColor: '#2563eb',
+      badgeColor: '#c2410c',
     },
     {
       id: 'agencies',
@@ -157,7 +157,7 @@ export default function SolutionsPage() {
               Built for How Project-Based Businesses{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -199,11 +199,11 @@ export default function SolutionsPage() {
                     fontWeight: active ? 800 : 600,
                     color: active ? '#ffffff' : '#475569',
                     background: active
-                      ? 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'
+                      ? 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)'
                       : 'rgba(255, 255, 255, 0.85)',
-                    border: `1px solid ${active ? '#2563eb' : 'rgba(226, 232, 240, 0.8)'}`,
+                    border: `1px solid ${active ? '#ea580c' : 'rgba(226, 232, 240, 0.8)'}`,
                     boxShadow: active
-                      ? '0 8px 20px -3px rgba(37, 99, 235, 0.35)'
+                      ? '0 8px 20px -3px rgba(234, 88, 12, 0.35)'
                       : '0 2px 6px rgba(0, 0, 0, 0.02)',
                     cursor: 'pointer',
                     backdropFilter: 'blur(10px)',
@@ -236,12 +236,12 @@ export default function SolutionsPage() {
                     width: 44,
                     height: 44,
                     borderRadius: 12,
-                    background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                    color: '#2563eb',
+                    background: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
+                    color: '#c2410c',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.15)',
+                    boxShadow: '0 4px 12px rgba(234, 88, 12, 0.15)',
                   }}
                 >
                   {current.icon}
@@ -252,8 +252,8 @@ export default function SolutionsPage() {
                     fontWeight: 800,
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
-                    color: '#2563eb',
-                    backgroundColor: '#eff6ff',
+                    color: '#c2410c',
+                    backgroundColor: '#fff7ed',
                     padding: '3px 10px',
                     borderRadius: 999,
                   }}
@@ -265,7 +265,7 @@ export default function SolutionsPage() {
               <h2 style={{ fontSize: 26, fontWeight: 900, color: '#09090b', letterSpacing: '-0.02em', marginBottom: 8 }}>
                 {current.title}
               </h2>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#2563eb', marginBottom: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#c2410c', marginBottom: 20 }}>
                 {current.tagline}
               </div>
 
@@ -327,23 +327,23 @@ export default function SolutionsPage() {
               {/* Highlight Metric Card */}
               <div
                 style={{
-                  background: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)',
+                  background: 'linear-gradient(135deg, #180d09 0%, #7c1228 50%, #9a3412 100%)',
                   borderRadius: 16,
                   padding: '24px 28px',
                   color: '#ffffff',
-                  boxShadow: '0 20px 40px -15px rgba(15, 23, 42, 0.35)',
+                  boxShadow: '0 20px 40px -15px rgba(24, 13, 9, 0.45)',
                   position: 'relative',
                   overflow: 'hidden',
                 }}
               >
-                <div style={{ position: 'absolute', right: -20, top: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(37,99,235,0.4) 0%, transparent 70%)', pointerEvents: 'none' }} />
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                <div style={{ position: 'absolute', right: -20, top: -20, width: 100, height: 100, background: 'radial-gradient(circle, rgba(234, 88, 12, 0.4) 0%, transparent 70%)', pointerEvents: 'none' }} />
+                <div style={{ fontSize: 11, fontWeight: 800, color: '#fed7aa', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
                   VERIFIED OUTCOME
                 </div>
                 <div style={{ fontSize: 28, fontWeight: 900, color: '#ffffff', letterSpacing: '-0.02em' }}>
                   {current.metric}
                 </div>
-                <div style={{ fontSize: 13, color: '#cbd5e1', marginTop: 4 }}>
+                <div style={{ fontSize: 13, color: '#fed7aa', marginTop: 4 }}>
                   {current.metricSub}
                 </div>
               </div>
@@ -408,14 +408,14 @@ export default function SolutionsPage() {
                     backgroundColor: '#ffffff',
                     padding: '20px 22px',
                     borderRadius: 14,
-                    border: ind.id === activeTab ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                    border: ind.id === activeTab ? '2px solid #c2410c' : '1px solid #e2e8f0',
                     cursor: 'pointer',
                     boxShadow: '0 2px 6px rgba(0, 0, 0, 0.02)',
                     transition: 'all 0.2s ease',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                    <div style={{ color: ind.id === activeTab ? '#2563eb' : '#64748b' }}>{ind.icon}</div>
+                    <div style={{ color: ind.id === activeTab ? '#c2410c' : '#64748b' }}>{ind.icon}</div>
                     <div style={{ fontSize: 14, fontWeight: 800, color: '#09090b' }}>{ind.label}</div>
                   </div>
                   <div style={{ fontSize: 12, color: '#71717a', lineHeight: 1.5 }}>

@@ -281,45 +281,46 @@ export function DocumentPreviewModal({ docData, onClose }) {
             }}
           >
             {/* Left: Supplier Info */}
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', maxWidth: '62%' }}>
-              <img
-                src={company?.logoUrl || '/dasa-tech-logo.png'}
-                alt={cleanCompanyName}
-                onError={(e) => {
-                  e.currentTarget.src = '/dasa-tech-logo.png';
-                }}
-                style={{
-                  height: '46px',
-                  width: '46px',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  padding: '3px',
-                }}
-              />
-              <div>
-                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.4px', margin: 0, lineHeight: 1.15 }}>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center', maxWidth: '65%' }}>
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                <img
+                  src={(company?.logoUrl && !company.logoUrl.includes('unsplash')) ? company.logoUrl : '/dasa-tech-logo.png'}
+                  alt={cleanCompanyName}
+                  onError={(e) => {
+                    e.currentTarget.src = '/dasa-tech-logo.png';
+                  }}
+                  style={{
+                    maxHeight: '84px',
+                    maxWidth: '220px',
+                    height: 'auto',
+                    width: 'auto',
+                    objectFit: 'contain',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <div style={{ borderLeft: '2.5px solid #1e3a8a', paddingLeft: '18px' }}>
+                <h1 style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.4px', margin: 0, lineHeight: 1.15 }}>
                   {cleanCompanyName}
                 </h1>
-                <p style={{ color: '#2563eb', fontWeight: 700, fontSize: '10px', marginTop: 2, marginBottom: 2, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                <p style={{ color: '#2563eb', fontWeight: 700, fontSize: '11px', marginTop: 2, marginBottom: 2, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
                   {company?.tagline || 'Enterprise Cloud & Software Engineering'}
                 </p>
-                <p style={{ color: '#64748b', fontSize: '10.5px', margin: '1px 0', lineHeight: 1.3 }}>
+                <p style={{ color: '#64748b', fontSize: '11px', margin: '1px 0', lineHeight: 1.35 }}>
                   {company?.address}, {(company?.city || 'Erode').replace(/BanERODEgalore/gi, 'Erode')}, {company?.state || 'Tamil Nadu'} - {company?.postalCode || '638002'}
                 </p>
-                <p style={{ color: '#64748b', fontSize: '10.5px', margin: '1px 0' }}>
-                  Phone: <strong>{company?.phone || '+91 76399 30148'}</strong> &nbsp;|&nbsp; Email: <strong>{company?.email || 'dasatechmu@gmail.com'}</strong>
+                <p style={{ color: '#64748b', fontSize: '11px', margin: '1px 0' }}>
+                  Phone: <strong style={{ color: '#0f172a' }}>{company?.phone || '+91 76399 30148'}</strong> &nbsp;|&nbsp; Email: <strong style={{ color: '#0f172a' }}>{company?.email || 'dasatechmu@gmail.com'}</strong>
                 </p>
                 {(company?.gstNumber || company?.panNumber) && (company?.gstNumber !== '33ABCDE1234F1Z5' || company?.panNumber !== 'ABCDE1234F') && (
-                  <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                  <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                     {company?.gstNumber && company.gstNumber !== '33ABCDE1234F1Z5' && (
-                      <span style={{ fontSize: '10px', color: '#334155', backgroundColor: '#f1f5f9', padding: '1px 5px', borderRadius: 3, fontWeight: 600 }}>
+                      <span style={{ fontSize: '10.5px', color: '#0f172a', backgroundColor: '#f8fafc', padding: '2px 7px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
                         GSTIN: <strong>{company.gstNumber}</strong>
                       </span>
                     )}
                     {company?.panNumber && company.panNumber !== 'ABCDE1234F' && (
-                      <span style={{ fontSize: '10px', color: '#334155', backgroundColor: '#f1f5f9', padding: '1px 5px', borderRadius: 3, fontWeight: 600 }}>
+                      <span style={{ fontSize: '10.5px', color: '#0f172a', backgroundColor: '#f8fafc', padding: '2px 7px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
                         PAN: <strong>{company.panNumber}</strong>
                       </span>
                     )}

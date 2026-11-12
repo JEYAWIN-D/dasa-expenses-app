@@ -284,12 +284,14 @@ export async function getProjectsFinancialReport({ status, clientId, startDate, 
 }
 
 export async function getGstTaxReport({ startDate, endDate, clientId, organizationId = null } = {}) {
-  const companyProfile = await prisma.companyProfile.findFirst({
-    where: {
-      ...(organizationId && { organizationId }),
-    },
-  });
-  const companyState = companyProfile?.state?.toLowerCase().trim() || 'tamil nadu';
+  const companyProfile = await prisma.companyProfile.findFirst();
+  let companyState = companyProfile?.state?.toLowerCase().trim() || 'tamil nadu';
+  if (organizationId) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org?.state) {
+      companyState = org.state.toLowerCase().trim();
+    }
+  }
 
   const where = {
     isDeleted: false,

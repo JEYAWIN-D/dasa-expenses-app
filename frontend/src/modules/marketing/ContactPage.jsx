@@ -56,7 +56,7 @@ export default function ContactPage() {
               We are Here to Help Your{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -142,19 +142,19 @@ export default function ContactPage() {
                     width: 48,
                     height: 48,
                     borderRadius: 14,
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                    background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
                     color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.25)',
+                    boxShadow: '0 4px 12px rgba(234, 88, 12, 0.25)',
                   }}
                 >
                   <Phone size={22} />
                 </div>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                     Direct Support & Sales
                   </div>
                   <div style={{ fontSize: 16, fontWeight: 900, color: '#09090b', marginTop: 2 }}>
@@ -174,7 +174,7 @@ export default function ContactPage() {
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                    <MapPin size={18} color="#2563eb" style={{ marginTop: 2, flexShrink: 0 }} />
+                    <MapPin size={18} color="#c2410c" style={{ marginTop: 2, flexShrink: 0 }} />
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#09090b' }}>DASA TECH Office</div>
                       <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>
@@ -184,14 +184,14 @@ export default function ContactPage() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <Globe size={18} color="#0891b2" style={{ flexShrink: 0 }} />
+                    <Globe size={18} color="#c2410c" style={{ flexShrink: 0 }} />
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#09090b' }}>Official Corporate Site</div>
                       <a
                         href="https://dasatech.in"
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ fontSize: 12, color: '#2563eb', fontWeight: 600, textDecoration: 'none' }}
+                        style={{ fontSize: 12, color: '#c2410c', fontWeight: 600, textDecoration: 'none' }}
                       >
                         https://dasatech.in
                       </a>

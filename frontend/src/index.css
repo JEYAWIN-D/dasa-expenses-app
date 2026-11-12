@@ -12,17 +12,17 @@
   
   --border-subtle: #e4e4e7;
   --border-strong: #d4d4d8;
-  --border-focus: #2563eb;
+  --border-focus: #ea580c;
 
   --text-main: #09090b;
   --text-muted: #71717a;
   --text-subtle: #a1a1aa;
   --text-inverse: #ffffff;
 
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --primary-light: #eff6ff;
-  --primary-border: #bfdbfe;
+  --primary: #c2410c;
+  --primary-hover: #9a3412;
+  --primary-light: #fff7ed;
+  --primary-border: #fed7aa;
 
   --success: #10b981;
   --success-light: #ecfdf5;
@@ -44,12 +44,12 @@
   --info-border: #bae6fd;
   --info-text: #075985;
 
-  --sidebar-bg: #090d16;
-  --sidebar-hover: #161f30;
-  --sidebar-active: #1e293b;
-  --sidebar-text: #94a3b8;
+  --sidebar-bg: #120e0d;
+  --sidebar-hover: #1f1714;
+  --sidebar-active: #2e1f1a;
+  --sidebar-text: #a8a29e;
   --sidebar-text-active: #ffffff;
-  --sidebar-border: #1e293b;
+  --sidebar-border: #291e1a;
 
   /* Premium Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -57,7 +57,7 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
   --shadow-bento: 0 20px 40px -15px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(226, 232, 240, 0.7);
-  --shadow-glow: 0 0 50px -10px rgba(37, 99, 235, 0.25);
+  --shadow-glow: 0 0 50px -10px rgba(234, 88, 12, 0.3);
 
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -110,9 +110,9 @@ a {
 /* 2026 Trendy Grid & Mesh Backgrounds */
 .mesh-bg {
   background-image: 
-    radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(234, 88, 12, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(217, 119, 6, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(185, 28, 28, 0.05) 0px, transparent 50%);
 }
 
 .grid-bg-subtle {
@@ -129,7 +129,7 @@ a {
 
 /* Bento Card Style */
 .bento-card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(226, 232, 240, 0.9);
@@ -142,8 +142,8 @@ a {
 
 .bento-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(37, 99, 235, 0.3);
-  box-shadow: 0 20px 40px -12px rgba(37, 99, 235, 0.1), 0 0 0 1px rgba(37, 99, 235, 0.15);
+  border-color: rgba(234, 88, 12, 0.35);
+  box-shadow: 0 20px 40px -12px rgba(234, 88, 12, 0.12), 0 0 0 1px rgba(234, 88, 12, 0.2);
 }
 
 .bento-card-dark {
@@ -166,16 +166,16 @@ a {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  background: rgba(37, 99, 235, 0.06);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  color: #2563eb;
-  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.15);
+  background: rgba(234, 88, 12, 0.08);
+  border: 1px solid rgba(234, 88, 12, 0.25);
+  color: #c2410c;
+  box-shadow: 0 2px 8px -2px rgba(234, 88, 12, 0.18);
   transition: all 0.2s ease;
 }
 
 .pill-badge:hover {
-  background: rgba(37, 99, 235, 0.1);
-  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(234, 88, 12, 0.14);
+  border-color: rgba(234, 88, 12, 0.4);
 }
 
 /* Trendy Shimmer Button */
@@ -189,9 +189,9 @@ a {
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0284c7 100%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.4), 0 0 0 1px rgba(37, 99, 235, 0.5);
+  background: linear-gradient(135deg, #d97706 0%, #ea580c 45%, #b91c1c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px -4px rgba(234, 88, 12, 0.42), 0 0 0 1px rgba(234, 88, 12, 0.4);
   cursor: pointer;
   text-decoration: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -201,8 +201,8 @@ a {
 
 .btn-trendy-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 30px -4px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(37, 99, 235, 0.6);
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0369a1 100%);
+  box-shadow: 0 14px 30px -4px rgba(234, 88, 12, 0.55), 0 0 0 1px rgba(234, 88, 12, 0.6);
+  background: linear-gradient(135deg, #b45309 0%, #c2410c 45%, #991b1b 100%);
 }
 
 .btn-trendy-secondary {
@@ -362,14 +362,14 @@ a {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #d97706 0%, #ea580c 45%, #b91c1c 100%);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 2px 6px -1px rgba(37, 99, 235, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 2px 6px -1px rgba(234, 88, 12, 0.4);
 }
 .btn-primary:hover {
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  box-shadow: 0 4px 12px -2px rgba(37, 99, 235, 0.5);
+  background: linear-gradient(135deg, #b45309 0%, #c2410c 45%, #991b1b 100%);
+  box-shadow: 0 4px 12px -2px rgba(234, 88, 12, 0.5);
   transform: translateY(-1px);
 }
 
@@ -424,7 +424,7 @@ a {
 }
 .form-input:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
 }
 
 .form-textarea {
@@ -445,7 +445,7 @@ a {
 }
 .form-textarea:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
 }
 
 .form-select {
@@ -468,7 +468,7 @@ a {
 }
 .form-select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.18);
 }
 
 .form-group {
@@ -507,9 +507,9 @@ a {
 }
 
 .badge-sent, .badge-in_progress, .badge-contacted, .badge-active {
-  background-color: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
 }
 
 .badge-converted, .badge-approved, .badge-paid, .badge-completed, .badge-won, .badge-verified {
@@ -537,9 +537,9 @@ a {
 }
 
 .badge-issued {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
 }
 
 /* Executive Button System */
@@ -572,13 +572,13 @@ a {
   background: var(--primary);
   color: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 1px 3px rgba(234, 88, 12, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
   border-color: var(--primary-hover);
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 2px 6px rgba(234, 88, 12, 0.45);
   transform: translateY(-0.5px);
 }
 

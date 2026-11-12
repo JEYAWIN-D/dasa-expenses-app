@@ -117,11 +117,11 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
         <div
           style={{
             padding: '20px 28px',
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '1px solid #fed7aa',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
+            background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -478,15 +478,15 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
                           cursor: 'pointer',
                           padding: '6px 10px',
                           borderRadius: 6,
-                          backgroundColor: checked ? '#eff6ff' : '#f8fafc',
-                          border: `1px solid ${checked ? '#bfdbfe' : '#e2e8f0'}`,
+                          backgroundColor: checked ? '#fff7ed' : '#f8fafc',
+                          border: `1px solid ${checked ? '#fed7aa' : '#e2e8f0'}`,
                         }}
                       >
                         <input
                           type="checkbox"
                           checked={checked}
                           onChange={() => handleFeatureToggle(feat)}
-                          style={{ accentColor: '#2563eb' }}
+                          style={{ accentColor: '#ea580c' }}
                         />
                         <span>{feat}</span>
                       </label>
@@ -576,7 +576,7 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
                   type="checkbox"
                   checked={formData.consentContact}
                   onChange={(e) => setFormData({ ...formData, consentContact: e.target.checked })}
-                  style={{ marginTop: 2, accentColor: '#2563eb' }}
+                  style={{ marginTop: 2, accentColor: '#ea580c' }}
                 />
                 <span>
                   I agree to receive a personalized demonstration and follow-up from DASA TECH (+91 76399 30148).
@@ -619,12 +619,12 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
                     disabled={loading}
                     className="btn btn-primary"
                     style={{
-                      background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                      background: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
                       color: '#ffffff',
                       padding: '10px 24px',
                       borderRadius: 8,
                       fontWeight: 700,
-                      boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
+                      boxShadow: '0 4px 14px rgba(234, 88, 12, 0.4)',
                     }}
                   >
                     {loading ? 'Submitting...' : 'Confirm Demo Request'}

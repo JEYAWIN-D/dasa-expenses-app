@@ -1,0 +1,1087 @@
+[
+  {
+    "id": "emp-uuid-001",
+    "employeeCode": "ITS-2024-001",
+    "firstName": "Rahul",
+    "middleName": "K.",
+    "lastName": "Sharma",
+    "fullName": "Rahul K. Sharma",
+    "personalEmail": "rahul.sharma.dev@gmail.com",
+    "officialEmail": "rahul.sharma@dasatech.in",
+    "phone": "+91 98450 12345",
+    "phoneMasked": "+91 98450 XX345",
+    "dob": "1990-05-14",
+    "dobDmy": "14-05-1990",
+    "gender": "MALE",
+    "maritalStatus": "MARRIED",
+    "bloodGroup": "O_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Rahul+Sharma",
+    "department": "Engineering & Cloud Architecture",
+    "designation": "Principal Software Architect",
+    "gradeLevel": "L5 / Director Band",
+    "workLocation": "Bengaluru (Hybrid)",
+    "employmentStatus": "CONFIRMED_ACTIVE",
+    "joiningDate": "2023-04-10",
+    "probationPeriodMonths": 6,
+    "probationEndDate": "2023-10-10",
+    "confirmedAt": "2023-10-10",
+    "reportingManager": "Venkatesh Rao (CTO)",
+    "annualCtc": 3200000,
+    "annualCtcWords": "Thirty-Two Lakhs Rupees Only",
+    "taxRegime": "NEW_REGIME",
+    "statutory": {
+      "panNumber": "ABCPS1234F",
+      "panMasked": "XXXXX1234F",
+      "aadhaarNumber": "548988124589",
+      "aadhaarMasked": "XXXX-XXXX-4589",
+      "pfUan": "100984512390",
+      "pfUanMasked": "XXXX-XXXX-2390",
+      "esiNumber": null,
+      "bankName": "HDFC Bank Ltd",
+      "bankAccountNumber": "50100234567890",
+      "bankAccountMasked": "XXXX-XXXX-7890",
+      "bankIfsc": "HDFC0001234"
+    },
+    "currentAddress": {
+      "street": "Flat 402, Prestige Palms, Whitefield",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560066",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "Flat 402, Prestige Palms, Whitefield",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560066",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Pooja Sharma",
+      "relation": "Spouse",
+      "phone": "+91 98450 99887"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "B.Tech in Computer Science & Engineering",
+        "institution": "National Institute of Technology, Karnataka (NITK)",
+        "graduationYear": 2012,
+        "score": "8.8 CGPA",
+        "documentUrl": "/docs/rahul_btech_degree.pdf",
+        "status": "VERIFIED"
+      }
+    ],
+    "experience": [
+      {
+        "companyName": "Infosys Technologies Ltd",
+        "designation": "Senior Lead Specialist",
+        "startDate": "2018-06-01",
+        "endDate": "2023-03-31",
+        "lastDrawnCtc": 2400000,
+        "hrContact": "verifications@infosys.com",
+        "documents": [
+          "relieving_letter.pdf",
+          "experience_cert.pdf"
+        ],
+        "status": "VERIFIED"
+      }
+    ],
+    "kycDocuments": [
+      {
+        "id": "doc-1",
+        "documentType": "PAN",
+        "title": "PAN Card Card Copy",
+        "idNumberMasked": "XXXXX1234F",
+        "idNumberFull": "ABCPS1234F",
+        "fileUrl": "/uploads/pan_rahul.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.2 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2023-04-12T10:30:00Z",
+        "ocrConfidence": 99,
+        "rejectionReason": null
+      },
+      {
+        "id": "doc-2",
+        "documentType": "AADHAAR",
+        "title": "Aadhaar Card (Masked e-Aadhaar)",
+        "idNumberMasked": "XXXX-XXXX-4589",
+        "idNumberFull": "548988124589",
+        "fileUrl": "/uploads/aadhaar_rahul.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.8 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2023-04-12T10:32:00Z",
+        "ocrConfidence": 98,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "CLEARED",
+      "agency": "AuthBridge Global Solutions",
+      "referenceId": "AB-2023-89410",
+      "initiatedAt": "2023-04-02",
+      "completedAt": "2023-04-09",
+      "checks": [
+        {
+          "name": "Identity & Criminal Database Check",
+          "status": "CLEARED",
+          "date": "2023-04-05"
+        },
+        {
+          "name": "Highest Educational Verification",
+          "status": "CLEARED",
+          "date": "2023-04-07"
+        },
+        {
+          "name": "Past 5-Year Employment & Conduct",
+          "status": "CLEARED",
+          "date": "2023-04-09"
+        }
+      ],
+      "reportUrl": "/bgv/reports/AB-2023-89410_Rahul_Cleared.pdf"
+    },
+    "assets": [
+      {
+        "id": "ast-1",
+        "assetTag": "DASA-LAP-2023-088",
+        "type": "LAPTOP",
+        "make": "Apple MacBook Pro 16\" M2 Max (32GB / 1TB)",
+        "serialNumber": "C02G9988MD6R",
+        "allocatedAt": "2023-04-10",
+        "condition": "BRAND_NEW_SEALED",
+        "status": "ALLOCATED",
+        "acknowledgedByEmployee": true
+      },
+      {
+        "id": "ast-2",
+        "assetTag": "DASA-KEY-2023-014",
+        "type": "SECURITY_KEY",
+        "make": "Yubico YubiKey 5C NFC",
+        "serialNumber": "YK-9948210",
+        "allocatedAt": "2023-04-10",
+        "condition": "BRAND_NEW",
+        "status": "ALLOCATED",
+        "acknowledgedByEmployee": true
+      }
+    ],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-1792759354744",
+        "category": "RELIEVING_LETTER",
+        "title": "Relieving Letter & Work Experience Certificate",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/relieving_letter/ITS-2024-001_1792759354744.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759354742",
+        "category": "SALARY_ANNEXURE",
+        "title": "Annexure A - Compensation & CTC Structure",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/salary_annexure/ITS-2024-001_1792759354742.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759354740",
+        "category": "NDA_IP_AGREEMENT",
+        "title": "Non-Disclosure & Intellectual Property Assignment Agreement",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/nda_ip_agreement/ITS-2024-001_1792759354740.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759336422",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759336422.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759281711",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759281711.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759264234",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759264234.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759256845",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759256845.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759195282",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759195282.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1792759183670",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Letter of Appointment & Terms of Employment",
+        "issuedDate": "23 October 2026",
+        "eSignedAt": null,
+        "storageKey": "/legal/appointment_letter/ITS-2024-001_1792759183670.pdf",
+        "status": "GENERATED_PENDING_SIGNATURE"
+      },
+      {
+        "id": "doc-gen-1",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Executive Appointment & Terms of Employment",
+        "issuedDate": "2023-04-01",
+        "eSignedAt": "2023-04-02T11:00:00Z",
+        "storageKey": "/legal/appointments/DASA_APT_2023_001.pdf",
+        "status": "SIGNED"
+      },
+      {
+        "id": "doc-gen-2",
+        "category": "NDA_IP_AGREEMENT",
+        "title": "Non-Disclosure & Intellectual Property Assignment",
+        "issuedDate": "2023-04-10",
+        "eSignedAt": "2023-04-10T09:15:00Z",
+        "storageKey": "/legal/nda/DASA_NDA_2023_001.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2023-04-01T08:00:00Z",
+    "updatedAt": "2026-10-20T10:00:00Z"
+  },
+  {
+    "id": "emp-uuid-002",
+    "employeeCode": "ITS-2024-002",
+    "firstName": "Priya",
+    "middleName": "M.",
+    "lastName": "Sundaram",
+    "fullName": "Priya M. Sundaram",
+    "personalEmail": "priya.sundaram.dev@gmail.com",
+    "officialEmail": "priya.sundaram@dasatech.in",
+    "phone": "+91 97401 54321",
+    "phoneMasked": "+91 97401 XX321",
+    "dob": "1995-11-20",
+    "dobDmy": "20-11-1995",
+    "gender": "FEMALE",
+    "maritalStatus": "SINGLE",
+    "bloodGroup": "B_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Priya+Sundaram",
+    "department": "DevOps & Site Reliability",
+    "designation": "Senior Cloud & DevOps Engineer",
+    "gradeLevel": "L3 / Senior Technical Specialist",
+    "workLocation": "Bengaluru (Hybrid)",
+    "employmentStatus": "ACTIVE_PROBATION",
+    "joiningDate": "2026-08-01",
+    "probationPeriodMonths": 3,
+    "probationEndDate": "2026-11-01",
+    "confirmedAt": null,
+    "reportingManager": "Rahul K. Sharma (Principal Architect)",
+    "annualCtc": 2100000,
+    "annualCtcWords": "Twenty-One Lakhs Rupees Only",
+    "taxRegime": "NEW_REGIME",
+    "statutory": {
+      "panNumber": "BGKPS7762H",
+      "panMasked": "XXXXX7762H",
+      "aadhaarNumber": "891044237891",
+      "aadhaarMasked": "XXXX-XXXX-7891",
+      "pfUan": "101299887711",
+      "pfUanMasked": "XXXX-XXXX-7711",
+      "esiNumber": null,
+      "bankName": "ICICI Bank Ltd",
+      "bankAccountNumber": "002901588722",
+      "bankAccountMasked": "XXXX-XXXX-8722",
+      "bankIfsc": "ICIC0000029"
+    },
+    "currentAddress": {
+      "street": "12th Cross, HSR Layout Sector 3",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560102",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "12th Cross, HSR Layout Sector 3",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560102",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Murugan Sundaram",
+      "relation": "Father",
+      "phone": "+91 94440 12345"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "B.E. in Electronics & Communication",
+        "institution": "PSG College of Technology, Coimbatore",
+        "graduationYear": 2017,
+        "score": "8.4 CGPA",
+        "documentUrl": "/docs/priya_degree.pdf",
+        "status": "VERIFIED"
+      }
+    ],
+    "experience": [
+      {
+        "companyName": "Wipro Limited",
+        "designation": "Senior Systems Engineer",
+        "startDate": "2021-02-01",
+        "endDate": "2026-07-15",
+        "lastDrawnCtc": 1550000,
+        "hrContact": "talent.bgv@wipro.com",
+        "documents": [
+          "relieving.pdf",
+          "payslip.pdf"
+        ],
+        "status": "VERIFIED"
+      }
+    ],
+    "kycDocuments": [
+      {
+        "id": "doc-3",
+        "documentType": "PAN",
+        "title": "PAN Card Copy",
+        "idNumberMasked": "XXXXX7762H",
+        "idNumberFull": "BGKPS7762H",
+        "fileUrl": "/uploads/pan_priya.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.4 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2026-08-03T14:20:00Z",
+        "ocrConfidence": 97,
+        "rejectionReason": null
+      },
+      {
+        "id": "doc-4",
+        "documentType": "AADHAAR",
+        "title": "Masked Aadhaar Card Copy",
+        "idNumberMasked": "XXXX-XXXX-7891",
+        "idNumberFull": "891044237891",
+        "fileUrl": "/uploads/aadhaar_priya.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "2.1 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2026-08-03T14:22:00Z",
+        "ocrConfidence": 99,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "CLEARED",
+      "agency": "IDfy Background Technologies",
+      "referenceId": "IDFY-2026-9042",
+      "initiatedAt": "2026-07-20",
+      "completedAt": "2026-07-28",
+      "checks": [
+        {
+          "name": "National Identity Check (Aadhaar & PAN)",
+          "status": "CLEARED",
+          "date": "2026-07-22"
+        },
+        {
+          "name": "Education Credential Verification",
+          "status": "CLEARED",
+          "date": "2026-07-25"
+        },
+        {
+          "name": "Prior Employer HR Verification",
+          "status": "CLEARED",
+          "date": "2026-07-28"
+        }
+      ],
+      "reportUrl": "/bgv/reports/Priya_Cleared.pdf"
+    },
+    "assets": [
+      {
+        "id": "ast-3",
+        "assetTag": "DASA-LAP-2026-104",
+        "type": "LAPTOP",
+        "make": "Lenovo ThinkPad P14s Gen 4 (AMD Ryzen 7 PRO / 32GB / 1TB)",
+        "serialNumber": "PF-491299A",
+        "allocatedAt": "2026-08-01",
+        "condition": "EXCELLENT",
+        "status": "ALLOCATED",
+        "acknowledgedByEmployee": true
+      },
+      {
+        "id": "ast-4",
+        "assetTag": "DASA-MON-2026-052",
+        "type": "MONITOR",
+        "make": "Dell UltraSharp 27\" 4K USB-C Hub (U2723QE)",
+        "serialNumber": "CN-09941-DELL",
+        "allocatedAt": "2026-08-01",
+        "condition": "BRAND_NEW",
+        "status": "ALLOCATED",
+        "acknowledgedByEmployee": true
+      }
+    ],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-3",
+        "category": "APPOINTMENT_LETTER",
+        "title": "Employment Offer & Appointment Letter",
+        "issuedDate": "2026-07-15",
+        "eSignedAt": "2026-07-16T15:00:00Z",
+        "storageKey": "/legal/appointments/DASA_APT_2026_002.pdf",
+        "status": "SIGNED"
+      },
+      {
+        "id": "doc-gen-4",
+        "category": "NDA_IP_AGREEMENT",
+        "title": "Proprietary IP Assignment & Non-Disclosure Agreement",
+        "issuedDate": "2026-08-01",
+        "eSignedAt": "2026-08-01T10:00:00Z",
+        "storageKey": "/legal/nda/DASA_NDA_2026_002.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2026-07-15T09:00:00Z",
+    "updatedAt": "2026-10-22T11:30:00Z"
+  },
+  {
+    "id": "emp-uuid-003",
+    "employeeCode": "ITS-2024-003",
+    "firstName": "Vikram",
+    "middleName": null,
+    "lastName": "Patel",
+    "fullName": "Vikram Patel",
+    "personalEmail": "vikram.patel.qa@gmail.com",
+    "officialEmail": "vikram.patel@dasatech.in",
+    "phone": "+91 99002 88441",
+    "phoneMasked": "+91 99002 XX441",
+    "dob": "1993-08-25",
+    "dobDmy": "25-08-1993",
+    "gender": "MALE",
+    "maritalStatus": "SINGLE",
+    "bloodGroup": "A_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Vikram+Patel",
+    "department": "Quality Engineering & Testing",
+    "designation": "QA Automation Lead",
+    "gradeLevel": "L3 / Lead Specialist",
+    "workLocation": "Bengaluru (On-site)",
+    "employmentStatus": "SUBMITTED_FOR_VERIFICATION",
+    "joiningDate": "2026-11-03",
+    "probationPeriodMonths": 6,
+    "probationEndDate": "2027-05-03",
+    "confirmedAt": null,
+    "reportingManager": "Rahul K. Sharma (Principal Architect)",
+    "annualCtc": 1850000,
+    "annualCtcWords": "Eighteen Lakhs Fifty Thousand Rupees Only",
+    "taxRegime": "NEW_REGIME",
+    "statutory": {
+      "panNumber": "CPAPP4412K",
+      "panMasked": "XXXXX4412K",
+      "aadhaarNumber": "772188401129",
+      "aadhaarMasked": "XXXX-XXXX-1129",
+      "pfUan": "100411223399",
+      "pfUanMasked": "XXXX-XXXX-3399",
+      "esiNumber": null,
+      "bankName": "Axis Bank Ltd",
+      "bankAccountNumber": "9180200445511",
+      "bankAccountMasked": "XXXX-XXXX-5511",
+      "bankIfsc": "UTIB0000140"
+    },
+    "currentAddress": {
+      "street": "B-304, Green Glen Layout, Bellandur",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560103",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "Navrangpura, Near University Road",
+      "city": "Ahmedabad",
+      "state": "Gujarat",
+      "pincode": "380009",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Ramesh Patel",
+      "relation": "Father",
+      "phone": "+91 98250 11223"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "B.E. in Information Technology",
+        "institution": "Gujarat Technological University",
+        "graduationYear": 2015,
+        "score": "8.1 CGPA",
+        "documentUrl": "/docs/vikram_degree.pdf",
+        "status": "UNDER_REVIEW"
+      }
+    ],
+    "experience": [
+      {
+        "companyName": "Mindtree Ltd",
+        "designation": "Senior Test Engineer",
+        "startDate": "2019-07-01",
+        "endDate": "2026-10-15",
+        "lastDrawnCtc": 1350000,
+        "hrContact": "experience@mindtree.com",
+        "documents": [
+          "mindtree_relieving.pdf"
+        ],
+        "status": "UNDER_REVIEW"
+      }
+    ],
+    "kycDocuments": [
+      {
+        "id": "doc-5",
+        "documentType": "PAN",
+        "title": "PAN Card Copy",
+        "idNumberMasked": "XXXXX4412K",
+        "idNumberFull": "CPAPP4412K",
+        "fileUrl": "/uploads/pan_vikram_scan.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.9 MB",
+        "verificationStatus": "UNDER_REVIEW",
+        "verifiedBy": null,
+        "verifiedAt": null,
+        "ocrConfidence": 96,
+        "rejectionReason": null
+      },
+      {
+        "id": "doc-6",
+        "documentType": "AADHAAR",
+        "title": "Aadhaar Card Front & Back",
+        "idNumberMasked": "XXXX-XXXX-1129",
+        "idNumberFull": "772188401129",
+        "fileUrl": "/uploads/aadhaar_vikram_scan.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "2.5 MB",
+        "verificationStatus": "UNDER_REVIEW",
+        "verifiedBy": null,
+        "verifiedAt": null,
+        "ocrConfidence": 94,
+        "rejectionReason": null
+      },
+      {
+        "id": "doc-7",
+        "documentType": "DEGREE_CERTIFICATE",
+        "title": "B.E. Convocation Certificate",
+        "idNumberMasked": "DEG-2015-8841",
+        "idNumberFull": "DEG-2015-8841",
+        "fileUrl": "/uploads/degree_vikram.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "3.1 MB",
+        "verificationStatus": "PENDING",
+        "verifiedBy": null,
+        "verifiedAt": null,
+        "ocrConfidence": 92,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "PENDING",
+      "agency": "AuthBridge Global Solutions",
+      "referenceId": "AB-2026-99120",
+      "initiatedAt": "2026-10-21",
+      "completedAt": null,
+      "checks": [
+        {
+          "name": "National Identity Check",
+          "status": "IN_PROGRESS",
+          "date": "2026-10-21"
+        },
+        {
+          "name": "Education Credential Verification",
+          "status": "PENDING",
+          "date": null
+        },
+        {
+          "name": "Past Employment Verification",
+          "status": "PENDING",
+          "date": null
+        }
+      ],
+      "reportUrl": null
+    },
+    "assets": [],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-5",
+        "category": "OFFER_LETTER",
+        "title": "Formal Offer of Employment",
+        "issuedDate": "2026-10-18",
+        "eSignedAt": "2026-10-19T10:00:00Z",
+        "storageKey": "/legal/offers/DASA_OFFER_2026_003.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2026-10-18T07:30:00Z",
+    "updatedAt": "2026-10-22T14:00:00Z"
+  },
+  {
+    "id": "emp-uuid-004",
+    "employeeCode": "ITS-2024-004",
+    "firstName": "Ananya",
+    "middleName": null,
+    "lastName": "Roy",
+    "fullName": "Ananya Roy",
+    "personalEmail": "ananya.roy.design@gmail.com",
+    "officialEmail": "ananya.roy@dasatech.in",
+    "phone": "+91 98300 44221",
+    "phoneMasked": "+91 98300 XX221",
+    "dob": "1996-03-12",
+    "dobDmy": "12-03-1996",
+    "gender": "FEMALE",
+    "maritalStatus": "SINGLE",
+    "bloodGroup": "AB_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Ananya+Roy",
+    "department": "Product Design & Experience",
+    "designation": "Senior Product Designer",
+    "gradeLevel": "L3 / Design Lead",
+    "workLocation": "Bengaluru (Hybrid)",
+    "employmentStatus": "BGV_IN_PROGRESS",
+    "joiningDate": "2026-11-10",
+    "probationPeriodMonths": 3,
+    "probationEndDate": "2027-02-10",
+    "confirmedAt": null,
+    "reportingManager": "Venkatesh Rao (CTO)",
+    "annualCtc": 1950000,
+    "annualCtcWords": "Nineteen Lakhs Fifty Thousand Rupees Only",
+    "taxRegime": "NEW_REGIME",
+    "statutory": {
+      "panNumber": "AMRPR8831B",
+      "panMasked": "XXXXX8831B",
+      "aadhaarNumber": "992144301128",
+      "aadhaarMasked": "XXXX-XXXX-1128",
+      "pfUan": "100998877123",
+      "pfUanMasked": "XXXX-XXXX-7123",
+      "esiNumber": null,
+      "bankName": "State Bank of India",
+      "bankAccountNumber": "38820019441",
+      "bankAccountMasked": "XXXX-XXXX-9441",
+      "bankIfsc": "SBIN0004112"
+    },
+    "currentAddress": {
+      "street": "7th Main, Indiranagar",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560038",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "Salt Lake Sector 1",
+      "city": "Kolkata",
+      "state": "West Bengal",
+      "pincode": "700064",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Subhash Roy",
+      "relation": "Father",
+      "phone": "+91 98310 99882"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "Bachelor of Design (Interaction Design)",
+        "institution": "National Institute of Design (NID), Ahmedabad",
+        "graduationYear": 2018,
+        "score": "8.7 CGPA",
+        "documentUrl": "/docs/ananya_nid.pdf",
+        "status": "VERIFIED"
+      }
+    ],
+    "experience": [
+      {
+        "companyName": "Swiggy (Bundl Technologies)",
+        "designation": "Product Designer II",
+        "startDate": "2021-09-01",
+        "endDate": "2026-10-10",
+        "lastDrawnCtc": 1600000,
+        "hrContact": "verifications@swiggy.in",
+        "documents": [
+          "swiggy_relieving.pdf"
+        ],
+        "status": "VERIFIED"
+      }
+    ],
+    "kycDocuments": [
+      {
+        "id": "doc-8",
+        "documentType": "PAN",
+        "title": "PAN Card Copy",
+        "idNumberMasked": "XXXXX8831B",
+        "idNumberFull": "AMRPR8831B",
+        "fileUrl": "/uploads/pan_ananya.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.7 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2026-10-21T11:00:00Z",
+        "ocrConfidence": 98,
+        "rejectionReason": null
+      },
+      {
+        "id": "doc-9",
+        "documentType": "AADHAAR",
+        "title": "Aadhaar Card Copy",
+        "idNumberMasked": "XXXX-XXXX-1128",
+        "idNumberFull": "992144301128",
+        "fileUrl": "/uploads/aadhaar_ananya.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "2.0 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2026-10-21T11:05:00Z",
+        "ocrConfidence": 99,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "IN_PROGRESS",
+      "agency": "IDfy Background Technologies",
+      "referenceId": "IDFY-2026-10499",
+      "initiatedAt": "2026-10-21",
+      "completedAt": null,
+      "checks": [
+        {
+          "name": "National Identity Check",
+          "status": "CLEARED",
+          "date": "2026-10-22"
+        },
+        {
+          "name": "Highest Education Check (NID)",
+          "status": "IN_PROGRESS",
+          "date": "2026-10-22"
+        },
+        {
+          "name": "Employment Check (Swiggy)",
+          "status": "IN_PROGRESS",
+          "date": "2026-10-22"
+        }
+      ],
+      "reportUrl": null
+    },
+    "assets": [
+      {
+        "id": "ast-5",
+        "assetTag": "DASA-LAP-2026-118",
+        "type": "LAPTOP",
+        "make": "Apple MacBook Pro 14\" M3 Pro (18GB / 512GB Space Black)",
+        "serialNumber": "C02K9981LL7Q",
+        "allocatedAt": "2026-10-22",
+        "condition": "BRAND_NEW_SEALED",
+        "status": "READY_FOR_DISPATCH",
+        "acknowledgedByEmployee": false
+      }
+    ],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-6",
+        "category": "OFFER_LETTER",
+        "title": "Offer of Employment",
+        "issuedDate": "2026-10-15",
+        "eSignedAt": "2026-10-16T12:00:00Z",
+        "storageKey": "/legal/offers/DASA_OFFER_2026_004.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2026-10-15T11:00:00Z",
+    "updatedAt": "2026-10-22T16:00:00Z"
+  },
+  {
+    "id": "emp-uuid-005",
+    "employeeCode": "ITS-2024-005",
+    "firstName": "Sneha",
+    "middleName": null,
+    "lastName": "Kulkarni",
+    "fullName": "Sneha Kulkarni",
+    "personalEmail": "sneha.kulkarni.ui@gmail.com",
+    "officialEmail": "sneha.kulkarni@dasatech.in",
+    "phone": "+91 98231 66554",
+    "phoneMasked": "+91 98231 XX554",
+    "dob": "1998-04-18",
+    "dobDmy": "18-04-1998",
+    "gender": "FEMALE",
+    "maritalStatus": "SINGLE",
+    "bloodGroup": "B_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Sneha+Kulkarni",
+    "department": "Frontend Engineering",
+    "designation": "Frontend Engineer (React / TypeScript)",
+    "gradeLevel": "L2 / Associate Specialist",
+    "workLocation": "Pune (Remote)",
+    "employmentStatus": "PRE_BOARDING",
+    "joiningDate": "2026-11-15",
+    "probationPeriodMonths": 6,
+    "probationEndDate": "2027-05-15",
+    "confirmedAt": null,
+    "reportingManager": "Rahul K. Sharma (Principal Architect)",
+    "annualCtc": 1250000,
+    "annualCtcWords": "Twelve Lakhs Fifty Thousand Rupees Only",
+    "taxRegime": "NEW_REGIME",
+    "statutory": {
+      "panNumber": "AZKPK9921M",
+      "panMasked": "XXXXX9921M",
+      "aadhaarNumber": "448199201144",
+      "aadhaarMasked": "XXXX-XXXX-1144",
+      "pfUan": "100887711244",
+      "pfUanMasked": "XXXX-XXXX-1244",
+      "esiNumber": null,
+      "bankName": "Kotak Mahindra Bank",
+      "bankAccountNumber": "9012445588",
+      "bankAccountMasked": "XXXX-XXXX-5588",
+      "bankIfsc": "KKBK0000958"
+    },
+    "currentAddress": {
+      "street": "Baner-Pashan Link Road",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411045",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "Kothrud, Near Karve Statue",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411038",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Ashok Kulkarni",
+      "relation": "Father",
+      "phone": "+91 98220 99441"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "B.E. in Computer Engineering",
+        "institution": "Pune Institute of Computer Technology (PICT)",
+        "graduationYear": 2020,
+        "score": "8.6 CGPA",
+        "documentUrl": "/docs/sneha_degree.pdf",
+        "status": "PENDING"
+      }
+    ],
+    "experience": [
+      {
+        "companyName": "Persistent Systems",
+        "designation": "Software Engineer",
+        "startDate": "2020-08-01",
+        "endDate": "2026-10-31",
+        "lastDrawnCtc": 850000,
+        "hrContact": "hr@persistent.com",
+        "documents": [
+          "persistent_offer.pdf"
+        ],
+        "status": "PENDING"
+      }
+    ],
+    "kycDocuments": [
+      {
+        "id": "doc-10",
+        "documentType": "PAN",
+        "title": "PAN Card Copy",
+        "idNumberMasked": "XXXXX9921M",
+        "idNumberFull": "AZKPK9921M",
+        "fileUrl": "/uploads/pan_sneha.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.5 MB",
+        "verificationStatus": "PENDING",
+        "verifiedBy": null,
+        "verifiedAt": null,
+        "ocrConfidence": 95,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "NOT_STARTED",
+      "agency": null,
+      "referenceId": null,
+      "initiatedAt": null,
+      "completedAt": null,
+      "checks": [],
+      "reportUrl": null
+    },
+    "assets": [],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-7",
+        "category": "OFFER_LETTER",
+        "title": "Offer Letter with CTC Breakup",
+        "issuedDate": "2026-10-20",
+        "eSignedAt": "2026-10-21T09:30:00Z",
+        "storageKey": "/legal/offers/DASA_OFFER_2026_005.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2026-10-20T08:00:00Z",
+    "updatedAt": "2026-10-21T10:00:00Z"
+  },
+  {
+    "id": "emp-uuid-006",
+    "employeeCode": "ITS-2024-006",
+    "firstName": "Karthik",
+    "middleName": null,
+    "lastName": "Raman",
+    "fullName": "Karthik Raman",
+    "personalEmail": "karthik.raman.cloud@gmail.com",
+    "officialEmail": "karthik.raman@dasatech.in",
+    "phone": "+91 94441 88772",
+    "phoneMasked": "+91 94441 XX772",
+    "dob": "1992-01-30",
+    "dobDmy": "30-01-1992",
+    "gender": "MALE",
+    "maritalStatus": "MARRIED",
+    "bloodGroup": "O_POS",
+    "profilePhotoUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=250",
+    "digitalSignatureUrl": "https://placehold.co/200x60/png?text=Karthik+Raman",
+    "department": "Backend Engineering",
+    "designation": "Senior Backend Go Developer",
+    "gradeLevel": "L3 / Senior Technical Specialist",
+    "workLocation": "Bengaluru (On-site)",
+    "employmentStatus": "RELIEVED",
+    "joiningDate": "2022-01-10",
+    "probationPeriodMonths": 6,
+    "probationEndDate": "2022-07-10",
+    "confirmedAt": "2022-07-10",
+    "resignationDate": "2026-08-01",
+    "relievingDate": "2026-09-30",
+    "reportingManager": "Rahul K. Sharma (Principal Architect)",
+    "annualCtc": 2400000,
+    "annualCtcWords": "Twenty-Four Lakhs Rupees Only",
+    "taxRegime": "OLD_REGIME",
+    "statutory": {
+      "panNumber": "DKRPR1140P",
+      "panMasked": "XXXXX1140P",
+      "aadhaarNumber": "662099124451",
+      "aadhaarMasked": "XXXX-XXXX-4451",
+      "pfUan": "100114455882",
+      "pfUanMasked": "XXXX-XXXX-5882",
+      "esiNumber": null,
+      "bankName": "HDFC Bank Ltd",
+      "bankAccountNumber": "5010044991122",
+      "bankAccountMasked": "XXXX-XXXX-1122",
+      "bankIfsc": "HDFC0000053"
+    },
+    "currentAddress": {
+      "street": "Koramangala 4th Block",
+      "city": "Bengaluru",
+      "state": "Karnataka",
+      "pincode": "560034",
+      "country": "India"
+    },
+    "permanentAddress": {
+      "street": "T. Nagar",
+      "city": "Chennai",
+      "state": "Tamil Nadu",
+      "pincode": "600017",
+      "country": "India"
+    },
+    "emergencyContact": {
+      "name": "Deepa Raman",
+      "relation": "Spouse",
+      "phone": "+91 94440 99881"
+    },
+    "education": [
+      {
+        "degreeType": "BACHELORS",
+        "degreeName": "B.Tech in Information Technology",
+        "institution": "Anna University, Chennai",
+        "graduationYear": 2014,
+        "score": "8.3 CGPA",
+        "documentUrl": "/docs/karthik_degree.pdf",
+        "status": "VERIFIED"
+      }
+    ],
+    "experience": [],
+    "kycDocuments": [
+      {
+        "id": "doc-11",
+        "documentType": "PAN",
+        "title": "PAN Card Copy",
+        "idNumberMasked": "XXXXX1140P",
+        "idNumberFull": "DKRPR1140P",
+        "fileUrl": "/uploads/pan_karthik.pdf",
+        "mimeType": "application/pdf",
+        "fileSize": "1.2 MB",
+        "verificationStatus": "VERIFIED",
+        "verifiedBy": "hr.operations@dasatech.in",
+        "verifiedAt": "2022-01-12T10:00:00Z",
+        "ocrConfidence": 99,
+        "rejectionReason": null
+      }
+    ],
+    "bgv": {
+      "overallStatus": "CLEARED",
+      "agency": "AuthBridge Global Solutions",
+      "referenceId": "AB-2022-10499",
+      "initiatedAt": "2022-01-05",
+      "completedAt": "2022-01-10",
+      "checks": [
+        {
+          "name": "Identity & Criminal Background",
+          "status": "CLEARED",
+          "date": "2022-01-08"
+        },
+        {
+          "name": "Educational Verification",
+          "status": "CLEARED",
+          "date": "2022-01-09"
+        }
+      ],
+      "reportUrl": "/bgv/reports/Karthik_Cleared.pdf"
+    },
+    "assets": [
+      {
+        "id": "ast-6",
+        "assetTag": "DASA-LAP-2022-045",
+        "type": "LAPTOP",
+        "make": "Dell XPS 15 (i9 / 32GB / 1TB)",
+        "serialNumber": "DL-994411X",
+        "allocatedAt": "2022-01-10",
+        "returnedAt": "2026-09-30",
+        "condition": "RETURNED_IN_GOOD_CONDITION",
+        "status": "RETURNED",
+        "acknowledgedByEmployee": true
+      }
+    ],
+    "generatedDocuments": [
+      {
+        "id": "doc-gen-8",
+        "category": "RELIEVING_LETTER",
+        "title": "Relieving & Experience Certificate",
+        "issuedDate": "2026-09-30",
+        "eSignedAt": "2026-09-30T17:00:00Z",
+        "storageKey": "/legal/relieving/DASA_REL_2026_006.pdf",
+        "status": "SIGNED"
+      }
+    ],
+    "createdAt": "2022-01-05T08:00:00Z",
+    "updatedAt": "2026-09-30T17:30:00Z"
+  }
+]

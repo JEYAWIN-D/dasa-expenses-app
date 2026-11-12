@@ -29,7 +29,7 @@ export default function HowItWorksPage() {
       num: '01',
       title: 'Quotation Drafting & Client Approval',
       desc: 'Create an itemized quote with custom milestones, GST, and terms. Track revisions and negotiations. Once the client approves, convert it into an active project with one click.',
-      icon: <FileSpreadsheet size={22} color="#2563eb" />,
+      icon: <FileSpreadsheet size={22} color="#c2410c" />,
       detail: 'Includes digital signature authorization PIN and branded PDF generation.',
       category: 'Sales Initiation',
       tag: 'Rev 0 → Rev 1 Audit Trail',
@@ -115,7 +115,7 @@ export default function HowItWorksPage() {
               How DASA EXPENCES Protects{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -153,14 +153,14 @@ export default function HowItWorksPage() {
                       width: 52,
                       height: 52,
                       borderRadius: 16,
-                      background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%)',
-                      border: '1px solid rgba(37, 99, 235, 0.2)',
+                      background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.12) 0%, rgba(217, 119, 6, 0.12) 100%)',
+                      border: '1px solid rgba(234, 88, 12, 0.25)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       fontWeight: 900,
                       fontSize: 18,
-                      color: '#2563eb',
+                      color: '#c2410c',
                       flexShrink: 0,
                     }}
                   >
@@ -215,8 +215,8 @@ export default function HowItWorksPage() {
                       style={{
                         fontSize: 11,
                         fontWeight: 700,
-                        color: '#2563eb',
-                        backgroundColor: 'rgba(37, 99, 235, 0.08)',
+                        color: '#c2410c',
+                        backgroundColor: 'rgba(234, 88, 12, 0.08)',
                         padding: '3px 8px',
                         borderRadius: 6,
                       }}
@@ -236,7 +236,7 @@ export default function HowItWorksPage() {
                       gap: 4,
                       fontSize: 12,
                       fontWeight: 700,
-                      color: '#2563eb',
+                      color: '#c2410c',
                       textDecoration: 'none',
                     }}
                   >

@@ -1,95 +1,89 @@
 import React from 'react';
 
 /**
- * Original DASA EXPENCES wordmark and recognizable D/E-inspired product icon.
- * Designed with electric blue, royal blue, teal accents, and sleek typography.
+ * Official DASA TECH & DASA EXPENCES brand mark and typography.
+ * Featuring the official geometric gold/amber/ruby emblem and modern metallic tones.
  */
-export function DasaLogo({ size = 'md', variant = 'full', lightMode = false, showTagline = true }) {
+export function DasaLogo({ size = 'md', variant = 'full', lightMode = false, showTagline = true, className = '' }) {
   // Dimension presets
   const dims = {
-    sm: { icon: 28, text: 16, sub: 9 },
-    md: { icon: 38, text: 19, sub: 10 },
-    lg: { icon: 48, text: 24, sub: 11 },
-    xl: { icon: 60, text: 30, sub: 13 },
-  }[size] || { icon: 38, text: 19, sub: 10 };
+    sm: { icon: 30, text: 16, sub: 9.5, officialH: 34 },
+    md: { icon: 40, text: 19, sub: 10.5, officialH: 44 },
+    lg: { icon: 52, text: 24, sub: 12, officialH: 56 },
+    xl: { icon: 66, text: 30, sub: 14, officialH: 72 },
+  }[size] || { icon: 40, text: 19, sub: 10.5, officialH: 44 };
 
-  const iconSvg = (
-    <svg
+  // Official stacked logo image
+  if (variant === 'official') {
+    return (
+      <img
+        src="/dasa-tech-logo.png"
+        alt="DASA TECH Software Solutions"
+        style={{
+          height: dims.officialH,
+          width: 'auto',
+          objectFit: 'contain',
+          display: 'inline-block',
+          verticalAlign: 'middle',
+        }}
+        className={className}
+      />
+    );
+  }
+
+  // Official horizontal logo image
+  if (variant === 'horizontal') {
+    return (
+      <img
+        src="/dasa-tech-logo-horizontal.png"
+        alt="DASA TECH Software Solutions"
+        style={{
+          height: dims.officialH,
+          width: 'auto',
+          objectFit: 'contain',
+          display: 'inline-block',
+          verticalAlign: 'middle',
+        }}
+        className={className}
+      />
+    );
+  }
+
+  const iconElement = (
+    <img
+      src="/dasa-mark.png"
+      alt="DASA Brand Mark"
       width={dims.icon}
       height={dims.icon}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{ filter: 'drop-shadow(0 4px 12px rgba(37, 99, 235, 0.35))', flexShrink: 0 }}
-    >
-      <defs>
-        <linearGradient id="dasaPrimaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#2563eb" />
-          <stop offset="50%" stopColor="#1d4ed8" />
-          <stop offset="100%" stopColor="#0f766e" />
-        </linearGradient>
-        <linearGradient id="dasaAccentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#06b6d4" />
-          <stop offset="100%" stopColor="#60a5fa" />
-        </linearGradient>
-        <linearGradient id="dasaBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#1e3a8a" />
-          <stop offset="100%" stopColor="#0f172a" />
-        </linearGradient>
-      </defs>
-
-      {/* Rounded squircle container */}
-      <rect width="48" height="48" rx="12" fill="url(#dasaBgGrad)" />
-      
-      {/* Outer subtle glow ring */}
-      <rect x="1" y="1" width="46" height="46" rx="11" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-
-      {/* Interlinked Geometric 'D' & 'E' / Rupee Flow glyph */}
-      {/* Back 'D' Spine & Curve */}
-      <path
-        d="M14 11H25C31.075 11 36 15.925 36 22C36 28.075 31.075 33 25 33H14V11Z"
-        fill="none"
-        stroke="url(#dasaPrimaryGrad)"
-        strokeWidth="3.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Front 'E' Layer with Rupee Balance Accents */}
-      <path
-        d="M18 17H31"
-        stroke="url(#dasaAccentGrad)"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 24H28"
-        stroke="#ffffff"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M18 31H32"
-        stroke="url(#dasaAccentGrad)"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-      />
-
-      {/* Financial Spark Dot */}
-      <circle cx="34" cy="14" r="3" fill="#06b6d4" />
-    </svg>
+      style={{
+        width: dims.icon,
+        height: dims.icon,
+        objectFit: 'contain',
+        flexShrink: 0,
+        filter: 'drop-shadow(0 3px 10px rgba(180, 83, 9, 0.28))',
+      }}
+    />
   );
 
   if (variant === 'icon') {
-    return iconSvg;
+    return iconElement;
   }
 
   const textColor = lightMode ? '#ffffff' : '#0f172a';
   const subtitleColor = lightMode ? '#94a3b8' : '#64748b';
+  const brandAccent = lightMode ? '#fbbf24' : '#b45309';
 
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: dims.icon > 32 ? 12 : 8, userSelect: 'none' }}>
-      {iconSvg}
+    <div
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: dims.icon > 32 ? 12 : 8,
+        userSelect: 'none',
+      }}
+    >
+      {iconElement}
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span
@@ -106,10 +100,11 @@ export function DasaLogo({ size = 'md', variant = 'full', lightMode = false, sho
             <span>DASA</span>
             <span
               style={{
-                background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                background: 'linear-gradient(135deg, #d97706 0%, #dc2626 55%, #991b1b 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 fontWeight: 900,
+                letterSpacing: '-0.02em',
               }}
             >
               EXPENCES
@@ -121,10 +116,10 @@ export function DasaLogo({ size = 'md', variant = 'full', lightMode = false, sho
               fontWeight: 700,
               padding: '2px 5px',
               borderRadius: 4,
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
-              color: '#2563eb',
+              backgroundColor: lightMode ? 'rgba(251, 191, 36, 0.15)' : 'rgba(217, 119, 6, 0.12)',
+              color: lightMode ? '#fde68a' : '#b45309',
               letterSpacing: '0.04em',
-              border: '1px solid rgba(37, 99, 235, 0.2)',
+              border: lightMode ? '1px solid rgba(251, 191, 36, 0.3)' : '1px solid rgba(217, 119, 6, 0.25)',
             }}
           >
             SAAS
@@ -144,9 +139,9 @@ export function DasaLogo({ size = 'md', variant = 'full', lightMode = false, sho
             }}
           >
             <span>by</span>
-            <span style={{ color: '#2563eb', fontWeight: 700 }}>DASA TECH</span>
+            <span style={{ color: brandAccent, fontWeight: 700 }}>DASA TECH</span>
             <span style={{ opacity: 0.5 }}>•</span>
-            <span style={{ opacity: 0.85 }}>Project Finance</span>
+            <span style={{ opacity: 0.85 }}>Software Solutions</span>
           </span>
         )}
       </div>

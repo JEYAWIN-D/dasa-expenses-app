@@ -52,7 +52,7 @@ export default function StartTrialPage() {
               Start Your Free{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -88,7 +88,7 @@ export default function StartTrialPage() {
                   Organization Setup Initialized!
                 </h3>
                 <p style={{ fontSize: 14, color: '#64748b', lineHeight: 1.6, marginBottom: 24 }}>
-                  Your trial workspace for <strong>{formData.orgName}</strong> is ready. You can now log in using the demo credentials or proceed directly into the dashboard.
+                  Your trial workspace for <strong>{formData.orgName}</strong> is ready. You can now log in with your credentials and proceed directly into the dashboard.
                 </p>
                 <Link
                   to="/login"
@@ -269,7 +269,7 @@ export default function StartTrialPage() {
 
             <div style={{ marginTop: 24, textAlign: 'center', borderTop: '1px solid rgba(226, 232, 240, 0.8)', paddingTop: 16 }}>
               <span style={{ fontSize: 13, color: '#64748b' }}>Already have an account? </span>
-              <Link to="/login" style={{ fontSize: 13, fontWeight: 700, color: '#2563eb', textDecoration: 'none' }}>
+              <Link to="/login" style={{ fontSize: 13, fontWeight: 700, color: '#c2410c', textDecoration: 'none' }}>
                 Sign In here
               </Link>
             </div>

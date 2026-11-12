@@ -76,6 +76,11 @@ export function printDocument(elementOrId, documentTitle = 'Official Document') 
           .no-print {
             display: none !important;
           }
+          img {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            image-rendering: -webkit-optimize-contrast;
+          }
           table {
             width: 100% !important;
             border-collapse: collapse !important;

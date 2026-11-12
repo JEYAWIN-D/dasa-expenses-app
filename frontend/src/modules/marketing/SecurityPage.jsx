@@ -18,7 +18,7 @@ export default function SecurityPage() {
     {
       title: 'Tenant-Aware Database Isolation',
       desc: 'Each customer company operates within strictly isolated multi-tenant contexts. Organization IDs and query filters are enforced on the server for every SQL query, preventing cross-tenant leakage.',
-      icon: <Database size={22} color="#2563eb" />,
+      icon: <Database size={22} color="#c2410c" />,
       tag: 'Multi-Tenant Architecture',
     },
     {
@@ -81,7 +81,7 @@ export default function SecurityPage() {
               Bank-Grade Security for{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}

@@ -3,8 +3,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const ThemeContext = createContext(null);
 
 const DEFAULT_THEME = {
-  primaryColor: '#2563eb', // Modern Tech Blue
-  accentColor: '#3b82f6',
+  primaryColor: '#c2410c', // DASA Tech Copper Gold (matches logo)
+  accentColor: '#b91c1c',  // DASA Tech Ruby Crimson
   fontFamily: 'Inter',
   fontSize: '14px',
   themeMode: 'light',
@@ -25,13 +25,14 @@ export const AVAILABLE_FONTS = [
 ];
 
 export const COLOR_PRESETS = [
-  { name: 'Tech Sapphire (Default)', primary: '#2563eb', accent: '#3b82f6' },
+  { name: 'DASA Copper Gold (Default)', primary: '#c2410c', accent: '#b91c1c' },
+  { name: 'DASA Amber Ruby', primary: '#ea580c', accent: '#7c1228' },
+  { name: 'Amber Sunset', primary: '#d97706', accent: '#ea580c' },
+  { name: 'Ruby Crimson', primary: '#dc2626', accent: '#b91c1c' },
   { name: 'Cyber Emerald', primary: '#059669', accent: '#10b981' },
   { name: 'Royal Indigo', primary: '#4f46e5', accent: '#6366f1' },
   { name: 'Imperial Violet', primary: '#7c3aed', accent: '#8b5cf6' },
   { name: 'Midnight Slate', primary: '#0f172a', accent: '#334155' },
-  { name: 'Ruby Crimson', primary: '#dc2626', accent: '#ef4444' },
-  { name: 'Amber Sunset', primary: '#d97706', accent: '#f59e0b' },
   { name: 'Ocean Cyan', primary: '#0891b2', accent: '#06b6d4' },
 ];
 
@@ -39,7 +40,17 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     try {
       const saved = localStorage.getItem('bizfinance_theme_settings');
-      return saved ? { ...DEFAULT_THEME, ...JSON.parse(saved) } : DEFAULT_THEME;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Automatically migrate old tech blue to DASA Copper
+        if (parsed.primaryColor === '#2563eb' || parsed.primaryColor === '#1e40af') {
+          parsed.primaryColor = '#c2410c';
+          parsed.accentColor = '#b91c1c';
+          localStorage.setItem('bizfinance_theme_settings', JSON.stringify(parsed));
+        }
+        return { ...DEFAULT_THEME, ...parsed };
+      }
+      return DEFAULT_THEME;
     } catch {
       return DEFAULT_THEME;
     }

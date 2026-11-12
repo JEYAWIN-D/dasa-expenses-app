@@ -39,7 +39,7 @@ export function MarketingLayout({ children }) {
       {/* Sleek Minimalist Announcement Banner */}
       <div
         style={{
-          background: 'linear-gradient(90deg, #1e3a8a 0%, #1d4ed8 50%, #0891b2 100%)',
+          background: 'linear-gradient(90deg, #7c1228 0%, #9a3412 45%, #ea580c 100%)',
           color: '#ffffff',
           padding: '6px 20px',
           fontSize: 12,
@@ -50,7 +50,7 @@ export function MarketingLayout({ children }) {
           gap: 12,
           position: 'relative',
           zIndex: 60,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -59,7 +59,7 @@ export function MarketingLayout({ children }) {
               display: 'inline-flex',
               alignItems: 'center',
               gap: 5,
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              backgroundColor: 'rgba(255, 255, 255, 0.22)',
               padding: '2px 8px',
               borderRadius: 999,
               fontSize: 10,
@@ -68,7 +68,7 @@ export function MarketingLayout({ children }) {
               textTransform: 'uppercase',
             }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#34d399', animation: 'pulse 1.8s infinite' }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#fef08a', animation: 'pulse 1.8s infinite' }} />
             DASA TECH Product
           </span>
           <span>
@@ -83,7 +83,7 @@ export function MarketingLayout({ children }) {
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: '#a7f3d0',
+              color: '#fde68a',
               fontWeight: 700,
               display: 'inline-flex',
               alignItems: 'center',
@@ -150,8 +150,8 @@ export function MarketingLayout({ children }) {
                     borderRadius: 999,
                     fontSize: 13,
                     fontWeight: active ? 800 : 600,
-                    color: active ? '#2563eb' : '#475569',
-                    backgroundColor: active ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                    color: active ? '#c2410c' : '#475569',
+                    backgroundColor: active ? 'rgba(194, 65, 12, 0.08)' : 'transparent',
                     textDecoration: 'none',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -167,7 +167,7 @@ export function MarketingLayout({ children }) {
                         fontWeight: 800,
                         padding: '1px 6px',
                         borderRadius: 999,
-                        background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                        background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
                         color: '#ffffff',
                         letterSpacing: '0.04em',
                       }}
@@ -253,8 +253,8 @@ export function MarketingLayout({ children }) {
                   borderRadius: 10,
                   fontSize: 14,
                   fontWeight: isActive(link.to) ? 800 : 600,
-                  color: isActive(link.to) ? '#2563eb' : '#334155',
-                  backgroundColor: isActive(link.to) ? 'rgba(37, 99, 235, 0.08)' : 'transparent',
+                  color: isActive(link.to) ? '#c2410c' : '#334155',
+                  backgroundColor: isActive(link.to) ? 'rgba(194, 65, 12, 0.08)' : 'transparent',
                   textDecoration: 'none',
                 }}
               >
@@ -321,7 +321,7 @@ export function MarketingLayout({ children }) {
       {/* Trendy Dark Titanium SaaS Footer */}
       <footer
         style={{
-          backgroundColor: '#0a0d14',
+          backgroundColor: '#120e0d',
           color: '#94a3b8',
           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
           padding: '80px 24px 36px',
@@ -338,7 +338,7 @@ export function MarketingLayout({ children }) {
             transform: 'translateX(-50%)',
             width: 900,
             height: 300,
-            background: 'radial-gradient(ellipse at bottom, rgba(37, 99, 235, 0.15) 0%, transparent 70%)',
+            background: 'radial-gradient(ellipse at bottom, rgba(234, 88, 12, 0.18) 0%, rgba(124, 18, 40, 0.10) 40%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
@@ -374,7 +374,7 @@ export function MarketingLayout({ children }) {
                   gap: 6,
                 }}
               >
-                <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: '#f97316', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   DEVELOPED & OWNED BY
                 </div>
                 <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
@@ -389,7 +389,7 @@ export function MarketingLayout({ children }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      color: '#38bdf8',
+                      color: '#f97316',
                       fontSize: 12,
                       fontWeight: 700,
                       display: 'inline-flex',
@@ -425,7 +425,7 @@ export function MarketingLayout({ children }) {
                 <li><Link to="/features#expenses" style={{ color: '#94a3b8', textDecoration: 'none' }}>Project Expense Ledger</Link></li>
                 <li><Link to="/features#cash-bank" style={{ color: '#94a3b8', textDecoration: 'none' }}>Cash & Bank Accounts</Link></li>
                 <li><Link to="/features#handover" style={{ color: '#94a3b8', textDecoration: 'none' }}>Handover Verification Gate</Link></li>
-                <li><Link to="/product-tour" style={{ color: '#38bdf8', fontWeight: 700, textDecoration: 'none' }}>Interactive Tour (10 Screens) →</Link></li>
+                <li><Link to="/product-tour" style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none' }}>Interactive Tour (10 Screens) →</Link></li>
               </ul>
             </div>
 
@@ -476,7 +476,7 @@ export function MarketingLayout({ children }) {
           >
             <div>
               © {new Date().getFullYear()} <strong>DASA EXPENCES</strong>. Developed and Owned by{' '}
-              <a href="https://dasatech.in" target="_blank" rel="noopener noreferrer" style={{ color: '#38bdf8', fontWeight: 700 }}>
+              <a href="https://dasatech.in" target="_blank" rel="noopener noreferrer" style={{ color: '#f97316', fontWeight: 700 }}>
                 DASA TECH
               </a>
               . All rights reserved.
@@ -485,7 +485,7 @@ export function MarketingLayout({ children }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               <span>Erode, Tamil Nadu, India</span>
               <a href="tel:+917639930148" style={{ color: '#94a3b8', textDecoration: 'none' }}>+91 76399 30148</a>
-              <Link to="/login" style={{ color: '#38bdf8', fontWeight: 700, textDecoration: 'none' }}>
+              <Link to="/login" style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none' }}>
                 Launch Web App →
               </Link>
             </div>

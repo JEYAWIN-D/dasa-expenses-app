@@ -40,7 +40,7 @@ export default function FeaturesPage() {
       id: 'quotations',
       category: 'sales',
       title: 'Quotation Management & Versioning',
-      icon: <FileSpreadsheet size={22} color="#2563eb" />,
+      icon: <FileSpreadsheet size={22} color="#c2410c" />,
       tagline: 'Itemized Pricing, Revisions, GST, and 1-Click Conversion',
       desc: 'Build detailed professional quotations with granular line items, custom taxes, discount limits, and payment terms. Maintain complete revision histories (Rev 0, Rev 1, Rev 2) so negotiations are completely transparent.',
       points: [
@@ -52,7 +52,7 @@ export default function FeaturesPage() {
         'Change order handling to track approved additional scope without overwriting base quote',
       ],
       badge: 'Sales Acceleration',
-      accentColor: '#2563eb',
+      accentColor: '#c2410c',
       previewDetails: {
         code: 'Q-2026-084',
         client: 'Apex Global Tech Ltd',
@@ -251,7 +251,7 @@ export default function FeaturesPage() {
               Engineered for Complete{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -364,7 +364,7 @@ export default function FeaturesPage() {
                       {sec.title}
                     </h2>
                     
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#2563eb', marginBottom: 14 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#c2410c', marginBottom: 14 }}>
                       {sec.tagline}
                     </div>
 

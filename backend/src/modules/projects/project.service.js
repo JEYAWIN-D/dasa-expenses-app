@@ -856,12 +856,25 @@ export async function getProjectDocumentData(projectId, docType, options = {}, o
   }
 
   const financials = calculateProjectFinancials(project);
-  const company = await prisma.companyProfile.findFirst({
-    where: {
-      ...(organizationId && { organizationId }),
-    },
+  let company = await prisma.companyProfile.findFirst({
     include: { assets: true },
   });
+  if (organizationId && company) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org) {
+      company = {
+        ...company,
+        companyName: org.name || company.companyName,
+        phone: org.phone || company.phone,
+        email: org.email || company.email,
+        address: org.address || company.address,
+        city: org.city || company.city,
+        state: org.state || company.state,
+        gstNumber: org.gstNumber || company.gstNumber,
+        panNumber: org.panNumber || company.panNumber,
+      };
+    }
+  }
 
   const accounts = await prisma.financialAccount.findMany({
     where: {

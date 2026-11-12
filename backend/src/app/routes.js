@@ -15,6 +15,7 @@ import settingsRoutes from '../modules/settings/settings.routes.js';
 import projectRoutes from '../modules/projects/project.routes.js';
 import accountRoutes from '../modules/accounts/account.routes.js';
 import leadRoutes from '../modules/leads/leads.routes.js';
+import employeeRoutes from '../modules/employees/employee.routes.js';
 
 const router = Router();
 
@@ -49,6 +50,7 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/reports', reportRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/leads', leadRoutes);
+router.use('/employees', employeeRoutes);
 
 export default router;
 

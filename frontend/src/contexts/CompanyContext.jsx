@@ -14,7 +14,7 @@ function getCachedCompany() {
       if (parsed.city && parsed.city.includes('BanERODEgalore')) {
         parsed.city = 'Erode';
       }
-      if (!parsed.logoUrl) {
+      if (!parsed.logoUrl || parsed.logoUrl.includes('unsplash')) {
         parsed.logoUrl = '/dasa-tech-logo.png';
       }
     }
@@ -107,11 +107,10 @@ export function CompanyProvider({ children }) {
       document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-    if (company?.logoUrl) {
+    if (company?.logoUrl && !company.logoUrl.includes('unsplash')) {
       link.href = company.logoUrl;
     } else {
-      const initial = name.charAt(0).toUpperCase() || 'D';
-      link.href = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%232563eb'/><text x='50%' y='68%' font-size='60' font-weight='bold' fill='white' text-anchor='middle'>${initial}</text></svg>`;
+      link.href = '/favicon.svg';
     }
   }, [company?.companyName, company?.logoUrl]);
 

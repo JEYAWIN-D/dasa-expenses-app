@@ -120,7 +120,7 @@ export default function RequestDemoPage() {
               Request a Live Demonstration of{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -157,15 +157,15 @@ export default function RequestDemoPage() {
                         width: 32,
                         height: 32,
                         borderRadius: 10,
-                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                        color: '#2563eb',
+                        backgroundColor: 'rgba(234, 88, 12, 0.12)',
+                        color: '#c2410c',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                         fontWeight: 900,
                         fontSize: 13,
-                        border: '1px solid rgba(37, 99, 235, 0.2)',
+                        border: '1px solid rgba(234, 88, 12, 0.25)',
                       }}
                     >
                       1
@@ -518,11 +518,11 @@ export default function RequestDemoPage() {
                               gap: 8,
                               fontSize: 11,
                               fontWeight: 600,
-                              color: checked ? '#1e40af' : '#475569',
+                              color: checked ? '#c2410c' : '#475569',
                               padding: '8px 10px',
                               borderRadius: 8,
-                              backgroundColor: checked ? 'rgba(37, 99, 235, 0.08)' : '#fafafa',
-                              border: `1px solid ${checked ? 'rgba(37, 99, 235, 0.3)' : 'rgba(226, 232, 240, 0.8)'}`,
+                              backgroundColor: checked ? 'rgba(234, 88, 12, 0.08)' : '#fafafa',
+                              border: `1px solid ${checked ? 'rgba(234, 88, 12, 0.3)' : 'rgba(226, 232, 240, 0.8)'}`,
                               cursor: 'pointer',
                               transition: 'all 0.15s ease',
                             }}
@@ -531,7 +531,7 @@ export default function RequestDemoPage() {
                               type="checkbox"
                               checked={checked}
                               onChange={() => handleFeatureToggle(feat)}
-                              style={{ accentColor: '#2563eb' }}
+                              style={{ accentColor: '#ea580c' }}
                             />
                             <span>{feat}</span>
                           </label>
@@ -590,7 +590,7 @@ export default function RequestDemoPage() {
                       type="checkbox"
                       checked={formData.consentContact}
                       onChange={(e) => setFormData({ ...formData, consentContact: e.target.checked })}
-                      style={{ marginTop: 2, accentColor: '#2563eb' }}
+                      style={{ marginTop: 2, accentColor: '#ea580c' }}
                     />
                     <span>
                       I authorize DASA TECH to contact me regarding DASA EXPENCES. No spam, only product demo scheduling.

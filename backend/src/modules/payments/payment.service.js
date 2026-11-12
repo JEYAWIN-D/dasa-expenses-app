@@ -89,12 +89,25 @@ export async function getPaymentById(id, organizationId = null) {
     throw new Error('Payment receipt not found');
   }
 
-  const companyProfile = await prisma.companyProfile.findFirst({
-    where: {
-      ...(organizationId && { organizationId }),
-    },
+  let companyProfile = await prisma.companyProfile.findFirst({
     include: { assets: true },
   });
+  if (organizationId && companyProfile) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org) {
+      companyProfile = {
+        ...companyProfile,
+        companyName: org.name || companyProfile.companyName,
+        phone: org.phone || companyProfile.phone,
+        email: org.email || companyProfile.email,
+        address: org.address || companyProfile.address,
+        city: org.city || companyProfile.city,
+        state: org.state || companyProfile.state,
+        gstNumber: org.gstNumber || companyProfile.gstNumber,
+        panNumber: org.panNumber || companyProfile.panNumber,
+      };
+    }
+  }
 
   return { ...payment, companyProfile };
 }
@@ -390,16 +403,21 @@ export async function recordPayment(data, user) {
 }
 
 export async function signPayment(id, pin, user, organizationId = null) {
-  const companyProfile = await prisma.companyProfile.findFirst({
-    where: {
-      ...(organizationId && { organizationId }),
-    },
-  });
-  if (!companyProfile || !companyProfile.signaturePinHash) {
+  const companyProfile = await prisma.companyProfile.findFirst();
+  let pinHash = companyProfile?.signaturePinHash;
+
+  if (organizationId) {
+    const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+    if (org?.signaturePinHash) {
+      pinHash = org.signaturePinHash;
+    }
+  }
+
+  if (!pinHash) {
     throw new Error('Digital signature PIN is not configured');
   }
 
-  const isPinValid = await bcrypt.compare(pin, companyProfile.signaturePinHash);
+  const isPinValid = await bcrypt.compare(pin, pinHash);
   if (!isPinValid) {
     await logAudit({
       userId: user.id,

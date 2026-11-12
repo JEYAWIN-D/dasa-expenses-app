@@ -22,6 +22,7 @@ import {
   Landmark,
   Sparkles,
   ExternalLink,
+  UserPlus,
 } from 'lucide-react';
 
 export function Sidebar() {
@@ -85,6 +86,13 @@ export function Sidebar() {
         { to: '/storage', label: 'Tenant Cloud Storage', icon: <FolderKanban size={18} /> },
         { to: '/journals', label: 'General Ledger', icon: <ScrollText size={18} /> },
         { to: '/security-settings', label: 'Security & Sessions', icon: <Settings size={18} /> },
+      ],
+    },
+    {
+      label: 'HUMAN CAPITAL & HRMS',
+      items: [
+        { to: '/employees', label: 'HR Staff & Onboarding', icon: <UserPlus size={18} /> },
+        { to: '/employees/onboard', label: 'Onboarding Wizard', icon: <UserCheck size={18} /> },
       ],
     },
     {
@@ -199,7 +207,7 @@ export function Sidebar() {
           to="/"
           style={{
             fontSize: 11,
-            color: '#38bdf8',
+            color: '#f97316',
             display: 'flex',
             alignItems: 'center',
             gap: 6,
@@ -214,7 +222,7 @@ export function Sidebar() {
           to="/platform-admin/dashboard"
           style={{
             fontSize: 11,
-            color: '#818cf8',
+            color: '#fbbf24',
             display: 'flex',
             alignItems: 'center',
             gap: 6,

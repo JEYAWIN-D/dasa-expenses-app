@@ -65,6 +65,11 @@ const ReportsPage = lazy(() => import('./modules/reports/ReportsPage.jsx'));
 const SettingsPage = lazy(() => import('./modules/settings/SettingsPage.jsx'));
 const LeadsListPage = lazy(() => import('./modules/leads/LeadsListPage.jsx'));
 
+// Human Capital, Staff Onboarding & Document Automation
+const EmployeesListPage = lazy(() => import('./modules/employees/EmployeesListPage.jsx'));
+const EmployeeOnboardingWizard = lazy(() => import('./modules/employees/EmployeeOnboardingWizard.jsx'));
+const EmployeeDetailsPage = lazy(() => import('./modules/employees/EmployeeDetailsPage.jsx'));
+
 function ProtectedRoute({ children }) {
   const { isAuthenticated, loading } = useAuth();
 
@@ -165,6 +170,11 @@ export default function App() {
                     <Route path="security" element={<CustomerSecurityPage />} />
                     <Route path="reports" element={<ReportsPage />} />
                     <Route path="settings" element={<SettingsPage />} />
+
+                    {/* HR Staff & Onboarding */}
+                    <Route path="employees" element={<EmployeesListPage />} />
+                    <Route path="employees/onboard" element={<EmployeeOnboardingWizard />} />
+                    <Route path="employees/:id" element={<EmployeeDetailsPage />} />
                   </Route>
 
                   <Route
@@ -219,6 +229,11 @@ export default function App() {
 
                     {/* Settings & Branding */}
                     <Route path="/settings" element={<SettingsPage />} />
+
+                    {/* Human Capital, Staff Onboarding & Legal Document Automation */}
+                    <Route path="/employees" element={<EmployeesListPage />} />
+                    <Route path="/employees/onboard" element={<EmployeeOnboardingWizard />} />
+                    <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
                   </Route>
 
                   {/* Catch-all redirect to Home */}

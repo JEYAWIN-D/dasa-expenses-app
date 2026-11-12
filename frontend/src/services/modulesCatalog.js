@@ -185,6 +185,23 @@ export const SYSTEM_MODULES_CATALOG = [
       { id: 'settings_audit', name: 'Security Audit Trail', description: 'Inspect login attempts and administrative actions' },
     ],
   },
+  {
+    id: 'EMPLOYEES',
+    name: 'HR & Staff Onboarding',
+    category: 'Human Capital & Legal',
+    description: 'Onboarding wizard, KYC verification, legal document automation, IT assets, and BGV tracking',
+    color: '#0284c7',
+    badge: 'Enterprise HRMS',
+    submodules: [
+      { id: 'employees_directory', name: 'Staff & Onboarding Queue', description: 'Browse employees, lifecycle stages, and verification statuses' },
+      { id: 'employees_onboard', name: 'Candidate Onboarding Wizard', description: 'Multi-step candidate registration, KYC, and document uploads' },
+      { id: 'employees_kyc', name: 'KYC & Verification Desk', description: 'Side-by-side Aadhaar, PAN review with approval/rejection' },
+      { id: 'employees_documents', name: 'Legal Document Generation Studio', description: 'Generate signed appointment letters, NDAs, CTC breakups, relieving letters' },
+      { id: 'employees_assets', name: 'IT Asset Allocation & Tracking', description: 'Provision laptops, monitors, YubiKeys, and track hardware returns' },
+      { id: 'employees_bgv', name: 'Background Verification (BGV)', description: 'Stage-wise identity, education, and past employment verification tracking' },
+      { id: 'employees_probation', name: 'Probation & Review Governance', description: '3/6-month evaluations, confirmation reviews, and appraisal letters' },
+    ],
+  },
 ];
 
 export const CORE_ACCESS_ACTIONS = [

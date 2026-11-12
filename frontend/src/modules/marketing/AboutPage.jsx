@@ -46,7 +46,7 @@ export default function AboutPage() {
               About{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -85,8 +85,8 @@ export default function AboutPage() {
 
             {/* Core Values */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20, borderTop: '1px solid rgba(226, 232, 240, 0.8)', paddingTop: 26 }}>
-              <div style={{ padding: '16px', borderRadius: 12, backgroundColor: 'rgba(37, 99, 235, 0.03)', border: '1px solid rgba(37, 99, 235, 0.1)' }}>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#2563eb', marginBottom: 4 }}>
+              <div style={{ padding: '16px', borderRadius: 12, backgroundColor: 'rgba(234, 88, 12, 0.05)', border: '1px solid rgba(234, 88, 12, 0.15)' }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#c2410c', marginBottom: 4 }}>
                   Precision Double-Entry Ledger
                 </div>
                 <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6 }}>

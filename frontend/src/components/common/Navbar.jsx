@@ -29,12 +29,17 @@ export function Navbar({ onOpenShortcuts, onOpenCommandPalette }) {
           <img
             src={company.logoUrl}
             alt={company.companyName || 'Company Logo'}
-            style={{ height: 32, maxWidth: 120, objectFit: 'contain' }}
+            onError={(e) => {
+              e.currentTarget.src = '/dasa-tech-logo.png';
+            }}
+            style={{ height: 36, maxWidth: 140, objectFit: 'contain' }}
           />
         ) : (
-          <div style={{ color: 'var(--primary)' }}>
-            <Building size={18} />
-          </div>
+          <img
+            src="/dasa-mark.png"
+            alt="DASA Logo"
+            style={{ height: 32, width: 32, objectFit: 'contain' }}
+          />
         )}
         <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.2px' }}>
           {company?.companyName || 'DASA TECH'}
@@ -42,12 +47,12 @@ export function Navbar({ onOpenShortcuts, onOpenCommandPalette }) {
         <span
           style={{
             fontSize: 11,
-            backgroundColor: '#eff6ff',
+            backgroundColor: 'var(--primary-light)',
             color: 'var(--primary)',
             padding: '2px 8px',
             borderRadius: 99,
             fontWeight: 700,
-            border: '1px solid #bfdbfe',
+            border: '1px solid var(--primary-border)',
           }}
         >
           FY 2026-27
@@ -138,7 +143,7 @@ export function Navbar({ onOpenShortcuts, onOpenCommandPalette }) {
               width: 34,
               height: 34,
               borderRadius: '50%',
-              backgroundColor: '#eff6ff',
+              backgroundColor: 'var(--primary-light)',
               border: '1.5px solid var(--primary-border)',
               display: 'flex',
               alignItems: 'center',
@@ -155,7 +160,7 @@ export function Navbar({ onOpenShortcuts, onOpenCommandPalette }) {
               {user?.name || 'Administrator'}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <Shield size={10} color="#3b82f6" />
+              <Shield size={10} color="var(--primary)" />
               <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
                 {user?.role || 'SUPER_ADMIN'}
               </span>

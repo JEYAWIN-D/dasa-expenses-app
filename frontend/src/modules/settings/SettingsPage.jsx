@@ -93,18 +93,7 @@ function generateDirectorSealSvg(name = 'MANAGING DIRECTOR') {
 }
 
 function generateTechLogoSvg(name = 'DASA TECH') {
-  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
-    <defs>
-      <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="%232563eb"/>
-        <stop offset="100%" stop-color="%234f46e5"/>
-      </linearGradient>
-    </defs>
-    <rect x="8" y="12" width="56" height="56" rx="14" fill="url(%23logoGrad)"/>
-    <path d="M26 52 L36 28 L46 52 Z M31 44 L41 44" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-    <text x="78" y="44" font-family="sans-serif" font-size="24" font-weight="800" fill="%230f172a" letter-spacing="-0.5">${encodeURIComponent(name)}</text>
-    <text x="80" y="60" font-family="sans-serif" font-size="10" font-weight="700" fill="%2364748b" letter-spacing="2">SOFTWARE SOLUTIONS</text>
-  </svg>`;
+  return '/dasa-tech-logo.png';
 }
 
 export default function SettingsPage() {

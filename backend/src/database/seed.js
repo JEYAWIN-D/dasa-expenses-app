@@ -28,7 +28,7 @@ async function seed() {
     data: {
       companyName: 'DASA TECH',
       tagline: 'Enterprise Cloud & Software Engineering',
-      logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80',
+      logoUrl: '/dasa-tech-logo.png',
       address: 'EB Colony',
       city: 'Erode',
       state: 'Tamil Nadu',

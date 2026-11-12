@@ -79,7 +79,7 @@ export default function HomePage() {
             transform: 'translateX(-50%)',
             width: 700,
             height: 350,
-            background: 'radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(6, 182, 212, 0.12) 50%, transparent 80%)',
+            background: 'radial-gradient(circle, rgba(234, 88, 12, 0.22) 0%, rgba(217, 119, 6, 0.14) 45%, rgba(124, 18, 40, 0.08) 70%, transparent 85%)',
             filter: 'blur(70px)',
             borderRadius: '50%',
             pointerEvents: 'none',
@@ -92,9 +92,9 @@ export default function HomePage() {
           {/* Top Pill Badge */}
           <div style={{ display: 'inline-flex', marginBottom: 20 }}>
             <span className="pill-badge">
-              <Sparkles size={13} color="#2563eb" />
+              <Sparkles size={13} color="#ea580c" />
               <span>Next-Gen Project Finance & Handover SaaS</span>
-              <span style={{ background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)', color: '#fff', fontSize: 9, padding: '2px 7px', borderRadius: 999, fontWeight: 800 }}>
+              <span style={{ background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)', color: '#fff', fontSize: 9, padding: '2px 7px', borderRadius: 999, fontWeight: 800 }}>
                 V1.0
               </span>
             </span>
@@ -115,7 +115,7 @@ export default function HomePage() {
             From Quotation to Project Handover.{' '}
             <span
               style={{
-                background: 'linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #0d9488 100%)',
+                background: 'linear-gradient(135deg, #ea580c 0%, #d97706 45%, #b91c1c 100%)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}
@@ -164,7 +164,7 @@ export default function HomePage() {
               className="btn-trendy-secondary"
               style={{ padding: '14px 24px', fontSize: 15 }}
             >
-              <Play size={15} style={{ fill: '#2563eb', color: '#2563eb' }} />
+              <Play size={15} style={{ fill: '#ea580c', color: '#ea580c' }} />
               <span>Interactive 10-Screen Tour</span>
             </Link>
 
@@ -188,10 +188,10 @@ export default function HomePage() {
 
           {/* DASA TECH Ownership Chip */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#71717a' }}>
-            <ShieldCheck size={14} color="#10b981" />
+            <ShieldCheck size={14} color="#ea580c" />
             <span>
               Developed and Owned by{' '}
-              <a href="https://dasatech.in" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 800, textDecoration: 'none' }}>
+              <a href="https://dasatech.in" target="_blank" rel="noopener noreferrer" style={{ color: '#c2410c', fontWeight: 800, textDecoration: 'none' }}>
                 DASA TECH
               </a>{' '}
               • WhatsApp: <strong>+91 76399 30148</strong>
@@ -240,31 +240,31 @@ export default function HomePage() {
                 top: 40,
                 right: -10,
                 zIndex: 10,
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                backgroundColor: 'rgba(20, 13, 10, 0.95)',
                 backdropFilter: 'blur(16px)',
                 padding: '8px 16px',
                 borderRadius: 999,
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.25)',
+                border: '1px solid rgba(251, 191, 36, 0.3)',
+                boxShadow: '0 12px 28px -6px rgba(0, 0, 0, 0.35)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 8,
                 fontSize: 12,
                 fontWeight: 800,
-                color: '#38bdf8',
+                color: '#fbbf24',
               }}
             >
-              <Lock size={12} color="#38bdf8" />
+              <Lock size={12} color="#fbbf24" />
               <span>Handover Gate: Strict Settlement Required</span>
             </div>
 
             {/* Dark Titanium Frame */}
             <div
               style={{
-                background: 'linear-gradient(135deg, #090d16 0%, #0f172a 100%)',
+                background: 'linear-gradient(135deg, #140d0a 0%, #1e130f 50%, #160e0c 100%)',
                 borderRadius: 24,
                 padding: '20px 24px',
-                boxShadow: '0 30px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 30px 60px -15px rgba(20, 13, 10, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08)',
                 textAlign: 'left',
                 color: '#ffffff',
                 overflow: 'hidden',
@@ -286,12 +286,12 @@ export default function HomePage() {
                   <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#ef4444' }} />
                   <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
                   <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981' }} />
-                  <span style={{ marginLeft: 10, color: '#94a3b8', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                  <span style={{ marginLeft: 10, color: '#a8a29e', fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                     app.dasaexpences.com/dashboard/executive
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ background: 'rgba(37, 99, 235, 0.25)', color: '#60a5fa', border: '1px solid rgba(37, 99, 235, 0.4)', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 800 }}>
+                  <span style={{ background: 'rgba(234, 88, 12, 0.22)', color: '#fdba74', border: '1px solid rgba(234, 88, 12, 0.4)', padding: '2px 8px', borderRadius: 4, fontSize: 10, fontWeight: 800 }}>
                     MULTI-TENANT SAAS
                   </span>
                   <span style={{ color: '#34d399', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -303,37 +303,37 @@ export default function HomePage() {
 
               {/* KPI Chips Grid */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14, marginBottom: 20 }}>
-                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em' }}>TOTAL CONTRACT PIPELINE</div>
+                <div style={{ background: 'rgba(30, 19, 15, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, letterSpacing: '0.04em' }}>TOTAL CONTRACT PIPELINE</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: '#ffffff', marginTop: 4 }}>₹37,80,000</div>
-                  <div style={{ fontSize: 11, color: '#38bdf8', marginTop: 4 }}>5 active client contracts</div>
+                  <div style={{ fontSize: 11, color: '#fbbf24', marginTop: 4 }}>5 active client contracts</div>
                 </div>
 
-                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em' }}>ADVANCE & PROGRESS RECEIVED</div>
+                <div style={{ background: 'rgba(30, 19, 15, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, letterSpacing: '0.04em' }}>ADVANCE & PROGRESS RECEIVED</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: '#34d399', marginTop: 4 }}>₹21,45,200</div>
                   <div style={{ fontSize: 11, color: '#a7f3d0', marginTop: 4 }}>56.7% collected into accounts</div>
                 </div>
 
-                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em' }}>PROJECT EXPENSES INCURRED</div>
+                <div style={{ background: 'rgba(30, 19, 15, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, letterSpacing: '0.04em' }}>PROJECT EXPENSES INCURRED</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: '#f87171', marginTop: 4 }}>₹8,92,400</div>
                   <div style={{ fontSize: 11, color: '#fca5a5', marginTop: 4 }}>Deducts pool, NOT client dues</div>
                 </div>
 
-                <div style={{ background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
-                  <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.04em' }}>LIQUID CASH & BANK BALANCES</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: '#818cf8', marginTop: 4 }}>₹12,52,800</div>
-                  <div style={{ fontSize: 11, color: '#c7d2fe', marginTop: 4 }}>HDFC + ICICI + GPay + Cash</div>
+                <div style={{ background: 'rgba(30, 19, 15, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 14, padding: '14px 16px' }}>
+                  <div style={{ fontSize: 10, color: '#a8a29e', fontWeight: 700, letterSpacing: '0.04em' }}>LIQUID CASH & BANK BALANCES</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: '#fdba74', marginTop: 4 }}>₹12,52,800</div>
+                  <div style={{ fontSize: 11, color: '#fed7aa', marginTop: 4 }}>HDFC + ICICI + GPay + Cash</div>
                 </div>
               </div>
 
               {/* Live Project Card row */}
               <div
                 style={{
-                  background: 'rgba(15, 23, 42, 0.8)',
+                  background: 'rgba(20, 13, 10, 0.85)',
                   borderRadius: 14,
-                  border: '1px solid rgba(37, 99, 235, 0.3)',
+                  border: '1px solid rgba(234, 88, 12, 0.35)',
                   padding: '16px 20px',
                   display: 'flex',
                   alignItems: 'center',
@@ -344,12 +344,12 @@ export default function HomePage() {
               >
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <span style={{ backgroundColor: '#2563eb', color: '#fff', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 4 }}>
+                    <span style={{ backgroundColor: '#c2410c', color: '#fff', fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 4 }}>
                       PROJECT #PRJ-2026-0101
                     </span>
                     <span style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>Enterprise Cloud Migration (TechNova)</span>
                   </div>
-                  <div style={{ fontSize: 12, color: '#94a3b8' }}>
+                  <div style={{ fontSize: 12, color: '#a8a29e' }}>
                     Contract: ₹14,50,000 • Milestone 1: <strong>Paid</strong> • Milestone 2: <strong>In Progress</strong> • Handover: <strong>Protected</strong>
                   </div>
                 </div>
@@ -357,9 +357,9 @@ export default function HomePage() {
                 <Link
                   to="/product-tour"
                   style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(234, 88, 12, 0.15)',
+                    color: '#fdba74',
+                    border: '1px solid rgba(234, 88, 12, 0.3)',
                     padding: '8px 16px',
                     borderRadius: 8,
                     fontSize: 12,
@@ -392,7 +392,7 @@ export default function HomePage() {
           }}
         >
           <div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: '#2563eb', letterSpacing: '-0.03em' }}>100% Tracking</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#c2410c', letterSpacing: '-0.03em' }}>100% Tracking</div>
             <div style={{ fontSize: 13, color: '#09090b', fontWeight: 700 }}>Advance Receipts Verified</div>
             <div style={{ fontSize: 12, color: '#71717a' }}>No unrecorded initial tokens</div>
           </div>
@@ -402,12 +402,12 @@ export default function HomePage() {
             <div style={{ fontSize: 12, color: '#71717a' }}>Cash, GPay, Bank mapped accurately</div>
           </div>
           <div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: '#7c3aed', letterSpacing: '-0.03em' }}>Strict Gate</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#b91c1c', letterSpacing: '-0.03em' }}>Strict Gate</div>
             <div style={{ fontSize: 13, color: '#09090b', fontWeight: 700 }}>Handover Verification</div>
             <div style={{ fontSize: 12, color: '#71717a' }}>Deliverables blocked till payments clear</div>
           </div>
           <div>
-            <div style={{ fontSize: 26, fontWeight: 900, color: '#0891b2', letterSpacing: '-0.03em' }}>Multi-Tenant</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#d97706', letterSpacing: '-0.03em' }}>Multi-Tenant</div>
             <div style={{ fontSize: 13, color: '#09090b', fontWeight: 700 }}>Isolated SaaS Architecture</div>
             <div style={{ fontSize: 12, color: '#71717a' }}>PostgreSQL & Role-Based Security</div>
           </div>
@@ -420,7 +420,7 @@ export default function HomePage() {
           
           <div style={{ textAlign: 'center', marginBottom: 54 }}>
             <span className="pill-badge" style={{ marginBottom: 12 }}>
-              <Layers size={13} />
+              <Layers size={13} color="#c2410c" />
               <span>Core FinOps Modules</span>
             </span>
             <h2 style={{ fontSize: 'clamp(28px, 4vw, 44px)', fontWeight: 900, letterSpacing: '-0.03em', color: '#09090b' }}>
@@ -453,10 +453,10 @@ export default function HomePage() {
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: '#fff7ed', color: '#c2410c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Receipt size={20} />
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: '#2563eb', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       FINTECH BREAKTHROUGH
                     </span>
                   </div>
@@ -477,7 +477,7 @@ export default function HomePage() {
                 <div style={{ backgroundColor: '#ffffff', borderRadius: 14, border: '1px solid #e4e4e7', padding: '18px 20px', marginBottom: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
                     <span>Cash in Hand (Office Vault)</span>
-                    <span style={{ color: '#2563eb' }}>₹{splitAmounts.cash.toLocaleString()}</span>
+                    <span style={{ color: '#c2410c' }}>₹{splitAmounts.cash.toLocaleString()}</span>
                   </div>
                   <input
                     type="range"
@@ -486,7 +486,7 @@ export default function HomePage() {
                     step="500"
                     value={splitAmounts.cash}
                     onChange={(e) => setSplitAmounts({ ...splitAmounts, cash: Number(e.target.value) })}
-                    style={{ width: '100%', accentColor: '#2563eb', marginBottom: 12 }}
+                    style={{ width: '100%', accentColor: '#c2410c', marginBottom: 12 }}
                   />
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
@@ -505,7 +505,7 @@ export default function HomePage() {
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, marginBottom: 6 }}>
                     <span>Bank Transfer (HDFC Current A/C)</span>
-                    <span style={{ color: '#7c3aed' }}>₹{splitAmounts.bank.toLocaleString()}</span>
+                    <span style={{ color: '#b91c1c' }}>₹{splitAmounts.bank.toLocaleString()}</span>
                   </div>
                   <input
                     type="range"
@@ -514,7 +514,7 @@ export default function HomePage() {
                     step="200"
                     value={splitAmounts.bank}
                     onChange={(e) => setSplitAmounts({ ...splitAmounts, bank: Number(e.target.value) })}
-                    style={{ width: '100%', accentColor: '#7c3aed' }}
+                    style={{ width: '100%', accentColor: '#b91c1c' }}
                   />
                 </div>
               </div>
@@ -522,7 +522,7 @@ export default function HomePage() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid #e4e4e7', paddingTop: 16 }}>
                 <div>
                   <div style={{ fontSize: 11, color: '#71717a' }}>TOTAL CALCULATED RECEIPT:</div>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: '#2563eb' }}>₹{totalSplit.toLocaleString()}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#c2410c' }}>₹{totalSplit.toLocaleString()}</div>
                 </div>
                 <Link to="/product-tour" className="btn-trendy-primary" style={{ padding: '8px 18px', fontSize: 13 }}>
                   <span>Test in Tour</span>
@@ -619,7 +619,7 @@ export default function HomePage() {
 
             {/* Bento 3: Quotations & Revisions (Span 4 cols) */}
             <div className="bento-card" style={{ gridColumn: 'span 4', padding: '30px' }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#fff7ed', color: '#c2410c', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <FileSpreadsheet size={18} />
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#09090b', marginBottom: 6 }}>
@@ -628,7 +628,7 @@ export default function HomePage() {
               <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6, marginBottom: 14 }}>
                 Itemized estimates with GST, line-item discounts, and terms. Preserve complete negotiation history across Rev 0, 1, 2. Convert approved quotes into active projects with 1 click.
               </p>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#2563eb' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#c2410c' }}>
                 Change Orders • Digital Seals • PDF Engine
               </div>
             </div>
@@ -651,7 +651,7 @@ export default function HomePage() {
 
             {/* Bento 5: Cash, Bank & UPI Balancing (Span 4 cols) */}
             <div className="bento-card" style={{ gridColumn: 'span 4', padding: '30px' }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#f5f3ff', color: '#7c3aed', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, backgroundColor: '#fffbeb', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                 <Landmark size={18} />
               </div>
               <h3 style={{ fontSize: 18, fontWeight: 800, color: '#09090b', marginBottom: 6 }}>
@@ -660,7 +660,7 @@ export default function HomePage() {
               <p style={{ fontSize: 13, color: '#71717a', lineHeight: 1.6, marginBottom: 14 }}>
                 Separate accounts for Cash in Hand, Google Pay, and Bank Current Accounts. Every UPI entry maps to its underlying bank account, completely eliminating double counting.
               </p>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#7c3aed' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#d97706' }}>
                 Internal Fund Transfers • Zero Double Count
               </div>
             </div>
@@ -671,7 +671,7 @@ export default function HomePage() {
       {/* 4. HIGH-CONVERTING BOTTOM CALL TO ACTION */}
       <section
         style={{
-          background: 'linear-gradient(135deg, #090d16 0%, #1e3a8a 50%, #0369a1 100%)',
+          background: 'linear-gradient(135deg, #180d09 0%, #7c1228 45%, #9a3412 80%, #ea580c 100%)',
           color: '#ffffff',
           padding: '90px 24px',
           textAlign: 'center',
@@ -683,7 +683,7 @@ export default function HomePage() {
           <h2 style={{ fontSize: 'clamp(30px, 4.5vw, 48px)', fontWeight: 900, letterSpacing: '-0.035em', lineHeight: 1.18, marginBottom: 20 }}>
             Never Release a Project Deliverable Unpaid Again.
           </h2>
-          <p style={{ fontSize: 17, color: '#e0f2fe', lineHeight: 1.65, maxWidth: 640, margin: '0 auto 36px' }}>
+          <p style={{ fontSize: 17, color: '#fed7aa', lineHeight: 1.65, maxWidth: 640, margin: '0 auto 36px' }}>
             Transform how your agency, software house, or engineering firm accounts for project finances.
             Start with a personalized walkthrough with DASA TECH.
           </p>
@@ -693,14 +693,14 @@ export default function HomePage() {
               onClick={() => setDemoModalOpen(true)}
               style={{
                 backgroundColor: '#ffffff',
-                color: '#1e3a8a',
+                color: '#7c1228',
                 padding: '14px 32px',
                 borderRadius: 999,
                 fontSize: 15,
                 fontWeight: 800,
                 border: 'none',
                 cursor: 'pointer',
-                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.25)',
+                boxShadow: '0 10px 25px rgba(0, 0, 0, 0.35)',
               }}
             >
               Request a Free Live Demo
@@ -728,7 +728,7 @@ export default function HomePage() {
             </a>
           </div>
 
-          <div style={{ marginTop: 32, fontSize: 12, color: '#93c5fd' }}>
+          <div style={{ marginTop: 32, fontSize: 12, color: '#fdba74' }}>
             Developed & Owned by DASA TECH (https://dasatech.in) • Erode, Tamil Nadu, India
           </div>
         </div>

@@ -66,7 +66,7 @@ export default function FaqPage() {
               Everything You Need to{' '}
               <span
                 style={{
-                  background: 'linear-gradient(135deg, #2563eb 0%, #06b6d4 100%)',
+                  background: 'linear-gradient(135deg, #ea580c 0%, #b91c1c 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -91,7 +91,7 @@ export default function FaqPage() {
                   style={{
                     overflow: 'hidden',
                     padding: 0,
-                    border: isOpen ? '1px solid #2563eb' : '1px solid rgba(226, 232, 240, 0.8)',
+                    border: isOpen ? '1px solid #c2410c' : '1px solid rgba(226, 232, 240, 0.8)',
                     transition: 'all 0.2s ease',
                   }}
                 >
@@ -104,12 +104,12 @@ export default function FaqPage() {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       textAlign: 'left',
-                      background: isOpen ? 'rgba(37, 99, 235, 0.03)' : 'transparent',
+                      background: isOpen ? 'rgba(234, 88, 12, 0.05)' : 'transparent',
                       border: 'none',
                       cursor: 'pointer',
                       fontSize: 15,
                       fontWeight: 800,
-                      color: isOpen ? '#2563eb' : '#09090b',
+                      color: isOpen ? '#c2410c' : '#09090b',
                       gap: 16,
                     }}
                   >
@@ -119,14 +119,14 @@ export default function FaqPage() {
                         width: 32,
                         height: 32,
                         borderRadius: 999,
-                        backgroundColor: isOpen ? 'rgba(37, 99, 235, 0.1)' : '#f1f5f9',
+                        backgroundColor: isOpen ? 'rgba(234, 88, 12, 0.12)' : '#f1f5f9',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
                       }}
                     >
-                      {isOpen ? <ChevronUp size={16} color="#2563eb" /> : <ChevronDown size={16} color="#64748b" />}
+                      {isOpen ? <ChevronUp size={16} color="#c2410c" /> : <ChevronDown size={16} color="#64748b" />}
                     </div>
                   </button>
 

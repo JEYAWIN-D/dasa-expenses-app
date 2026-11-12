@@ -34,7 +34,7 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
     ...rawCompany,
     companyName: rawCompany.companyName || 'DASA TECH',
     tagline: rawCompany.tagline || 'Enterprise Cloud & Software Engineering',
-    logoUrl: rawCompany.logoUrl || '/dasa-tech-logo.png',
+    logoUrl: (rawCompany.logoUrl && !rawCompany.logoUrl.includes('unsplash')) ? rawCompany.logoUrl : '/dasa-tech-logo.png',
     address: rawCompany.address || 'EB Colony',
     city: cleanCity,
     state: rawCompany.state || 'Tamil Nadu',
@@ -245,26 +245,27 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
               }}
             >
               {/* Supplier Branding */}
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flex: 1 }}>
-                <img
-                  src={company.logoUrl}
-                  alt={company.companyName}
-                  onError={(e) => {
-                    e.currentTarget.src = '/dasa-tech-logo.png';
-                  }}
-                  style={{
-                    height: 64,
-                    width: 64,
-                    objectFit: 'contain',
-                    borderRadius: 10,
-                    border: '1px solid #e2e8f0',
-                    padding: 4,
-                    backgroundColor: '#ffffff',
-                  }}
-                />
-                <div>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center', flex: 1 }}>
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <img
+                    src={company.logoUrl}
+                    alt={company.companyName}
+                    onError={(e) => {
+                      e.currentTarget.src = '/dasa-tech-logo.png';
+                    }}
+                    style={{
+                      maxHeight: 90,
+                      maxWidth: 240,
+                      height: 'auto',
+                      width: 'auto',
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+                <div style={{ borderLeft: '2.5px solid #1e3a8a', paddingLeft: 18 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <h1 style={{ fontSize: 24, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.4px' }}>
+                    <h1 style={{ fontSize: 23, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.4px', lineHeight: 1.2 }}>
                       {company.companyName}
                     </h1>
                     <span
@@ -284,22 +285,26 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
                     </span>
                   </div>
                   {company.tagline && (
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 2 }}>
+                    <div style={{ fontSize: 11.5, fontWeight: 800, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 3 }}>
                       {company.tagline}
                     </div>
                   )}
-                  <div style={{ fontSize: 12, color: '#475569', lineHeight: 1.5, marginTop: 5, maxWidth: 420 }}>
+                  <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginTop: 4, maxWidth: 440 }}>
                     <div>{company.address}, {company.city}, {company.state} - {company.postalCode}</div>
+                    <div style={{ marginTop: 2 }}>
+                      Phone: <strong style={{ color: '#0f172a' }}>{company.phone}</strong>
+                      {company.email && <span> &nbsp;|&nbsp; Email: <strong style={{ color: '#0f172a' }}>{company.email}</strong></span>}
+                    </div>
                     {(company.gstNumber || company.panNumber) && (
-                      <div style={{ marginTop: 4, fontSize: 11 }}>
+                      <div style={{ marginTop: 5, display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 10.5 }}>
                         {company.gstNumber && (
-                          <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4, marginRight: 6 }}>
-                            <strong>GSTIN:</strong> {company.gstNumber}
+                          <span style={{ backgroundColor: '#f8fafc', padding: '2px 8px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
+                            <strong style={{ color: '#0f172a' }}>GSTIN:</strong> {company.gstNumber}
                           </span>
                         )}
                         {company.panNumber && (
-                          <span style={{ backgroundColor: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
-                            <strong>PAN:</strong> {company.panNumber}
+                          <span style={{ backgroundColor: '#f8fafc', padding: '2px 8px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
+                            <strong style={{ color: '#0f172a' }}>PAN:</strong> {company.panNumber}
                           </span>
                         )}
                       </div>
@@ -817,44 +822,54 @@ export function DocumentPreviewModal({ isOpen, onClose, document, type = 'QUOTAT
               }}
             >
               {/* Supplier Branding */}
-              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flex: 1 }}>
-                <img
-                  src={company.logoUrl}
-                  alt={company.companyName}
-                  onError={(e) => {
-                    e.currentTarget.src = '/dasa-tech-logo.png';
-                  }}
-                  style={{
-                    height: 56,
-                    width: 56,
-                    objectFit: 'contain',
-                    borderRadius: 8,
-                    border: '1px solid #e2e8f0',
-                    padding: 3,
-                    backgroundColor: '#ffffff',
-                  }}
-                />
-                <div>
-                  <h2 style={{ fontSize: 20, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
+              <div style={{ display: 'flex', gap: 20, alignItems: 'center', flex: 1 }}>
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  <img
+                    src={company.logoUrl}
+                    alt={company.companyName}
+                    onError={(e) => {
+                      e.currentTarget.src = '/dasa-tech-logo.png';
+                    }}
+                    style={{
+                      maxHeight: 90,
+                      maxWidth: 240,
+                      height: 'auto',
+                      width: 'auto',
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                </div>
+                <div style={{ borderLeft: isPayment ? '3px solid #059669' : '3px solid #1e40af', paddingLeft: 18 }}>
+                  <h2 style={{ fontSize: 22, fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.3px', lineHeight: 1.2 }}>
                     {company.companyName}
                   </h2>
                   {company.tagline && (
-                    <div style={{ fontSize: 10.5, fontWeight: 700, color: isPayment ? '#059669' : '#2563eb', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 2 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: isPayment ? '#059669' : '#1e40af', textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 3 }}>
                       {company.tagline}
                     </div>
                   )}
-                  <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginTop: 4, maxWidth: 390 }}>
+                  <div style={{ fontSize: 11.5, color: '#475569', lineHeight: 1.5, marginTop: 4, maxWidth: 440 }}>
                     <div>{company.address}, {company.city}</div>
-                    <div>{company.state} - {company.postalCode}, {company.country}</div>
-                    <div>Phone: <strong>{company.phone}</strong> | Email: <strong>{company.email}</strong></div>
-                    <div style={{ marginTop: 4, fontSize: 10.5 }}>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 7px', borderRadius: 4, marginRight: 6, border: '1px solid #e2e8f0' }}>
-                        <strong>GSTIN:</strong> {company.gstNumber} (State: {company.state} - {stateCodeSupplier})
-                      </span>
-                      <span style={{ backgroundColor: '#f1f5f9', padding: '2px 7px', borderRadius: 4, border: '1px solid #e2e8f0' }}>
-                        <strong>PAN:</strong> {company.panNumber}
-                      </span>
+                    <div>{company.state} - {company.postalCode}{company.country ? `, ${company.country}` : ''}</div>
+                    <div style={{ marginTop: 2 }}>
+                      Phone: <strong style={{ color: '#0f172a' }}>{company.phone}</strong>
+                      {company.email && <span> &nbsp;|&nbsp; Email: <strong style={{ color: '#0f172a' }}>{company.email}</strong></span>}
                     </div>
+                    {(company.gstNumber || company.panNumber) && (
+                      <div style={{ marginTop: 5, display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 10.5 }}>
+                        {company.gstNumber && (
+                          <span style={{ backgroundColor: '#f8fafc', padding: '2px 8px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
+                            <strong style={{ color: '#0f172a' }}>GSTIN:</strong> {company.gstNumber} {stateCodeSupplier ? `(State: ${company.state} - ${stateCodeSupplier})` : ''}
+                          </span>
+                        )}
+                        {company.panNumber && (
+                          <span style={{ backgroundColor: '#f8fafc', padding: '2px 8px', borderRadius: 4, border: '1px solid #cbd5e1', fontWeight: 600 }}>
+                            <strong style={{ color: '#0f172a' }}>PAN:</strong> {company.panNumber}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
