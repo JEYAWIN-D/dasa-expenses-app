@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { exec } from 'child_process';
 import authRoutes from '../modules/auth/auth.routes.js';
 import platformRoutes from '../modules/platform/platform.routes.js';
 import orgRoutes from '../modules/organization/organization.routes.js';
@@ -26,6 +27,26 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     service: 'DASA EXPENCES SaaS Platform API',
     edition: 'Enterprise Multi-Tenant SaaS Edition',
+  });
+});
+
+// Continuous Deployment Webhook Endpoint (Auto-Deploy on Git Push)
+router.all('/deploy-webhook', (req, res) => {
+  const token = req.headers['x-deploy-token'] || req.query.token || (req.body && req.body.token);
+  const expectedToken = process.env.DEPLOY_SECRET || 'dasa_tech_secure_auto_deploy_2026';
+
+  if (!token || token !== expectedToken) {
+    return res.status(401).json({ success: false, message: 'Unauthorized deployment request' });
+  }
+
+  res.json({ success: true, message: 'Deployment triggered in background' });
+
+  exec('/usr/local/bin/deploy-dasa-expense', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Deployment webhook error:', error);
+    } else {
+      console.log('Deployment webhook succeeded:\n', stdout);
+    }
   });
 });
 
