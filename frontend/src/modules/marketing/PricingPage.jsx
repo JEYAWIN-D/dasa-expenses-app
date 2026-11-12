@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
 import { DemoRequestModal } from '../../components/marketing/DemoRequestModal.jsx';
+import { SignalIcon } from '../../components/marketing/SignalContactCard.jsx';
 import {
   Check,
   ArrowRight,
@@ -56,7 +57,7 @@ export default function PricingPage() {
         'Advance Split Payment Receipts (Cash + UPI)',
         'Project Expense Ledger & Cost Deduction',
         '1 Main Bank Account + Physical Cash Vault',
-        'Standard Email & WhatsApp Support',
+        'Standard Signal & Web Support',
         'PDF Invoices & Receipt Exports',
       ],
       ctaText: 'Start Free 14-Day Trial',
@@ -82,7 +83,7 @@ export default function PricingPage() {
         'Document Studio (Official Letters, Receipts & Certs)',
         'Up to 5 Bank & UPI Financial Accounts',
         'Handover Verification Gatekeeper & PIN Signoff',
-        'Priority WhatsApp & Phone Support from DASA TECH',
+        'Priority Signal & Phone Support from DASA TECH',
       ],
       ctaText: 'Start Free 14-Day Trial',
       ctaLink: '/start-trial',
@@ -181,7 +182,7 @@ export default function PricingPage() {
     {
       title: 'Support & SLAs',
       features: [
-        { name: 'Support Channels', starter: 'Email & WhatsApp', growth: 'Priority WhatsApp & Phone', business: 'Dedicated Account Lead', enterprise: '24/7 Dedicated Hotline' },
+        { name: 'Support Channels', starter: 'Signal & Web', growth: 'Priority Signal & Web', business: 'Dedicated Account Lead', enterprise: '24/7 Dedicated Signal & Hotline' },
         { name: 'Response Time Guarantee', starter: '24 Hours', growth: '4 Hours', business: '1 Hour', enterprise: '15 Minutes SLA' },
         { name: 'Data Migration Assistance', starter: false, growth: 'Self-Serve Import', business: 'Assisted by Engineer', enterprise: 'Dedicated White-Glove' },
       ],
@@ -650,13 +651,14 @@ export default function PricingPage() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <a
-                href="https://wa.me/917639930148?text=Hello%20DASA%20TECH,%20I%20have%20a%20question%20about%20DASA%20EXPENCES%20pricing"
+                href="https://signal.me/#u/dasatech.99"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
                   padding: '10px 20px',
                   borderRadius: 999,
-                  backgroundColor: '#25D366',
+                  backgroundColor: '#2563eb',
+                  backgroundImage: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   color: '#ffffff',
                   fontSize: 13,
                   fontWeight: 800,
@@ -664,10 +666,11 @@ export default function PricingPage() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 8,
-                  boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)',
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
                 }}
               >
-                <span>Chat on WhatsApp</span>
+                <SignalIcon size={14} color="#ffffff" />
+                <span>Chat on Signal</span>
               </a>
               <button
                 onClick={() => setDemoModalOpen(true)}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
 import { DemoRequestModal } from '../../components/marketing/DemoRequestModal.jsx';
+import { SignalIcon } from '../../components/marketing/SignalContactCard.jsx';
 import {
   FileSpreadsheet,
   FolderKanban,
@@ -194,7 +195,7 @@ export default function HomePage() {
               <a href="https://dasatech.in" target="_blank" rel="noopener noreferrer" style={{ color: '#c2410c', fontWeight: 800, textDecoration: 'none' }}>
                 DASA TECH
               </a>{' '}
-              • WhatsApp: <strong>+91 76399 30148</strong>
+              • Signal: <strong style={{ color: '#09090b' }}>@dasatech.99</strong>
             </span>
           </div>
 
@@ -707,11 +708,12 @@ export default function HomePage() {
             </button>
 
             <a
-              href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES%20and%20would%20like%20to%20request%20a%20demo."
+              href="https://signal.me/#u/dasatech.99"
               target="_blank"
               rel="noopener noreferrer"
               style={{
-                backgroundColor: '#25D366',
+                backgroundColor: '#2563eb',
+                backgroundImage: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                 color: '#ffffff',
                 padding: '14px 24px',
                 borderRadius: 999,
@@ -721,10 +723,11 @@ export default function HomePage() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
+                boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)',
               }}
             >
-              <MessageSquare size={16} />
-              <span>WhatsApp: +91 76399 30148</span>
+              <SignalIcon size={16} color="#ffffff" />
+              <span>Signal: @dasatech.99</span>
             </a>
           </div>
 

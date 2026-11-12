@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
 import { DemoRequestModal } from '../../components/marketing/DemoRequestModal.jsx';
+import { SignalIcon } from '../../components/marketing/SignalContactCard.jsx';
 import { ChevronDown, ChevronUp, HelpCircle, Sparkles, ArrowRight, MessageSquare } from 'lucide-react';
 
 export default function FaqPage() {
@@ -165,7 +166,7 @@ export default function FaqPage() {
               Still have questions about DASA EXPENCES?
             </h3>
             <p style={{ fontSize: 14, color: '#94a3b8', maxWidth: 480, margin: '0 auto 20px' }}>
-              Speak directly with our engineering architects at DASA TECH on WhatsApp or book a tailored demo.
+              Speak directly with our engineering architects at DASA TECH on Signal or book a tailored demo.
             </p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
               <button onClick={() => setDemoModalOpen(true)} className="btn-trendy-primary">
@@ -173,18 +174,18 @@ export default function FaqPage() {
                 <ArrowRight size={14} />
               </button>
               <a
-                href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20have%20a%20question%20about%20DASA%20EXPENCES."
+                href="https://signal.me/#u/dasatech.99"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-trendy-secondary"
                 style={{
                   color: '#ffffff',
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  borderColor: 'rgba(255, 255, 255, 0.18)',
+                  backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                  borderColor: 'rgba(59, 130, 246, 0.4)',
                 }}
               >
-                <MessageSquare size={14} />
-                <span>Chat on WhatsApp (+91 76399 30148)</span>
+                <SignalIcon size={14} color="#38bdf8" />
+                <span>Chat on Signal (@dasatech.99)</span>
               </a>
             </div>
           </div>

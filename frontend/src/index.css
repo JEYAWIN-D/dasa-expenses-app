@@ -231,7 +231,32 @@ a {
   box-shadow: 0 8px 20px -3px rgba(15, 23, 42, 0.1);
 }
 
-/* WhatsApp Floating Aura Button */
+/* Signal & WhatsApp Floating Aura Button */
+.signal-floating {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  padding: 12px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2) inset;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.signal-floating:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 16px 35px -4px rgba(37, 99, 235, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+}
+
 .whatsapp-floating {
   position: fixed;
   bottom: 24px;

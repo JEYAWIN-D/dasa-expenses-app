@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
 import { DemoRequestModal } from '../../components/marketing/DemoRequestModal.jsx';
+import { SignalIcon } from '../../components/marketing/SignalContactCard.jsx';
 import {
   FileSpreadsheet,
   FolderKanban,
@@ -559,7 +560,7 @@ export default function FeaturesPage() {
                   <ArrowRight size={16} />
                 </button>
                 <a
-                  href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20would%20like%20to%20see%20a%20demo%20of%20DASA%20EXPENCES."
+                  href="https://signal.me/#u/dasatech.99"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-trendy-secondary"
@@ -567,11 +568,15 @@ export default function FeaturesPage() {
                     padding: '12px 24px',
                     fontSize: 14,
                     color: '#ffffff',
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    borderColor: 'rgba(255, 255, 255, 0.18)',
+                    backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                    borderColor: 'rgba(59, 130, 246, 0.4)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
                   }}
                 >
-                  <span>Chat on WhatsApp (+91 76399 30148)</span>
+                  <SignalIcon size={14} color="#38bdf8" />
+                  <span>Chat on Signal (@dasatech.99)</span>
                 </a>
               </div>
             </div>

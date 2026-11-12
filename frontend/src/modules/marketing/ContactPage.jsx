@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
+import { SignalContactCard } from '../../components/marketing/SignalContactCard.jsx';
 import {
-  Phone,
-  Mail,
-  MessageSquare,
   MapPin,
   Globe,
   ExternalLink,
@@ -81,90 +79,8 @@ export default function ContactPage() {
             {/* Contact Details Column */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               
-              {/* WhatsApp Card */}
-              <a
-                href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bento-card"
-                style={{
-                  padding: 24,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  textDecoration: 'none',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                }}
-              >
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 14,
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
-                  }}
-                >
-                  <MessageSquare size={22} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#059669', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Instant Response
-                  </div>
-                  <div style={{ fontSize: 16, fontWeight: 900, color: '#09090b', marginTop: 2 }}>
-                    WhatsApp: +91 76399 30148
-                  </div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                    Fastest channel for live product discussions
-                  </div>
-                </div>
-              </a>
-
-              {/* Phone Hotline Card */}
-              <a
-                href="tel:+917639930148"
-                className="bento-card"
-                style={{
-                  padding: 24,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  textDecoration: 'none',
-                }}
-              >
-                <div
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 14,
-                    background: 'linear-gradient(135deg, #d97706 0%, #ea580c 100%)',
-                    color: '#ffffff',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(234, 88, 12, 0.25)',
-                  }}
-                >
-                  <Phone size={22} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 800, color: '#c2410c', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Direct Support & Sales
-                  </div>
-                  <div style={{ fontSize: 16, fontWeight: 900, color: '#09090b', marginTop: 2 }}>
-                    +91 76399 30148
-                  </div>
-                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                    Mon - Sat, 9:00 AM - 7:00 PM IST
-                  </div>
-                </div>
-              </a>
+              {/* Official Signal Leadership Channel Card */}
+              <SignalContactCard />
 
               {/* Corporate Info Bento */}
               <div className="bento-card" style={{ padding: 26 }}>

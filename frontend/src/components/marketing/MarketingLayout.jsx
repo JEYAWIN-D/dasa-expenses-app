@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { DasaLogo } from '../common/DasaLogo.jsx';
 import { DemoRequestModal } from './DemoRequestModal.jsx';
+import { SignalIcon } from './SignalContactCard.jsx';
 import {
   Phone,
   MessageSquare,
@@ -72,27 +73,25 @@ export function MarketingLayout({ children }) {
             DASA TECH Product
           </span>
           <span>
-            From Quotation to Project Handover • Hotline:{' '}
-            <a href="tel:+917639930148" style={{ color: '#ffffff', fontWeight: 800, textDecoration: 'underline' }}>
-              +91 76399 30148
-            </a>
+            From Quotation to Project Handover • Direct Signal Channel:{' '}
+            <strong style={{ color: '#ffffff' }}>@dasatech.99</strong>
           </span>
           <span style={{ opacity: 0.5 }}>|</span>
           <a
-            href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES."
+            href="https://signal.me/#u/dasatech.99"
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              color: '#fde68a',
-              fontWeight: 700,
+              color: '#bfdbfe',
+              fontWeight: 800,
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 4,
+              gap: 5,
               textDecoration: 'none',
             }}
           >
-            <MessageSquare size={11} />
-            <span>Chat on WhatsApp</span>
+            <SignalIcon size={12} color="#bfdbfe" />
+            <span>Chat on Signal</span>
           </a>
         </div>
       </div>
@@ -296,13 +295,13 @@ export function MarketingLayout({ children }) {
       {/* Main Content Area */}
       <main style={{ flex: 1 }}>{children}</main>
 
-      {/* Trendy Floating WhatsApp Button */}
+      {/* Trendy Floating Signal Messenger Button */}
       <a
-        href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES%20and%20would%20like%20to%20request%20a%20demo."
+        href="https://signal.me/#u/dasatech.99"
         target="_blank"
         rel="noopener noreferrer"
-        className="whatsapp-floating"
-        title="Chat on WhatsApp (+91 76399 30148)"
+        className="signal-floating"
+        title="Direct Chat on Signal (@dasatech.99)"
       >
         <span
           style={{
@@ -314,8 +313,8 @@ export function MarketingLayout({ children }) {
             animation: 'pulse 1.5s infinite',
           }}
         />
-        <MessageSquare size={16} />
-        <span>Chat on WhatsApp</span>
+        <SignalIcon size={16} color="#ffffff" />
+        <span>Chat on Signal</span>
       </a>
 
       {/* Trendy Dark Titanium SaaS Footer */}
@@ -402,11 +401,13 @@ export function MarketingLayout({ children }) {
                     <ExternalLink size={12} />
                   </a>
                   <a
-                    href="tel:+917639930148"
-                    style={{ color: '#cbd5e1', fontSize: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    href="https://signal.me/#u/dasatech.99"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: '#93c5fd', fontSize: 12, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 700 }}
                   >
-                    <Phone size={12} />
-                    <span>+91 76399 30148</span>
+                    <SignalIcon size={13} color="#93c5fd" />
+                    <span>Signal: @dasatech.99</span>
                   </a>
                 </div>
               </div>
@@ -484,7 +485,10 @@ export function MarketingLayout({ children }) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               <span>Erode, Tamil Nadu, India</span>
-              <a href="tel:+917639930148" style={{ color: '#94a3b8', textDecoration: 'none' }}>+91 76399 30148</a>
+              <a href="https://signal.me/#u/dasatech.99" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <SignalIcon size={12} color="#93c5fd" />
+                <span>Signal: @dasatech.99</span>
+              </a>
               <Link to="/login" style={{ color: '#f97316', fontWeight: 700, textDecoration: 'none' }}>
                 Launch Web App →
               </Link>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
 import { DasaLogo } from '../../components/common/DasaLogo.jsx';
+import { SignalIcon } from '../../components/marketing/SignalContactCard.jsx';
 import {
   Building,
   ShieldCheck,
@@ -158,15 +159,16 @@ export default function AboutPage() {
               </div>
 
               <div>
-                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>WhatsApp Direct</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 700 }}>Signal Encrypted Channel</div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#ffffff', marginTop: 4 }}>
                   <a
-                    href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20would%20like%20to%20connect%20with%20your%20team."
+                    href="https://signal.me/#u/dasatech.99"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#34d399', textDecoration: 'none' }}
+                    style={{ color: '#38bdf8', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5 }}
                   >
-                    +91 76399 30148 (Chat)
+                    <SignalIcon size={14} color="#38bdf8" />
+                    <span>@dasatech.99</span>
                   </a>
                 </div>
               </div>

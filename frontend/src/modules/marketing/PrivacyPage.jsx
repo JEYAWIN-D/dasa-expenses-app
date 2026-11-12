@@ -40,13 +40,13 @@ export default function PrivacyPage() {
 
             <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0f172a' }}>4. Contact & Support</h3>
             <p>
-              For privacy inquiries, data deletion requests, or compliance reviews, contact DASA TECH at:
+              For privacy inquiries, data deletion requests, or compliance reviews, contact DASA TECH leadership directly via Signal:
               <br />
-              <strong>Email:</strong> dasatechmu@gmail.com
+              <strong>Official Signal Messenger:</strong> @dasatech.99
               <br />
-              <strong>Phone / WhatsApp:</strong> +91 76399 30148
+              <strong>Official Website:</strong> https://dasatech.in
               <br />
-              <strong>Address:</strong> EB Colony, Erode, Tamil Nadu 638002, India
+              <strong>Corporate Headquarters:</strong> EB Colony, Erode, Tamil Nadu 638002, India
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MarketingLayout } from '../../components/marketing/MarketingLayout.jsx';
+import { SignalContactCard } from '../../components/marketing/SignalContactCard.jsx';
 import {
   CheckCircle2,
   Phone,
@@ -234,73 +235,8 @@ export default function RequestDemoPage() {
                 </div>
               </div>
 
-              {/* Direct WhatsApp Callout Card (Titanium Bento) */}
-              <div
-                style={{
-                  backgroundColor: '#090d16',
-                  borderRadius: 20,
-                  padding: 26,
-                  color: '#ffffff',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: '0 20px 40px -15px rgba(0, 0, 0, 0.5)',
-                }}
-              >
-                <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>
-                  PREFER IMMEDIATE CONTACT?
-                </div>
-                <div style={{ fontSize: 16, fontWeight: 900, marginBottom: 8 }}>
-                  Talk to the Engineering Team at DASA TECH
-                </div>
-                <div style={{ fontSize: 13, color: '#94a3b8', lineHeight: 1.6, marginBottom: 20 }}>
-                  Have specific enterprise requirements or need a walkthrough today? Message or call our architects directly.
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <a
-                    href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES%20and%20would%20like%20to%20request%20a%20demo."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: '#ffffff',
-                      padding: '11px 18px',
-                      borderRadius: 999,
-                      fontSize: 13,
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
-                    }}
-                  >
-                    <MessageSquare size={16} />
-                    <span>WhatsApp: +91 76399 30148</span>
-                  </a>
-
-                  <a
-                    href="tel:+917639930148"
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                      color: '#ffffff',
-                      padding: '10px 18px',
-                      borderRadius: 999,
-                      fontSize: 13,
-                      fontWeight: 700,
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 8,
-                      border: '1px solid rgba(255, 255, 255, 0.15)',
-                    }}
-                  >
-                    <Phone size={15} />
-                    <span>Hotline: +91 76399 30148</span>
-                  </a>
-                </div>
-              </div>
+              {/* Official Signal Leadership Channel Card */}
+              <SignalContactCard />
             </div>
 
             {/* Right: Full Interactive Request Form (Bento Card) */}

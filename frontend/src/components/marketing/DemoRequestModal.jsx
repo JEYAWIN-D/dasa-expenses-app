@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, Calendar, Phone, Mail, Building, Sparkles, ArrowRight, MessageSquare } from 'lucide-react';
 import { DasaLogo } from '../common/DasaLogo.jsx';
+import { SignalIcon } from './SignalContactCard.jsx';
 
 export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
   const [formData, setFormData] = useState({
@@ -71,7 +72,7 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
       }
       setSubmitted(true);
     } catch (err) {
-      setErrorMsg(err.message || 'Something went wrong. You can also contact us directly via WhatsApp.');
+      setErrorMsg(err.message || 'Something went wrong. You can also contact us directly via Signal.');
     } finally {
       setLoading(false);
     }
@@ -207,12 +208,13 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
 
               <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <a
-                  href={`https://wa.me/917639930148?text=${whatsappMessage}`}
+                  href="https://signal.me/#u/dasatech.99"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn"
                   style={{
-                    backgroundColor: '#25D366',
+                    backgroundColor: '#2563eb',
+                    backgroundImage: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                     color: '#ffffff',
                     padding: '10px 20px',
                     borderRadius: 8,
@@ -221,10 +223,11 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 8,
+                    boxShadow: '0 4px 14px rgba(37, 99, 235, 0.35)',
                   }}
                 >
-                  <MessageSquare size={16} />
-                  Connect Instantly on WhatsApp (+91 76399 30148)
+                  <SignalIcon size={16} color="#ffffff" />
+                  Connect Instantly on Signal (@dasatech.99)
                 </a>
                 <button
                   onClick={onClose}
@@ -589,13 +592,13 @@ export function DemoRequestModal({ isOpen, onClose, initialFeature = '' }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#64748b' }}>
                   <span>Need instant answers?</span>
                   <a
-                    href="https://wa.me/917639930148?text=Hello%20DASA%20TECH%2C%20I%20am%20interested%20in%20DASA%20EXPENCES%20and%20would%20like%20to%20request%20a%20demo."
+                    href="https://signal.me/#u/dasatech.99"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    style={{ color: '#2563eb', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 5 }}
                   >
-                    <MessageSquare size={13} />
-                    WhatsApp Us
+                    <SignalIcon size={13} color="#2563eb" />
+                    <span>Signal Us (@dasatech.99)</span>
                   </a>
                 </div>
 
